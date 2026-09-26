@@ -197,6 +197,14 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Tools_BoxManipulation", OpenBoxManipCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_Daycare", OpenDaycareCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_Records", OpenRecordsCommand, "Menu_Tools_SaveEditors");
+        _capabilityRegistry.Add(new(
+            "Menu_Save_GiftRibbons",
+            string.Empty,
+            "M 3,3 H 13 V 13 H 3 Z M 5,6 H 11 M 5,9 H 11 M 5,12 H 9",
+            OpenGiftRibbonsCommand,
+            showInLauncher: true,
+            menuGroupTitleKey: "Menu_Tools_SaveEditors",
+            capabilityPredicate: CanOpenGiftRibbons));
         RegisterMenuCapability("Menu_Save_HallOfFame", OpenHallOfFameCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_MailBox", OpenMailBoxCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_BoxLayout", OpenBoxLayoutCommand, "Menu_Tools_SaveEditors");

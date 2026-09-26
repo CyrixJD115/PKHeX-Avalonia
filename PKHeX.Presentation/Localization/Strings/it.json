@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "Sbloccare tutti e tre gli slot del Safari Amici per ogni amico salvato? Non è possibile modificare singoli amici o specie.",
   "FriendSafari_Apply": "Applica",
   "PlusRecords_Title": "Contrassegni mosse Plus",
+  "ZygardeCellEditor_TotemCounterWarning": "Il contatore degli adesivi raccolti non corrisponde al numero di adesivi ricevuti. Controlla entrambi prima di salvare.",
   "ZygardeCellEditor_CounterWarning": "Il contatore raccolto è inferiore alle voci ricevute. Controlla prima di salvare; le cellule conservate possono variare dopo assemblaggio o separazione.",
   "Poffin8bEditor_SmoothnessHelp": "La morbidezza aumenta la lucentezza quando il Poffin viene mangiato.",
-  "RecordsEditor_Reset": "Ripristina modifiche in sospeso"
+  "RecordsEditor_Reset": "Ripristina modifiche in sospeso",
+  "Menu_Save_GiftRibbons": "Fiocchi regalo",
+  "Dialog_GiftRibbons": "Editor dei fiocchi regalo",
+  "GiftRibbonEditor_Generation": "Generazione {0}",
+  "GiftRibbonEditor_RibbonColumn": "Fiocco",
+  "GiftRibbonEditor_DescriptionIndex": "Indice descrizione",
+  "GiftRibbonEditor_DescriptionIndexFor": "Indice descrizione di {0}",
+  "GiftRibbonEditor_AllLegal": "Tutti legali",
+  "GiftRibbonEditor_Clear": "Cancella"
 }

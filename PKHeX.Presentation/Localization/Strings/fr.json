@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "Débloquer les trois emplacements du Safari des Amis pour chaque ami enregistré ? La modification individuelle des amis et des espèces n’est pas prise en charge.",
   "FriendSafari_Apply": "Appliquer",
   "PlusRecords_Title": "Marqueurs de capacités Plus",
+  "ZygardeCellEditor_TotemCounterWarning": "Le compteur de stickers collectés ne correspond pas au nombre de stickers reçus. Vérifiez les deux avant d’enregistrer.",
   "ZygardeCellEditor_CounterWarning": "Le compteur collecté est inférieur aux entrées reçues. Vérifiez avant d’enregistrer ; le stock peut varier après assemblage ou séparation.",
   "Poffin8bEditor_SmoothnessHelp": "L’onctuosité augmente le lustre lorsque le Poffin est mangé.",
-  "RecordsEditor_Reset": "Annuler les modifications en attente"
+  "RecordsEditor_Reset": "Annuler les modifications en attente",
+  "Menu_Save_GiftRibbons": "Rubans cadeaux",
+  "Dialog_GiftRibbons": "Éditeur de rubans cadeaux",
+  "GiftRibbonEditor_Generation": "Génération {0}",
+  "GiftRibbonEditor_RibbonColumn": "Ruban",
+  "GiftRibbonEditor_DescriptionIndex": "Index de description",
+  "GiftRibbonEditor_DescriptionIndexFor": "Index de description : {0}",
+  "GiftRibbonEditor_AllLegal": "Tous légaux",
+  "GiftRibbonEditor_Clear": "Effacer"
 }

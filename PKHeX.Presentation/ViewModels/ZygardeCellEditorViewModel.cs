@@ -44,12 +44,30 @@ public partial class ZygardeCellEditorViewModel : ViewModelBase, ICloseableDialo
     public System.Action? CloseRequested { get; set; }
     public bool CanSave => IsSupported && CellsTotal is >= 0 and <= ushort.MaxValue &&
         CellsCollected is >= 0 and <= ushort.MaxValue && Cells.All(c => c.State is >= 0 and <= 2);
-    public bool HasCounterWarning => CellsCollected < Cells.Count(c => c.State == 2);
+
+    /// <summary>
+    /// In Sun/Moon, the collected counter can exceed the currently stored cells after assembly.
+    /// Ultra Sun/Ultra Moon stickers are never consumed, so their counter must match the received
+    /// sticker states in either direction.
+    /// </summary>
+    public bool HasCounterWarning
+    {
+        get
+        {
+            var received = Cells.Count(c => c.State == 2);
+            return IsTotemSticker ? CellsCollected != received : CellsCollected < received;
+        }
+    }
+
+    public bool ShowCellCounterWarning => !IsTotemSticker && HasCounterWarning;
+    public bool ShowTotemStickerCounterWarning => IsTotemSticker && HasCounterWarning;
 
     private void NotifyCounterValidity()
     {
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(HasCounterWarning));
+        OnPropertyChanged(nameof(ShowCellCounterWarning));
+        OnPropertyChanged(nameof(ShowTotemStickerCounterWarning));
         SaveCommand.NotifyCanExecuteChanged();
     }
 

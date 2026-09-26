@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "登録されているすべてのフレンドのサファリを3枠とも解放しますか？個別のフレンドやポケモンの編集には対応していません。",
   "FriendSafari_Apply": "適用",
   "PlusRecords_Title": "プラス技フラグ",
+  "ZygardeCellEditor_TotemCounterWarning": "収集したステッカー数が、受け取ったステッカー数と一致しません。保存前に両方を確認してください。",
   "ZygardeCellEditor_CounterWarning": "収集数が受取済みの項目数より少なくなっています。保存前に確認してください。保存セル数は合成・分離により変わる場合があります。",
   "Poffin8bEditor_SmoothnessHelp": "ポフィンを食べるとなめらかさに応じてけづやが上がります。",
-  "RecordsEditor_Reset": "未保存の変更をリセット"
+  "RecordsEditor_Reset": "未保存の変更をリセット",
+  "Menu_Save_GiftRibbons": "ギフトリボン",
+  "Dialog_GiftRibbons": "ギフトリボンエディター",
+  "GiftRibbonEditor_Generation": "第{0}世代",
+  "GiftRibbonEditor_RibbonColumn": "リボン",
+  "GiftRibbonEditor_DescriptionIndex": "説明ID",
+  "GiftRibbonEditor_DescriptionIndexFor": "{0}の説明ID",
+  "GiftRibbonEditor_AllLegal": "すべて合法",
+  "GiftRibbonEditor_Clear": "消去"
 }

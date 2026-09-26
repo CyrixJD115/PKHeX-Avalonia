@@ -1,6 +1,9 @@
 using System.IO;
+using Moq;
+using PKHeX.Application.Abstractions;
 using PKHeX.Application.UseCases;
 using PKHeX.Core;
+using PKHeX.Presentation.ViewModels;
 using Xunit.Abstractions;
 
 namespace PKHeX.Avalonia.Tests;
@@ -108,6 +111,50 @@ public class OsDragDropTests(ITestOutputHelper output)
             Assert.NotEqual(EntityFileDropKind.Entity, result.Kind);
             Assert.NotNull(result.Message);
             output.WriteLine($"Import: incompatible Gen1 file rejected cleanly ({result.Kind}): {result.Message} ✓");
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public async Task Import_Gen5EntityIntoGen7Box_ConvertsOnlyTheDestinationSave()
+    {
+        var sourceSave = new SAV5B2W2();
+        var sourcePokemon = (PK5)sourceSave.BlankPKM;
+        sourcePokemon.Species = 25;
+        sourcePokemon.Nickname = "Pikachu";
+        sourcePokemon.RefreshChecksum();
+        sourceSave.SetBoxSlotAtIndex(sourcePokemon, 0, 0);
+        var sourceBeforeDrop = sourceSave.Data.ToArray();
+
+        var targetSave = new SAV7USUM();
+        var path = WriteTempEntityFile(sourceSave.GetBoxSlotAtIndex(0, 0));
+        try
+        {
+            var viewer = new BoxViewerViewModel(targetSave, Mock.Of<ISpriteRenderer>());
+            await viewer.HandleFileDropAsync([path], 0);
+
+            var imported = targetSave.GetBoxSlotAtIndex(0, 0);
+            Assert.IsType<PK7>(imported);
+            Assert.Equal(25, imported.Species);
+            Assert.Equal(sourceBeforeDrop, sourceSave.Data.ToArray());
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public async Task Import_IncompatibleCrossWindowEntity_LeavesDestinationUnchanged()
+    {
+        var targetSave = new SAV5B2W2();
+        var targetBeforeDrop = targetSave.Data.ToArray();
+        var incompatible = new PK1 { Species = 1, TID16 = 1 };
+        var path = WriteTempEntityFile(incompatible);
+        try
+        {
+            var viewer = new BoxViewerViewModel(targetSave, Mock.Of<ISpriteRenderer>());
+            await viewer.HandleFileDropAsync([path], 0);
+
+            Assert.Equal(targetBeforeDrop, targetSave.Data.ToArray());
+            Assert.Equal(0, targetSave.GetBoxSlotAtIndex(0, 0).Species);
         }
         finally { File.Delete(path); }
     }

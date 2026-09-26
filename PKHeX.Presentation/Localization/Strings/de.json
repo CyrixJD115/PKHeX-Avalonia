@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "Alle drei Kontaktsafari-Plätze für jeden gespeicherten Freund freischalten? Einzelne Freunde und Spezies können nicht bearbeitet werden.",
   "FriendSafari_Apply": "Anwenden",
   "PlusRecords_Title": "Plus-Attacken-Markierungen",
+  "ZygardeCellEditor_TotemCounterWarning": "Der Zähler für gesammelte Sticker stimmt nicht mit der Anzahl erhaltener Sticker überein. Prüfe beide Werte vor dem Speichern.",
   "ZygardeCellEditor_CounterWarning": "Gesammelt ist kleiner als die Anzahl erhaltener Einträge. Zähler vor dem Speichern prüfen; gespeicherte Zellen können nach der Synthese oder Zerlegung abweichen.",
   "Poffin8bEditor_SmoothnessHelp": "Geschmeidigkeit erhöht den Glanz beim Füttern.",
-  "RecordsEditor_Reset": "Änderungen zurücksetzen"
+  "RecordsEditor_Reset": "Änderungen zurücksetzen",
+  "Menu_Save_GiftRibbons": "Geschenk-Bänder",
+  "Dialog_GiftRibbons": "Geschenkband-Editor",
+  "GiftRibbonEditor_Generation": "Generation {0}",
+  "GiftRibbonEditor_RibbonColumn": "Band",
+  "GiftRibbonEditor_DescriptionIndex": "Beschreibungsindex",
+  "GiftRibbonEditor_DescriptionIndexFor": "Beschreibungsindex für {0}",
+  "GiftRibbonEditor_AllLegal": "Alle legal",
+  "GiftRibbonEditor_Clear": "Leeren"
 }

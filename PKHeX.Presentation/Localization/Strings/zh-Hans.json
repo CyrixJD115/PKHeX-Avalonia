@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "解锁所有已保存朋友的三个狩猎区栏位？不支持单独编辑朋友或宝可梦种类。",
   "FriendSafari_Apply": "应用",
   "PlusRecords_Title": "强化招式标记",
+  "ZygardeCellEditor_TotemCounterWarning": "已收集贴纸数与已领取贴纸数不一致。保存前请检查这两个数值。",
   "ZygardeCellEditor_CounterWarning": "收集数量少于已领取条目。保存前请检查计数；储存数量可能因合成或分离而变化。",
   "Poffin8bEditor_SmoothnessHelp": "食用宝芬时，润滑度会增加光泽。",
-  "RecordsEditor_Reset": "重置待保存的更改"
+  "RecordsEditor_Reset": "重置待保存的更改",
+  "Menu_Save_GiftRibbons": "礼物缎带",
+  "Dialog_GiftRibbons": "礼物缎带编辑器",
+  "GiftRibbonEditor_Generation": "第{0}世代",
+  "GiftRibbonEditor_RibbonColumn": "缎带",
+  "GiftRibbonEditor_DescriptionIndex": "描述编号",
+  "GiftRibbonEditor_DescriptionIndexFor": "{0}的描述编号",
+  "GiftRibbonEditor_AllLegal": "全部合法",
+  "GiftRibbonEditor_Clear": "清除"
 }

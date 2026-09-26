@@ -114,4 +114,40 @@ public sealed class ZygardeCellEditorTests
         vm.SaveCommand.Execute(null);
         Assert.Equal(1, sav.GetRecord(72));
     }
+
+    [Fact]
+    public void UltraSunMoon_CounterWarningUsesStickerSemanticsInBothDirections()
+    {
+        var vm = new ZygardeCellEditorViewModel(new SAV7USUM());
+
+        Assert.False(vm.HasCounterWarning);
+        vm.Cells[0].State = 2;
+        Assert.Equal(1, vm.CellsCollected);
+        Assert.False(vm.HasCounterWarning);
+
+        vm.CellsCollected = 0;
+        Assert.True(vm.HasCounterWarning);
+        Assert.False(vm.ShowCellCounterWarning);
+        Assert.True(vm.ShowTotemStickerCounterWarning);
+
+        vm.CellsCollected = 2;
+        Assert.True(vm.HasCounterWarning);
+        vm.CellsCollected = 1;
+        Assert.False(vm.HasCounterWarning);
+    }
+
+    [Fact]
+    public void SunMoon_CounterWarningAllowsCellsConsumedByAssembly()
+    {
+        var vm = new ZygardeCellEditorViewModel(new SAV7SM());
+        vm.Cells[0].State = 2;
+
+        Assert.False(vm.HasCounterWarning);
+        vm.CellsCollected = 2; // A collected cell may already have been spent on Zygarde assembly.
+        Assert.False(vm.HasCounterWarning);
+        vm.CellsCollected = 0;
+        Assert.True(vm.HasCounterWarning);
+        Assert.True(vm.ShowCellCounterWarning);
+        Assert.False(vm.ShowTotemStickerCounterWarning);
+    }
 }

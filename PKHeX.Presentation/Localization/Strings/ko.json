@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "저장된 모든 친구의 프렌드사파리 슬롯 3개를 해제할까요? 개별 친구나 포켓몬 종류 편집은 지원되지 않습니다.",
   "FriendSafari_Apply": "적용",
   "PlusRecords_Title": "플러스 기술 플래그",
+  "ZygardeCellEditor_TotemCounterWarning": "수집한 스티커 수가 받은 스티커 수와 일치하지 않습니다. 저장하기 전에 두 값을 확인하세요.",
   "ZygardeCellEditor_CounterWarning": "수집 수가 받은 항목 수보다 적습니다. 저장 전에 확인하세요. 보관한 셀은 합체나 분리 후 달라질 수 있습니다.",
   "Poffin8bEditor_SmoothnessHelp": "포핀을 먹으면 매끄러움에 따라 윤기가 올라갑니다.",
-  "RecordsEditor_Reset": "저장 전 변경 초기화"
+  "RecordsEditor_Reset": "저장 전 변경 초기화",
+  "Menu_Save_GiftRibbons": "기념 리본",
+  "Dialog_GiftRibbons": "기념 리본 편집기",
+  "GiftRibbonEditor_Generation": "제{0}세대",
+  "GiftRibbonEditor_RibbonColumn": "리본",
+  "GiftRibbonEditor_DescriptionIndex": "설명 인덱스",
+  "GiftRibbonEditor_DescriptionIndexFor": "{0} 설명 인덱스",
+  "GiftRibbonEditor_AllLegal": "모두 합법",
+  "GiftRibbonEditor_Clear": "지우기"
 }

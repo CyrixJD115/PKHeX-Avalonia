@@ -43,6 +43,7 @@ public static class ViewLocator
         [typeof(GearBREditorViewModel)] = () => new GearBREditor(),
         [typeof(Geonet4EditorViewModel)] = () => new Geonet4Editor(),
         [typeof(GlobalLink5EditorViewModel)] = () => new GlobalLink5Editor(),
+        [typeof(GiftRibbonEditorViewModel)] = () => new GiftRibbonEditorView(),
         [typeof(GroupViewerViewModel)] = () => new GroupViewer(),
         [typeof(HallOfFame1EditorViewModel)] = () => new HallOfFame1Editor(),
         [typeof(HallOfFame3EditorViewModel)] = () => new HallOfFame3EditorView(),

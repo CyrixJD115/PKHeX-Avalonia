@@ -92,6 +92,19 @@ internal static class SlotDragTransfer
     /// <summary>Returns whether a transfer contains a PKHeX slot payload, even if its session is stale.</summary>
     public static bool HasCustomPayload(IDataTransfer? transfer) => transfer?.TryGetValue(Format) is not null;
 
+    /// <summary>
+    /// Allows the exported entity file from a different save session to use the ordinary import
+    /// and conversion path. Same-session drags must keep using the slot move/copy path, and stale
+    /// slot payloads without exactly one exported entity file are not actionable.
+    /// </summary>
+    public static bool HasCrossSessionEntityFile(IDataTransfer? transfer, Guid expectedSessionId)
+    {
+        var data = TryGet(transfer);
+        return data is not null
+            && data.SessionId != expectedSessionId
+            && transfer?.TryGetFiles() is { Length: 1 };
+    }
+
     /// <summary>Maps a valid slot payload and pointer modifiers to the operation the drop will perform.</summary>
     public static DragDropEffects GetDropEffect(SlotDragData data, SlotLocation destination, KeyModifiers modifiers)
     {
