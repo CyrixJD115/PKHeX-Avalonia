@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "解鎖所有已儲存朋友的三個狩獵區欄位？不支援個別編輯朋友或寶可夢種類。",
   "FriendSafari_Apply": "套用",
   "PlusRecords_Title": "強化招式標記",
+  "ZygardeCellEditor_TotemCounterWarning": "已收集貼紙數與已領取貼紙數不一致。儲存前請檢查這兩個數值。",
   "ZygardeCellEditor_CounterWarning": "收集數量少於已領取項目。儲存前請檢查計數；儲存數量可能因合成或分離而變化。",
   "Poffin8bEditor_SmoothnessHelp": "食用寶芬時，潤滑度會增加光澤。",
-  "RecordsEditor_Reset": "重設待儲存的變更"
+  "RecordsEditor_Reset": "重設待儲存的變更",
+  "Menu_Save_GiftRibbons": "禮物緞帶",
+  "Dialog_GiftRibbons": "禮物緞帶編輯器",
+  "GiftRibbonEditor_Generation": "第{0}世代",
+  "GiftRibbonEditor_RibbonColumn": "緞帶",
+  "GiftRibbonEditor_DescriptionIndex": "描述編號",
+  "GiftRibbonEditor_DescriptionIndexFor": "{0}的描述編號",
+  "GiftRibbonEditor_AllLegal": "全部合法",
+  "GiftRibbonEditor_Clear": "清除"
 }

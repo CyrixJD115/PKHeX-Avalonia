@@ -162,6 +162,19 @@ public partial class MainWindowViewModel
             T("Dialog_GameRecords"));
     }
 
+    private bool CanOpenGiftRibbons() => CurrentSave is IGiftRibbons && CurrentSave.Generation is 3 or 4;
+
+    [RelayCommand(CanExecute = nameof(CanOpenGiftRibbons))]
+    private async Task OpenGiftRibbonsAsync()
+    {
+        if (CurrentSave is not { } save || save is not IGiftRibbons || save.Generation is not (3 or 4))
+            return;
+
+        await _windowService.ShowDialogAsync(
+            new GiftRibbonEditorViewModel(save),
+            T("Dialog_GiftRibbons"));
+    }
+
     [RelayCommand(CanExecute = nameof(HasSave))]
     private async Task OpenHallOfFameAsync()
     {

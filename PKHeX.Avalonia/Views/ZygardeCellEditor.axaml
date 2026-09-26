@@ -28,7 +28,9 @@
                     </StackPanel>
                 </DockPanel>
 
-                <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ZygardeCellEditor_CounterWarning}" IsVisible="{Binding HasCounterWarning}"
+                <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ZygardeCellEditor_CounterWarning}" IsVisible="{Binding ShowCellCounterWarning}"
+                           Classes="form-hint" Margin="0,0,0,8" />
+                <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ZygardeCellEditor_TotemCounterWarning}" IsVisible="{Binding ShowTotemStickerCounterWarning}"
                            Classes="form-hint" Margin="0,0,0,8" />
 
                 <!-- Totals -->

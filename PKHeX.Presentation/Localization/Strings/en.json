@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "Unlock all three Friend Safari slots for every stored friend? Individual friend and species editing is not supported.",
   "FriendSafari_Apply": "Apply",
   "PlusRecords_Title": "Plus Move flags",
+  "ZygardeCellEditor_TotemCounterWarning": "The collected sticker count does not match the number of received stickers. Review both before saving.",
   "ZygardeCellEditor_CounterWarning": "Collected is lower than the number of received entries. Review the counters before saving; stored cells can differ after assembly or disassembly.",
   "Poffin8bEditor_SmoothnessHelp": "Smoothness increases sheen when the Poffin is eaten.",
-  "RecordsEditor_Reset": "Reset pending edits"
+  "RecordsEditor_Reset": "Reset pending edits",
+  "Menu_Save_GiftRibbons": "Gift Ribbons",
+  "Dialog_GiftRibbons": "Gift Ribbon Editor",
+  "GiftRibbonEditor_Generation": "Generation {0}",
+  "GiftRibbonEditor_RibbonColumn": "Ribbon",
+  "GiftRibbonEditor_DescriptionIndex": "Description index",
+  "GiftRibbonEditor_DescriptionIndexFor": "{0} description index",
+  "GiftRibbonEditor_AllLegal": "All Legal",
+  "GiftRibbonEditor_Clear": "Clear"
 }

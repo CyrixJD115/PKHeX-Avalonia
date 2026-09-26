@@ -119,9 +119,11 @@ public partial class BoxViewer : UserControl
         }
         else if (SlotDragTransfer.HasCustomPayload(e.DataTransfer))
         {
-            // A stale in-app payload may also carry an exported file. Never reinterpret it as an
-            // OS file drop after a save switch; the session token must win.
-            e.DragEffects = DragDropEffects.None;
+            // A different save session may fall through to the exported Pokémon file, which the
+            // destination then validates and converts through the regular file-import pipeline.
+            e.DragEffects = SlotDragTransfer.HasCrossSessionEntityFile(e.DataTransfer, vm.SessionId)
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
         }
         else if (e.DataTransfer.TryGetFiles() is { Length: > 0 })
         {
@@ -165,9 +167,11 @@ public partial class BoxViewer : UserControl
             return;
         }
 
-        if (SlotDragTransfer.HasCustomPayload(e.DataTransfer))
+        if (SlotDragTransfer.HasCustomPayload(e.DataTransfer)
+            && !SlotDragTransfer.HasCrossSessionEntityFile(e.DataTransfer, vm.SessionId))
         {
-            // Ignore stale/invalid in-app payloads, including payloads that also contain a file.
+            // Ignore stale/invalid in-app payloads unless they carry one exported entity file
+            // from another save session (handled below as a normal import).
             e.Handled = true;
             return;
         }

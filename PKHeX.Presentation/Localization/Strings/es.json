@@ -2331,7 +2331,16 @@
   "FriendSafari_Confirm": "¿Desbloquear los tres espacios de Safari Amistad para cada amigo guardado? No se pueden editar amigos ni especies individualmente.",
   "FriendSafari_Apply": "Aplicar",
   "PlusRecords_Title": "Marcas de movimientos Plus",
+  "ZygardeCellEditor_TotemCounterWarning": "El contador de pegatinas recogidas no coincide con el número de pegatinas recibidas. Revisa ambos valores antes de guardar.",
   "ZygardeCellEditor_CounterWarning": "El contador recogido es menor que las entradas recibidas. Revisa los contadores antes de guardar; las células almacenadas pueden variar tras ensamblar o separar.",
   "Poffin8bEditor_SmoothnessHelp": "La suavidad aumenta el brillo al comer el Pokocho.",
-  "RecordsEditor_Reset": "Restablecer cambios pendientes"
+  "RecordsEditor_Reset": "Restablecer cambios pendientes",
+  "Menu_Save_GiftRibbons": "Cintas regalo",
+  "Dialog_GiftRibbons": "Editor de cintas regalo",
+  "GiftRibbonEditor_Generation": "Generación {0}",
+  "GiftRibbonEditor_RibbonColumn": "Cinta",
+  "GiftRibbonEditor_DescriptionIndex": "Índice de descripción",
+  "GiftRibbonEditor_DescriptionIndexFor": "Índice de descripción de {0}",
+  "GiftRibbonEditor_AllLegal": "Todas legales",
+  "GiftRibbonEditor_Clear": "Borrar"
 }
