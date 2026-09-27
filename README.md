@@ -83,7 +83,7 @@ Use **Tools**, or **Ctrl+K** to search the tool launcher. The tool catalog refle
 ### Desktop experience
 
 - Light and Dark themes, switchable at runtime from the top bar or Settings.
-- Nine interface languages: English, German, Spanish, French, Italian, Japanese, Korean, Simplified Chinese, and Traditional Chinese. Switch through **Help → Language**.
+- Ten interface languages: English, German, Spanish, French, Italian, Japanese, Korean, Simplified Chinese, Traditional Chinese, and Brazilian Portuguese (interface only; game data such as species and move names stays in English). Switch through **Help → Language**.
 - Compact and comfortable density settings, a resizable shell, and Pokémon, Save, and Reports workspaces.
 - Keyboard navigation, contextual accessible control names, and visible focus. See [accessibility and shortcuts](docs/accessibility.md).
 - Platform-specific settings/data directories, update notifications, and release notes.
@@ -184,7 +184,7 @@ Other release targets are `linux-x64`, `osx-arm64`, and `osx-x64`. Installers, D
 
 Tests cover Core behavior, Avalonia controls/ViewModels, headless rendering, and architecture boundaries. CI builds and tests on Windows, macOS, and Linux.
 
-Development is AI-assisted. Shared repository instructions are in [AGENTS.md](AGENTS.md). Contributions go through branches and pull requests. Keep consumer changes outside the Core mirror, add user-facing strings to all nine language resources, and include relevant regression coverage. CI owns the application version bump; do not edit `UIVersion` in a PR.
+Development is AI-assisted. Shared repository instructions are in [AGENTS.md](AGENTS.md). Contributions go through branches and pull requests. Keep consumer changes outside the Core mirror, add user-facing strings to all ten language resources, and include relevant regression coverage. CI owns the application version bump; do not edit `UIVersion` in a PR.
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [development guide](docs/development.md).
 

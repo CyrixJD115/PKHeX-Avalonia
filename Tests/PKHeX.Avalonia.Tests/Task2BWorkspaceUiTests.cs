@@ -46,7 +46,7 @@ public sealed class Task2BWorkspaceUiTests
         var localizationDirectory = Path.Combine(FindRepositoryRoot(), "PKHeX.Presentation", "Localization", "Strings");
         var expectedCatalogs = new[]
         {
-            "de.json", "en.json", "es.json", "fr.json", "it.json", "ja.json", "ko.json", "zh-Hans.json", "zh-Hant.json",
+            "de.json", "en.json", "es.json", "fr.json", "it.json", "ja.json", "ko.json", "pt-BR.json", "zh-Hans.json", "zh-Hant.json",
         };
         var actualCatalogs = Directory.GetFiles(localizationDirectory, "*.json")
             .Select(Path.GetFileName)

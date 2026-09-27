@@ -122,8 +122,9 @@ A clean build is expected to produce **0 warnings**. Test projects live under `T
 ## Localization
 
 Resource files live in `PKHeX.Presentation/Localization/Strings/` (`LocalizedStrings.cs` / `LocExtension.cs`
-drive lookup) with one JSON file per language: **9 languages** — `de`, `en`, `es`, `fr`, `it`, `ja`, `ko`,
-`zh-Hans`, `zh-Hant`. Any new user-facing string needs a key added to **all 9** files, not just `en.json`.
+drive lookup) with one JSON file per language: **10 languages** — `de`, `en`, `es`, `fr`, `it`, `ja`, `ko`,
+`pt-BR`, `zh-Hans`, `zh-Hant`. Any new user-facing string needs a key added to **all 10** files, not just `en.json`.
+`pt-BR` is UI-only: `LanguageService.GetDataLanguage` maps it to English for PKHeX.Core game data.
 
 ## Theming
 

@@ -23,6 +23,7 @@ public sealed class CompactPokemonEditorTests
     [AvaloniaTheory]
     [InlineData("de")]
     [InlineData("ja")]
+    [InlineData("pt-BR")]
     public void LanguageChangePreservesGenderAndKeepsItsSelectionVisible(string language)
     {
         using var app = new HeadlessAppFixture();

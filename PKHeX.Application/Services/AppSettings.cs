@@ -49,7 +49,7 @@ public sealed class AppSettings : IProgramSettings
     public void InitializeCore()
     {
         if (!string.IsNullOrEmpty(DisplayLanguage))
-            GameInfo.CurrentLanguage = DisplayLanguage;
+            GameInfo.CurrentLanguage = LanguageService.GetDataLanguage(DisplayLanguage);
 
         SaveFile.SetUpdateDex = SlotWrite.SetUpdateDex ? EntityImportOption.Enable : EntityImportOption.Disable;
         SaveFile.SetUpdatePKM = SlotWrite.SetUpdatePKM ? EntityImportOption.Enable : EntityImportOption.Disable;

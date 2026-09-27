@@ -16,7 +16,7 @@ namespace PKHeX.Avalonia.Tests;
 /// </summary>
 public class LocalizationServiceTests
 {
-    private static readonly string[] Languages = ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant"];
+    private static readonly string[] Languages = ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant", "pt-BR"];
 
     private static string StringsDir()
     {
@@ -40,7 +40,7 @@ public class LocalizationServiceTests
     }
 
     [Fact]
-    public void AllNineLanguageFiles_Exist_And_Are_KeyComplete_Against_English()
+    public void AllLanguageFiles_Exist_And_Are_KeyComplete_Against_English()
     {
         var english = LoadFile("en");
         Assert.NotEmpty(english);
@@ -142,6 +142,59 @@ public class LocalizationServiceTests
         {
             loc.PropertyChanged -= handler;
             loc.SetLanguage("en");
+        }
+    }
+
+    [Fact]
+    public void PortugueseBrazil_Translates_The_Shell()
+    {
+        var loc = LocalizedStrings.Instance;
+        try
+        {
+            loc.SetLanguage("pt-BR");
+            Assert.Equal("pt-BR", loc.CurrentLanguage);
+            Assert.Equal("Salvar", loc["Common_Save"]);
+            Assert.Equal("_Arquivo", loc["Menu_File"]);
+        }
+        finally
+        {
+            loc.SetLanguage("en");
+        }
+    }
+
+    [Fact]
+    public void PortugueseBrazil_Is_UiOnly_And_Uses_English_Game_Data()
+    {
+        Assert.Equal("en", PKHeX.Application.Services.LanguageService.GetDataLanguage("pt-BR"));
+        Assert.Equal("de", PKHeX.Application.Services.LanguageService.GetDataLanguage("de"));
+
+        var service = new PKHeX.Application.Services.LanguageService();
+        Assert.Contains(service.AvailableLanguages, l => l.Code == "pt-BR" && l.Name == "Português (Brasil)");
+
+        // SetLanguage mutates process-wide state (Core's language/strings and the cultures); put it back
+        // exactly as it was so tests running in parallel are not affected.
+        var previousLanguage = PKHeX.Core.GameInfo.CurrentLanguage;
+        var previousStrings = PKHeX.Core.GameInfo.Strings;
+        var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+        var previousUiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var previousDefaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture;
+        var previousDefaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+        try
+        {
+            service.SetLanguage("pt-BR");
+            Assert.Equal("pt-BR", service.CurrentLanguage);
+            Assert.Equal("en", PKHeX.Core.GameInfo.CurrentLanguage);
+            Assert.Equal("Pikachu", PKHeX.Core.GameInfo.Strings.specieslist[25]);
+            Assert.Equal("pt-BR", System.Globalization.CultureInfo.CurrentCulture.Name);
+        }
+        finally
+        {
+            PKHeX.Core.GameInfo.CurrentLanguage = previousLanguage;
+            PKHeX.Core.GameInfo.Strings = previousStrings;
+            System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+            System.Globalization.CultureInfo.CurrentUICulture = previousUiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = previousDefaultCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = previousDefaultUiCulture;
         }
     }
 }
