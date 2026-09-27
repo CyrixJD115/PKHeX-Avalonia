@@ -1,20 +1,28 @@
-# PKHeX-Avalonia
+<h1 align="center">PKHeX-Avalonia</h1>
 
-[![Release](https://img.shields.io/github/v/release/realgarit/PKHeX-Avalonia)](https://github.com/realgarit/PKHeX-Avalonia/releases/latest)
-[![CI](https://github.com/realgarit/PKHeX-Avalonia/actions/workflows/ci.yml/badge.svg)](https://github.com/realgarit/PKHeX-Avalonia/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Downloads](https://img.shields.io/github/downloads/realgarit/PKHeX-Avalonia/total)](https://github.com/realgarit/PKHeX-Avalonia/releases)
-[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/DY2SWKsV75)
+<p align="center">
+  <a href="https://github.com/realgarit/PKHeX-Avalonia/releases/latest"><img src="https://img.shields.io/github/v/release/realgarit/PKHeX-Avalonia" alt="Release"></a>
+  <a href="https://github.com/realgarit/PKHeX-Avalonia/actions/workflows/ci.yml"><img src="https://github.com/realgarit/PKHeX-Avalonia/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPLv3"></a>
+  <a href="https://github.com/realgarit/PKHeX-Avalonia/releases"><img src="https://img.shields.io/github/downloads/realgarit/PKHeX-Avalonia/total" alt="Downloads"></a>
+  <a href="https://discord.gg/DY2SWKsV75"><img src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&amp;logoColor=white" alt="Join the Discord community"></a>
+</p>
 
-A native Pokémon save editor for **Windows, macOS, and Linux**, built with .NET 10 and Avalonia 11 on the upstream [PKHeX](https://github.com/kwsch/PKHeX) engine.
+<p align="center">
+  A native Pokémon save editor for <strong>Windows, macOS, and Linux</strong>, built with .NET 10 and Avalonia 11 on the upstream <a href="https://github.com/kwsch/PKHeX">PKHeX</a> engine.
+</p>
 
-[Download](#download) · [Getting started](#getting-started) · [Features](#features) · [Screenshots](#screenshots) · [Build](#building-from-source) · [Community](#community)
+<p align="center">
+  <a href="#download">Download</a> · <a href="#getting-started">Getting started</a> · <a href="#features">Features</a> · <a href="#screenshots">Screenshots</a> · <a href="#building-from-source">Build</a> · <a href="#community">Community</a>
+</p>
 
 <p align="center">
   <a href="docs/screenshots/pokemon-editor-dark.png"><img src="docs/screenshots/pokemon-editor-dark.png" alt="Compact Pokémon editor in dark theme with a populated box and party strip" width="600"></a>
 </p>
 
-The default 900×600 workspace keeps Pokémon editing, box navigation, and the party together. Advanced fields and game-specific tools are available through **More**, **Tools**, and the searchable tool launcher.
+<p align="center">
+  The default 900×600 workspace keeps Pokémon editing, box navigation, and the party together. Advanced fields and game-specific tools are available through <strong>More</strong>, <strong>Tools</strong>, and the searchable tool launcher.
+</p>
 
 ## Download
 

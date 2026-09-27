@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PKHeX.Core;
 using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Presentation.ViewModels;
@@ -38,6 +39,9 @@ public partial class MainWindowViewModel
     public bool IsPokemonWorkspace => ActiveWorkspace == MainWorkspace.Pokemon;
     public bool IsSaveWorkspace => ActiveWorkspace == MainWorkspace.Save;
     public bool IsReportsWorkspace => ActiveWorkspace == MainWorkspace.Reports;
+    public bool IsTrainerNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == TrainerWorkspaceTabIndex;
+    public bool IsInventoryNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == InventoryWorkspaceTabIndex;
+    public bool IsSaveNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex >= 4;
     public bool IsEventsWorkspace => IsSaveWorkspace && EventFlagsEditor?.IsSupported == true;
     public bool IsGiftsWorkspace => IsSaveWorkspace && MysteryGiftEditor?.HasAnySupport == true;
     public IReadOnlyList<ToolLauncherItem> ToolLauncherItems => _capabilityRegistry;
@@ -56,6 +60,7 @@ public partial class MainWindowViewModel
             SelectedWorkspaceIndex = 0;
         else if (value == MainWorkspace.Save && SelectedWorkspaceIndex < 2)
             SelectedWorkspaceIndex = 2;
+        NotifyWorkspaceNavigation();
     }
 
     partial void OnSelectedWorkspaceIndexChanged(int value)
@@ -64,13 +69,29 @@ public partial class MainWindowViewModel
             ActiveWorkspace = MainWorkspace.Pokemon;
         else if (value >= 2 && ActiveWorkspace != MainWorkspace.Save)
             ActiveWorkspace = MainWorkspace.Save;
+        NotifyWorkspaceNavigation();
     }
+
+    private void NotifyWorkspaceNavigation()
+    {
+        OnPropertyChanged(nameof(IsTrainerNavigationSelected));
+        OnPropertyChanged(nameof(IsInventoryNavigationSelected));
+        OnPropertyChanged(nameof(IsSaveNavigationSelected));
+    }
+
+    [RelayCommand]
+    private void SelectSaveNavigation() => SelectWorkspaceTab(
+        EventFlagsEditor?.IsSupported == true ? 4 : MysteryGiftEditor?.HasAnySupport == true ? 5 : 6);
 
     [RelayCommand]
     private void SelectWorkspace(MainWorkspace workspace) => ActiveWorkspace = workspace;
 
     [RelayCommand]
-    private void SelectWorkspaceTab(int index) => SelectedWorkspaceIndex = index;
+    private void SelectWorkspaceTab(int index)
+    {
+        ActiveWorkspace = index <= 1 ? MainWorkspace.Pokemon : MainWorkspace.Save;
+        SelectedWorkspaceIndex = index;
+    }
 
     [RelayCommand]
     private void OpenToolLauncher()
@@ -176,6 +197,14 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Tools_BoxManipulation", OpenBoxManipCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_Daycare", OpenDaycareCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_Records", OpenRecordsCommand, "Menu_Tools_SaveEditors");
+        _capabilityRegistry.Add(new(
+            "Menu_Save_GiftRibbons",
+            string.Empty,
+            "M 3,3 H 13 V 13 H 3 Z M 5,6 H 11 M 5,9 H 11 M 5,12 H 9",
+            OpenGiftRibbonsCommand,
+            showInLauncher: true,
+            menuGroupTitleKey: "Menu_Tools_SaveEditors",
+            capabilityPredicate: CanOpenGiftRibbons));
         RegisterMenuCapability("Menu_Save_HallOfFame", OpenHallOfFameCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_MailBox", OpenMailBoxCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_BoxLayout", OpenBoxLayoutCommand, "Menu_Tools_SaveEditors");
@@ -215,6 +244,9 @@ public partial class MainWindowViewModel
 
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen6");
         RegisterMenuCapability("Menu_Gen6_OPowers", OpenOPowerCommand, "Menu_Gen6");
+        _capabilityRegistry.Add(new("FriendSafari_Title", string.Empty, string.Empty,
+            UnlockFriendSafariCommand, menuGroupTitleKey: "Menu_Gen6",
+            capabilityPredicate: () => CurrentSave is SAV6XY));
         RegisterMenuCapability("Menu_Gen6_SuperTraining", OpenSuperTrainingCommand, "Menu_Gen6");
         RegisterMenuCapability("Menu_Roamer", OpenRoamer6Command, "Menu_Gen6");
         RegisterMenuCapability("Menu_Gen6_PokemonLink", OpenLink6Command, "Menu_Gen6");

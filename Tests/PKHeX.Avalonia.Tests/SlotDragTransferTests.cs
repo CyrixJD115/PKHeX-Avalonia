@@ -77,6 +77,26 @@ public class SlotDragTransferTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void Create_WithSynchronousStorageProvider_AttachesOneExportedEntityFile()
+    {
+        var sav = new SAV9SV();
+        var pk = (PK9)sav.BlankPKM;
+        pk.Species = 25;
+        pk.RefreshChecksum();
+        var exportedFile = Mock.Of<IStorageFile>();
+        var storageProvider = new Mock<IStorageProvider>();
+        storageProvider.Setup(p => p.TryGetFileFromPathAsync(It.IsAny<System.Uri>()))
+            .Returns(Task.FromResult<IStorageFile?>(exportedFile));
+
+        var transfer = SlotDragTransfer.Create(
+            new SlotDragData(SlotLocation.FromBox(0, 0), Guid.NewGuid()),
+            pk,
+            storageProvider.Object);
+
+        Assert.Same(exportedFile, Assert.Single(transfer.TryGetFiles()!));
+    }
+
+    [Fact]
     public void Create_StorageResolutionDoesNotCompleteSynchronously_DegradesGracefully()
     {
         var sav = new SAV9SV();
@@ -143,6 +163,33 @@ public class SlotDragTransferTests(ITestOutputHelper output)
 
         Assert.True(SlotDragTransfer.HasCustomPayload(transfer));
         Assert.Null(SlotDragTransfer.TryGet(transfer, currentSession));
+    }
+
+    [Theory]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, true)]
+    public void HasCrossSessionEntityFile_OnlyAllowsOneFileFromAnotherSession(bool sameSession, bool hasFile, bool expected)
+    {
+        var currentSession = Guid.NewGuid();
+        var sourceSession = sameSession ? currentSession : Guid.NewGuid();
+        var transfer = SlotDragTransfer.Create(new SlotDragData(SlotLocation.FromBox(0, 0), sourceSession));
+        if (hasFile)
+            transfer.Add(DataTransferItem.CreateFile(Mock.Of<IStorageFile>()));
+
+        Assert.Equal(expected, SlotDragTransfer.HasCrossSessionEntityFile(transfer, currentSession));
+    }
+
+    [Fact]
+    public void HasCrossSessionEntityFile_RejectsMultipleFiles()
+    {
+        var currentSession = Guid.NewGuid();
+        var transfer = SlotDragTransfer.Create(new SlotDragData(SlotLocation.FromBox(0, 0), Guid.NewGuid()));
+        transfer.Add(DataTransferItem.CreateFile(Mock.Of<IStorageFile>()));
+        transfer.Add(DataTransferItem.CreateFile(Mock.Of<IStorageFile>()));
+
+        Assert.False(SlotDragTransfer.HasCrossSessionEntityFile(transfer, currentSession));
     }
 
     [Theory]
