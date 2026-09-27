@@ -9,10 +9,10 @@ set into a legal `PKM`. The Windows plugin UI (`AutoModPlugins`, WinForms) is **
 | | |
 |---|---|
 | Upstream repo | https://github.com/santacrab2/PKHeX-Plugins |
-| Vendored commit (SHA) | `b78bd4c274b75adf4454ad9cefebe0cbbbacfa19` |
-| Commit date | 2026-07-08 |
+| Vendored commit (SHA) | `90410f2681a0a72680d12280a1e0f14715e67dff` |
+| Commit date | 2026-08-31 |
 | Upstream project | `PKHeX.Core.AutoMod` |
-| Upstream `PKHeX.Core` NuGet pin | `26.7.7` |
+| Upstream `PKHeX.Core` NuGet pin | `26.8.26` |
 | License | GPL-3.0-or-later (compatible with this repo's GPLv3) |
 
 ## What was vendored
@@ -37,25 +37,26 @@ On each Core sync, re-check this engine against the new Core and adapt any API d
 
 ## Adaptations made vs. upstream
 
-1. **`PKHeX.AutoMod.csproj` is new / rewritten.** Upstream's `PKHeX.Core.AutoMod.csproj` only contained
-   `<PackageReference Include="PKHeX.Core" Version="26.7.7" />`. Replaced with:
+1. **`PKHeX.AutoMod.csproj` is new / rewritten.** Upstream's `PKHeX.Core.AutoMod.csproj` only contains
+   `<PackageReference Include="PKHeX.Core" Version="26.8.26" />`. Replaced with:
    - `<ProjectReference Include="..\PKHeX.Core\PKHeX.Core.csproj" />` (build against this repo's Core).
    - `TargetFramework net10.0`, `Nullable enable` (root `Directory.Build.props` supplies `LangVersion 14`).
    - `AssemblyName = PKHeX.AutoMod` (the solution project name) while `RootNamespace` stays
      `PKHeX.Core.AutoMod` so **no source file needed editing**.
    - `NoWarn = CS0618;CS1591` and `GenerateDocumentationFile=false`, kept **defensively** to insulate the
      solution's warning-clean build from future Core drift in this third-party code. As of the vendored
-     commit against this repo's Core (`26.07.07`), the engine compiles with **0 warnings even without
+     commit against this repo's Core (`26.08.26`), the engine compiles with **0 warnings even without
      these suppressions** — no source warnings are currently being hidden.
 
 2. **No `.cs` source edits.** Every file under `AutoMod/` and `Enhancements/` is byte-for-byte upstream.
-   Our Core version (`26.07.07`) is close enough to upstream's pin (`26.7.7`) that there was **no API
-   drift to patch**. If a future Core sync breaks compilation, fix it here (not in `PKHeX.Core`) and
+   Our Core version (`26.08.26`) matches upstream's pin (`26.8.26`), so there is **no API drift to
+   patch**. If a future Core sync breaks compilation, fix it here (not in `PKHeX.Core`) and
    record the change in this file.
 
-3. **`AutoMod/APILegality.cs`: pass trainer context to `IGenerateSeed64`.** PKHeX.Core commit
-   `757a297` added an `ITrainerInfo` parameter so Legends: Arceus encounter generation can derive the
-   save-specific shiny-roll count. The vendored call now forwards its existing source trainer.
+3. **`AutoMod/APILegality.cs`: pass trainer context to `IGenerateSeed64` (now upstream).** PKHeX.Core
+   commit `757a297` added an `ITrainerInfo` parameter so Legends: Arceus encounter generation can derive
+   the save-specific shiny-roll count. This was a local edit until upstream made the same change in
+   `9cd9d0f`; since the `90410f2` sync the file is byte-for-byte upstream again.
 
 ## Re-sync procedure
 
