@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "未保存の変更",
+  "Unsaved_Message": "閉じる前に変更を保存しますか？",
+  "Unsaved_Discard": "破棄",
   "_comment": "これは機械支援による初回翻訳です。ネイティブスピーカーによるレビューを歓迎します。",
   "Common_Save": "保存",
   "Common_Close": "閉じる",

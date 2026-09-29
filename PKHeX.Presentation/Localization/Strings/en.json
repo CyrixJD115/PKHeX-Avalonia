@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "Unsaved changes",
+  "Unsaved_Message": "Save changes before closing?",
+  "Unsaved_Discard": "Discard",
   "_comment": "PKHeX-Avalonia UI shell strings. English is the source of truth (issue #132). Do NOT translate PKHeX.Core game data (species/moves/items); those come from GameInfo.Strings. Keys are stable identifiers; only values are translated. Leading underscore in a value marks the menu access-key (mnemonic) and may be dropped or repositioned per language.",
   "Common_Save": "Save",
   "Common_Close": "Close",

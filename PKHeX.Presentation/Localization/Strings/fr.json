@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "Modifications non enregistrées",
+  "Unsaved_Message": "Enregistrer les modifications avant de fermer ?",
+  "Unsaved_Discard": "Ignorer",
   "_comment": "Traduction française assistée par machine (première ébauche). Une relecture par un locuteur natif est la bienvenue.",
   "Common_Save": "Enregistrer",
   "Common_Close": "Fermer",

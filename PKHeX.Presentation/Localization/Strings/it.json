@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "Modifiche non salvate",
+  "Unsaved_Message": "Salvare le modifiche prima di chiudere?",
+  "Unsaved_Discard": "Ignora",
   "_comment": "Traduzione italiana assistita da macchina (prima bozza). Una revisione da parte di un madrelingua è benvenuta.",
   "Common_Save": "Salva",
   "Common_Close": "Chiudi",

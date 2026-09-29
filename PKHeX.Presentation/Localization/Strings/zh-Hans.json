@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "未保存的更改",
+  "Unsaved_Message": "关闭前保存更改吗？",
+  "Unsaved_Discard": "放弃",
   "_comment": "PKHeX-Avalonia 界面字符串的简体中文翻译，为机器辅助的初版翻译，欢迎母语者校对。",
   "Common_Save": "保存",
   "Common_Close": "关闭",

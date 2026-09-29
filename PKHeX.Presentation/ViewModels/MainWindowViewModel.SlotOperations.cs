@@ -125,6 +125,7 @@ public partial class MainWindowViewModel
         BoxViewer?.RefreshCurrentBox();
         PartyViewer?.RefreshParty();
         BatchEditor?.RefreshExternalState();
+        sav.State.Edited = true;
     }
 
     private async Task OnReplaceRequested(SlotLocation destination, PKM replacement)
@@ -176,6 +177,7 @@ public partial class MainWindowViewModel
         BoxViewer?.RefreshCurrentBox();
         PartyViewer?.RefreshParty();
         BatchEditor?.RefreshExternalState();
+        sav.State.Edited = true;
     }
 
     private static bool IsValidSlot(SaveFile sav, SlotLocation location) => location.IsParty
@@ -221,6 +223,7 @@ public partial class MainWindowViewModel
             return;
         }
         CurrentSave.SetBoxSlotAtIndex(pk, box, slot);
+        CurrentSave.State.Edited = true;
         BoxViewer?.RefreshCurrentBox();
         BatchEditor?.RefreshExternalState();
     }
@@ -230,6 +233,7 @@ public partial class MainWindowViewModel
         if (CurrentSave is null) return;
         if (CurrentSave.GetBoxSlotAtIndex(box, slot).Species == 0) return;
         CurrentSave.SetBoxSlotAtIndex(CurrentSave.BlankPKM, box, slot);
+        CurrentSave.State.Edited = true;
         BoxViewer?.RefreshCurrentBox();
         BatchEditor?.RefreshExternalState();
     }
@@ -251,6 +255,7 @@ public partial class MainWindowViewModel
             return;
         }
         CurrentSave.SetPartySlotAtIndex(pk, slot);
+        CurrentSave.State.Edited = true;
         PartyViewer.RefreshParty();
         BatchEditor?.RefreshExternalState();
     }
@@ -295,6 +300,8 @@ public partial class MainWindowViewModel
 
     private void OnUndoRedoPerformed(ISlotInfo info)
     {
+        if (CurrentSave is { } save)
+            save.State.Edited = true;
         if (info is SlotInfoBox) BoxViewer?.RefreshCurrentBox();
         else if (info is SlotInfoParty) PartyViewer?.RefreshParty();
     }

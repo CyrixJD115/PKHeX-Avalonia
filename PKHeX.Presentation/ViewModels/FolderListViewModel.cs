@@ -20,6 +20,7 @@ public partial class FolderListViewModel : ViewModelBase, ICloseableDialog, IDis
     private readonly ISaveFileGateway _saveFileService;
     private readonly AppSettings _settings;
     private readonly IDialogService _dialogService;
+    public Func<Task<bool>>? CanReplaceSaveAsync { get; set; }
     private CancellationTokenSource _scanCts = new();
 
     public ObservableCollection<SaveFilePreviewViewModel> RecentSaves { get; } = [];
@@ -238,6 +239,7 @@ public partial class FolderListViewModel : ViewModelBase, ICloseableDialog, IDis
     private async Task OpenSave(SaveFilePreviewViewModel? vm)
     {
         if (vm == null) return;
+        if (CanReplaceSaveAsync is not null && !await CanReplaceSaveAsync()) return;
         
         // Use SaveFileService to load
         // But we already loaded it? 

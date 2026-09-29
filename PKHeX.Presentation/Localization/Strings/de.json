@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "Ungespeicherte Änderungen",
+  "Unsaved_Message": "Änderungen vor dem Schließen speichern?",
+  "Unsaved_Discard": "Verwerfen",
   "_comment": "PKHeX-Avalonia UI-Strings. Dies ist eine maschinell unterstützte Erstübersetzung; eine Überprüfung durch Muttersprachler ist willkommen.",
   "Common_Save": "Speichern",
   "Common_Close": "Schließen",

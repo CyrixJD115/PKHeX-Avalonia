@@ -211,6 +211,7 @@ public partial class BatchEditorViewModel : ViewModelBase, IDisposable
             }
 
             _batchTokens.Add(token);
+            _sav.State.Edited = true;
             BatchEditCompleted?.Invoke();
             RefreshPreview();
         }
@@ -252,6 +253,7 @@ public partial class BatchEditorViewModel : ViewModelBase, IDisposable
             return;
 
         Results = string.Empty;
+        _sav.State.Edited = true;
         BatchEditCompleted?.Invoke();
         RefreshPreview();
         ResetBatchCommand.NotifyCanExecuteChanged();

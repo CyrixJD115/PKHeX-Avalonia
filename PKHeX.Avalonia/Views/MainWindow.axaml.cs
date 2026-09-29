@@ -11,6 +11,8 @@ namespace PKHeX.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
+    private bool _closeApproved;
+    private bool _closePending;
     private static readonly IDisposable MenuSubmenuHandlerRegistration =
         MenuItem.IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(OnSubmenuOpenChanged);
 
@@ -18,6 +20,30 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         GC.KeepAlive(MenuSubmenuHandlerRegistration);
+    }
+
+    protected override async void OnClosing(WindowClosingEventArgs e)
+    {
+        if (!_closeApproved && DataContext is MainWindowViewModel vm)
+        {
+            e.Cancel = true;
+            if (_closePending) return;
+            _closePending = true;
+            try
+            {
+                if (await vm.CanLeaveCurrentSaveAsync())
+                {
+                    _closeApproved = true;
+                    Close();
+                }
+            }
+            finally
+            {
+                _closePending = false;
+            }
+            return;
+        }
+        base.OnClosing(e);
     }
 
     private static void OnSubmenuOpenChanged(MenuItem opened, AvaloniaPropertyChangedEventArgs e)

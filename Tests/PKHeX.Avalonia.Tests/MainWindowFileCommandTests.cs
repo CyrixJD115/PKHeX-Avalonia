@@ -4,11 +4,113 @@ using System.Threading.Tasks;
 using Avalonia.Headless.XUnit;
 using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Core;
+using PKHeX.Application.Abstractions;
+using PKHeX.Application.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PKHeX.Avalonia.Tests;
 
 public sealed class MainWindowFileCommandTests
 {
+    [AvaloniaFact]
+    public async Task CloseModifiedSave_OffersCancelDiscardAndSettingOptOut()
+    {
+        using var app = new HeadlessAppFixture();
+        var save = BlankSaveFile.Get(GameVersion.SL);
+        app.LoadSaveInstance(save);
+        save.State.Edited = true;
+
+        await app.ViewModel.CloseFileCommand.ExecuteAsync(null);
+        Assert.Same(save, app.Save);
+        Assert.Single(app.Dialogs.UnsavedPrompts);
+
+        app.Dialogs.UnsavedChoice = UnsavedChangesChoice.Discard;
+        await app.ViewModel.CloseFileCommand.ExecuteAsync(null);
+        app.Pump();
+        Assert.Null(app.Save);
+
+        app.LoadSaveInstance(save);
+        save.State.Edited = true;
+        app.Services.GetRequiredService<AppSettings>().EditorBehavior.WarnClosingModified = false;
+        await app.ViewModel.CloseFileCommand.ExecuteAsync(null);
+        app.Pump();
+        Assert.Null(app.Save);
+        Assert.Equal(2, app.Dialogs.UnsavedPrompts.Count);
+    }
+
+    [AvaloniaFact]
+    public async Task SavingModifiedSave_ClearsFlagAndWritesLatestSlot()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"pkhex-unsaved-{Guid.NewGuid():N}.sav");
+        try
+        {
+            using var app = new HeadlessAppFixture();
+            var save = BlankSaveFile.Get(GameVersion.SL);
+            app.LoadSaveInstance(save);
+            var pokemon = save.BlankPKM;
+            pokemon.Species = 25;
+            pokemon.RefreshChecksum();
+            app.BoxViewer!.SetSlotPKM(0, pokemon);
+            Assert.True(save.State.Edited);
+
+            app.Dialogs.SaveFileResult = path;
+            app.Dialogs.UnsavedChoice = UnsavedChangesChoice.Save;
+            await app.ViewModel.CloseFileCommand.ExecuteAsync(null);
+            app.Pump();
+
+            Assert.Null(app.Save);
+            Assert.False(save.State.Edited);
+            Assert.True(File.Exists(path));
+            Assert.NotEmpty(File.ReadAllBytes(path));
+            Assert.Single(app.Dialogs.UnsavedPrompts);
+        }
+        finally
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task OpeningAnotherSave_RespectsCancelAndDiscard()
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../savefiles/gen9_scarlet.main"));
+        using var app = new HeadlessAppFixture();
+        var original = BlankSaveFile.Get(GameVersion.SL);
+        app.LoadSaveInstance(original);
+        original.State.Edited = true;
+        app.Dialogs.OpenFileResult = path;
+
+        await app.ViewModel.OpenFileCommand.ExecuteAsync(null);
+        Assert.Same(original, app.Save);
+        Assert.Single(app.Dialogs.UnsavedPrompts);
+
+        app.Dialogs.UnsavedChoice = UnsavedChangesChoice.Discard;
+        await app.ViewModel.OpenFileCommand.ExecuteAsync(null);
+        app.Pump();
+        Assert.NotSame(original, app.Save);
+        Assert.Equal(2, app.Dialogs.UnsavedPrompts.Count);
+    }
+
+    [AvaloniaFact]
+    public void ClosingWindow_RespectsCancelAndDiscard()
+    {
+        using var app = new HeadlessAppFixture();
+        var save = BlankSaveFile.Get(GameVersion.SL);
+        app.LoadSaveInstance(save);
+        save.State.Edited = true;
+
+        app.Window.Close();
+        app.Pump();
+        Assert.True(app.Window.IsVisible);
+        Assert.Single(app.Dialogs.UnsavedPrompts);
+
+        app.Dialogs.UnsavedChoice = UnsavedChangesChoice.Discard;
+        app.Window.Close();
+        app.Pump();
+        Assert.False(app.Window.IsVisible);
+    }
+
     [AvaloniaFact]
     public async Task DumpBoxesCommand_WritesFromTheLoadedSaveAndCompletesOffTheCommandStack()
     {
