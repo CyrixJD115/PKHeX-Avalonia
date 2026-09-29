@@ -208,6 +208,10 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Save_HallOfFame", OpenHallOfFameCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_MailBox", OpenMailBoxCommand, "Menu_Tools_SaveEditors");
         RegisterMenuCapability("Menu_Save_BoxLayout", OpenBoxLayoutCommand, "Menu_Tools_SaveEditors");
+        RegisterConditionalMenuCapability("Dialog_GroupViewer", OpenGroupViewerCommand,
+            "Menu_Tools_SaveEditors", () => CurrentSave is SAV_STADIUM);
+        RegisterConditionalMenuCapability("Dialog_SimpleTrainerEditor", OpenSimpleTrainerCommand,
+            "Menu_Tools_SaveEditors", () => CurrentSave is SAV1 or SAV2 or SAV3 or SAV4 or SAV5);
 
         RegisterMenuCapability("Menu_Gen1_EventReset", OpenEventReset1Command, "Menu_Gen1");
         RegisterMenuCapability("Menu_Save_HallOfFame", OpenHallOfFame1Command, "Menu_Gen1");
@@ -220,6 +224,10 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen3_RTC", OpenRTC3Command, "Menu_Gen3");
         RegisterMenuCapability("Menu_Gen3_PokeblockCase", OpenPokeBlock3CaseCommand, "Menu_Gen3");
         RegisterMenuCapability("Menu_Save_HallOfFame", OpenHallOfFame3Command, "Menu_Gen3");
+        RegisterConditionalMenuCapability("Dialog_SecretBaseEditorRSE", OpenSecretBase3Command,
+            "Menu_Gen3", () => CurrentSave is SAV3RS or SAV3E);
+        RegisterConditionalMenuCapability("Dialog_RTCEditor", OpenRTCCommand,
+            "Menu_Gen3", () => CurrentSave is SAV3RS or SAV3E);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc4Command, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_PoffinsDPPt", OpenPoffinCaseCommand, "Menu_Gen4");
@@ -231,6 +239,12 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen4_GeonetDPPt", OpenGeonet4Command, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_BattlePassPBR", OpenBattlePassCommand, "Menu_Gen4");
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen4");
+        RegisterConditionalMenuCapability("Dialog_ApricornEditor", OpenApricornCommand,
+            "Menu_Gen4", () => CurrentSave is SAV4HGSS);
+        RegisterConditionalMenuCapability("Dialog_UndergroundEditor", OpenUndergroundCommand,
+            "Menu_Gen4", () => CurrentSave is SAV4Sinnoh);
+        RegisterConditionalMenuCapability("Dialog_GearEditorBattleRevolution", OpenGearBRCommand,
+            "Menu_Gen4", () => CurrentSave is SAV4BR);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc5Command, "Menu_Gen5");
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen5");
@@ -254,6 +268,12 @@ public partial class MainWindowViewModel
             OpenPssExportCommand, menuGroupTitleKey: "Menu_Gen6",
             capabilityPredicate: () => CurrentSave is SAV6 { PSS: >= 0 }));
         RegisterMenuCapability("Menu_Gen6_SecretBaseEditor", OpenSecretBase6Command, "Menu_Gen6");
+        RegisterConditionalMenuCapability("Dialog_PokePuffEditor", OpenPokepuffCommand,
+            "Menu_Gen6", () => CurrentSave is ISaveBlock6Main);
+        RegisterConditionalMenuCapability("Dialog_PokeblockEditor", OpenPokeBlockCommand,
+            "Menu_Gen6", () => CurrentSave is SAV6AO);
+        RegisterConditionalMenuCapability("Dialog_BerryFieldEditor", OpenBerryFieldCommand,
+            "Menu_Gen6", () => CurrentSave is SAV6AO);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc7Command, "Menu_Gen7");
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen7");
@@ -262,6 +282,8 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen7_ZygardeCells", OpenZygardeCellCommand, "Menu_Gen7");
         RegisterMenuCapability("Menu_Gen7_CaptureRecordsLGPE", OpenCapture7GGCommand, "Menu_Gen7");
         RegisterMenuCapability("Menu_Gen7_HallOfFameSMUSUM", OpenHallOfFame7Command, "Menu_Gen7");
+        RegisterConditionalMenuCapability("Dialog_MiscEditorLetsGo", OpenMisc7bCommand,
+            "Menu_Gen7", () => CurrentSave is SAV7b);
 
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen8");
         RegisterMenuCapability("Menu_Gen8_MaxRaidsSWSH", OpenRaidEditorCommand, "Menu_Gen8");
@@ -271,6 +293,10 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen8_UndergroundBDSP", OpenUnderground8bCommand, "Menu_Gen8");
         RegisterMenuCapability("Menu_Gen8_SealStickersBDSP", OpenSealStickers8bCommand, "Menu_Gen8");
         RegisterMenuCapability("Menu_Gen8_PoffinsBDSP", OpenPoffin8bCommand, "Menu_Gen8");
+        RegisterConditionalMenuCapability("Dialog_MiscEditorSWSH", OpenMisc8Command,
+            "Menu_Gen8", () => CurrentSave is SAV8SWSH);
+        RegisterConditionalMenuCapability("Dialog_MiscEditorLegendsArceus", OpenMisc8aCommand,
+            "Menu_Gen8", () => CurrentSave is SAV8LA);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc9Command, "Menu_Gen9");
         RegisterMenuCapability("Menu_Pokedex", OpenPokedexCommand, "Menu_Gen9");
@@ -292,6 +318,14 @@ public partial class MainWindowViewModel
             showInLauncher: showInLauncher,
             menuGroupTitleKey: menuGroupTitleKey,
             capabilityPredicate: GetMenuCapabilityPredicate(menuGroupTitleKey)));
+    }
+
+    private void RegisterConditionalMenuCapability(string titleKey, ICommand command,
+        string menuGroupTitleKey, Func<bool> isApplicable)
+    {
+        _capabilityRegistry.Add(new(titleKey, string.Empty, string.Empty, command,
+            showInLauncher: true, menuGroupTitleKey: menuGroupTitleKey,
+            capabilityPredicate: isApplicable));
     }
 
     private void InitializeToolMenuGroups()
