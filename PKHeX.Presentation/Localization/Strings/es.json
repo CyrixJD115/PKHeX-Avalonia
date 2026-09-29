@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "Cambios sin guardar",
+  "Unsaved_Message": "¿Guardar los cambios antes de cerrar?",
+  "Unsaved_Discard": "Descartar",
   "_comment": "Cadenas de la interfaz de PKHeX-Avalonia. Esta es una traducción inicial asistida por máquina; se agradece la revisión por hablantes nativos.",
   "Common_Save": "Guardar",
   "Common_Close": "Cerrar",

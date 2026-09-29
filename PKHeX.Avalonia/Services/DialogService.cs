@@ -153,6 +153,51 @@ public sealed class DialogService : IDialogService
         return result;
     }
 
+    public async Task<UnsavedChangesChoice> ShowUnsavedChangesAsync(string title, string message,
+        string saveText, string discardText, string cancelText)
+    {
+        var owner = GetActiveWindow();
+        if (owner is null) return UnsavedChangesChoice.Cancel;
+
+        var saveButton = new Button { Content = saveText, MinWidth = 90 };
+        var discardButton = new Button { Content = discardText, MinWidth = 90 };
+        var cancelButton = new Button { Content = cancelText, MinWidth = 90 };
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 480,
+            MinHeight = 130,
+            MaxWidth = 620,
+            MaxHeight = 520,
+            SizeToContent = SizeToContent.Height,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Spacing = 16,
+                Children =
+                {
+                    new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Spacing = 12,
+                        Children = { cancelButton, discardButton, saveButton },
+                    },
+                },
+            },
+        };
+        var result = UnsavedChangesChoice.Cancel;
+        saveButton.Click += (_, _) => { result = UnsavedChangesChoice.Save; dialog.Close(); };
+        discardButton.Click += (_, _) => { result = UnsavedChangesChoice.Discard; dialog.Close(); };
+        cancelButton.Click += (_, _) => dialog.Close();
+        AttachDialogConventions(dialog, saveButton, cancelButton);
+        await dialog.ShowDialog(owner);
+        return result;
+    }
+
     public void RevealInFileManager(string path)
     {
         try

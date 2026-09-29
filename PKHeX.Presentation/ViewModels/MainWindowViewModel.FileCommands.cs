@@ -21,6 +21,8 @@ public partial class MainWindowViewModel
 
     private async Task OpenSaveFilePathAsync(string path)
     {
+        if (!await CanLeaveCurrentSaveAsync())
+            return;
         var success = await _saveFileService.LoadSaveFileAsync(path);
         if (!success)
             await _dialogService.ShowErrorAsync(T("Common_Error"), LocalizedStrings.Instance.Format("File_CouldNotLoadSave", path));
@@ -105,7 +107,54 @@ public partial class MainWindowViewModel
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]
-    private void CloseFile() => _saveFileService.CloseSave();
+    private async Task CloseFileAsync()
+    {
+        if (await CanLeaveCurrentSaveAsync())
+            _saveFileService.CloseSave();
+    }
+
+    private bool _isLeavePromptOpen;
+
+    public async Task<bool> CanLeaveCurrentSaveAsync()
+    {
+        if (_isLeavePromptOpen)
+            return false;
+        var save = CurrentSave;
+        if (save is null || !save.State.Edited || !_settings.EditorBehavior.WarnClosingModified)
+            return true;
+
+        _isLeavePromptOpen = true;
+        try
+        {
+            var choice = await _dialogService.ShowUnsavedChangesAsync(
+                T("Unsaved_Title"), T("Unsaved_Message"),
+                T("Common_Save"), T("Unsaved_Discard"), T("Common_Cancel"));
+            if (!ReferenceEquals(CurrentSave, save))
+                return false;
+            if (choice == UnsavedChangesChoice.Cancel)
+                return false;
+            if (choice == UnsavedChangesChoice.Discard)
+                return true;
+
+            var path = _saveFileService.CurrentPath;
+            if (string.IsNullOrEmpty(path))
+            {
+                path = await _dialogService.SaveFileAsync(T("File_SaveAsTitle"), save.Metadata.FileName);
+                if (string.IsNullOrEmpty(path) || !ReferenceEquals(CurrentSave, save))
+                    return false;
+            }
+
+            if (await _saveFileService.SaveFileAsync(path))
+                return ReferenceEquals(CurrentSave, save) && !save.State.Edited;
+
+            await _dialogService.ShowErrorAsync(T("Common_Error"), T("File_FailedToSaveFile"));
+            return false;
+        }
+        finally
+        {
+            _isLeavePromptOpen = false;
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(HasSave))]
     private async Task ImportShowdownAsync()
@@ -322,6 +371,7 @@ public partial class MainWindowViewModel
             // Restoring reloads the save via ISaveFileGateway, which already re-fires
             // SaveFileChanged (see the subscription in the constructor) — no separate hook needed here.
             _backupManager = new BackupManagerViewModel(_saveBackupService, _saveFileService, _dialogService, _settings);
+            _backupManager.CanReplaceSaveAsync = CanLeaveCurrentSaveAsync;
         }
         else
         {

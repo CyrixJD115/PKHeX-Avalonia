@@ -19,6 +19,7 @@ public partial class BackupManagerViewModel : ViewModelBase
     private readonly ISaveFileGateway _saveFileService;
     private readonly IDialogService _dialogService;
     private readonly AppSettings _settings;
+    public Func<Task<bool>>? CanReplaceSaveAsync { get; set; }
 
     [ObservableProperty]
     private ObservableCollection<BackupEntryRow> _backups = [];
@@ -123,6 +124,11 @@ public partial class BackupManagerViewModel : ViewModelBase
             Refresh();
             return;
         }
+
+        if (CanReplaceSaveAsync is not null && !await CanReplaceSaveAsync())
+            return;
+        if (!string.Equals(_saveFileService.CurrentPath, currentPath, StringComparison.Ordinal))
+            return;
 
         // Pre-restore backup of the current on-disk state, so restoring is itself undoable.
         if (File.Exists(currentPath))

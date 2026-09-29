@@ -1,4 +1,7 @@
 {
+  "Unsaved_Title": "未儲存的變更",
+  "Unsaved_Message": "關閉前儲存變更嗎？",
+  "Unsaved_Discard": "捨棄",
   "_comment": "PKHeX-Avalonia 介面字串的繁體中文翻譯，為機器輔助的初版翻譯，歡迎母語者校對。",
   "Common_Save": "儲存",
   "Common_Close": "關閉",

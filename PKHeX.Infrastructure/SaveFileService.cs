@@ -82,9 +82,10 @@ public sealed class SaveFileService : ISaveFileGateway
         PublishSave(sav, path ?? sav.Metadata.FilePath);
     }
 
-    public Task<bool> SaveFileAsync(string? path = null)
+    public async Task<bool> SaveFileAsync(string? path = null)
     {
         SaveFile save;
+        SaveFile originalSave;
         string savePath;
         long sessionId;
 
@@ -93,28 +94,51 @@ public sealed class SaveFileService : ISaveFileGateway
             lock (_stateLock)
             {
                 if (_currentSave is null)
-                    return Task.FromResult(false);
+                    return false;
 
                 savePath = path ?? _currentPath ?? string.Empty;
                 if (string.IsNullOrEmpty(savePath))
-                    return Task.FromResult(false);
+                    return false;
 
                 // Clone on the caller's thread, then serialize the detached copy on the worker.
                 // The live save can be switched or edited while backup/file I/O runs, but the
                 // worker can no longer observe a later session's mutable buffer.
-                save = _currentSave.Clone();
+                originalSave = _currentSave;
+                save = originalSave.Clone();
                 sessionId = _sessionId;
             }
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
 
-        return Task.Run(() => SaveSnapshot(save, savePath, path is not null, sessionId));
+        var result = await Task.Run(() => SaveSnapshot(save, originalSave, savePath, path is not null, sessionId));
+        if (!result.Success)
+            return false;
+
+        // The await returns to the caller's synchronization context (the UI dispatcher in the
+        // desktop app). Compare there so the worker never reads the mutable live save.
+        lock (_stateLock)
+        {
+            if (_sessionId == sessionId && ReferenceEquals(_currentSave, originalSave))
+            {
+                try
+                {
+                    if (originalSave.Write().Span.SequenceEqual(result.Data))
+                        originalSave.State.Edited = false;
+                }
+                catch
+                {
+                    // The disk write succeeded, but the live state could not be compared. Keep
+                    // the warning active rather than falsely declaring the save clean.
+                }
+            }
+        }
+        return true;
     }
 
-    private bool SaveSnapshot(SaveFile save, string savePath, bool updatePath, long sessionId)
+    private (bool Success, byte[] Data) SaveSnapshot(SaveFile save, SaveFile originalSave, string savePath, bool updatePath, long sessionId)
     {
         try
         {
@@ -139,18 +163,16 @@ public sealed class SaveFileService : ISaveFileGateway
 
                 File.WriteAllBytes(savePath, data);
 
-                if (updatePath)
+                lock (_stateLock)
                 {
-                    lock (_stateLock)
+                    if (_sessionId == sessionId && ReferenceEquals(_currentSave, originalSave))
                     {
-                        // Save As may finish after the user has already loaded another save. Do not
-                        // rewrite the new session's path in that case.
-                        if (_sessionId == sessionId && ReferenceEquals(_currentSave, save))
+                        if (updatePath)
                             _currentPath = savePath;
                     }
                 }
 
-                return true;
+                return (true, data);
             }
             finally
             {
@@ -159,7 +181,7 @@ public sealed class SaveFileService : ISaveFileGateway
         }
         catch
         {
-            return false;
+            return (false, []);
         }
     }
 

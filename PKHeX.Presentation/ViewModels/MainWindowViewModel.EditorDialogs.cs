@@ -56,6 +56,7 @@ public partial class MainWindowViewModel
     private async Task OpenFolderListAsync()
     {
         var vm = new FolderListViewModel(_saveFileService, _settings, _dialogService);
+        vm.CanReplaceSaveAsync = CanLeaveCurrentSaveAsync;
         await _windowService.ShowDialogAsync(vm, T("Dialog_SaveFolderList"));
     }
 
@@ -65,6 +66,7 @@ public partial class MainWindowViewModel
     private async Task OpenSaveHandlerTroubleshooterAsync()
     {
         var vm = new SaveHandlerTroubleshooterViewModel(_dialogService, _saveFileService);
+        vm.CanReplaceSaveAsync = CanLeaveCurrentSaveAsync;
         await _windowService.ShowDialogAsync(vm, T("Dialog_SaveHandlerTroubleshooter"));
     }
 
