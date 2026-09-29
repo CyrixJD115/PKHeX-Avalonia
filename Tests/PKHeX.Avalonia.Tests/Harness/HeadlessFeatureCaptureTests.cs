@@ -32,6 +32,16 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureGeonetLocationEditor_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new Geonet4Editor { DataContext = new Geonet4EditorViewModel(new SAV4HGSS()) },
+            "geonet-location-editor.png", 620, 570, "Gen 4 Geonet location editor");
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
