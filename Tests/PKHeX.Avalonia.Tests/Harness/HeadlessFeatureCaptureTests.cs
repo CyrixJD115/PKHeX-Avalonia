@@ -42,6 +42,23 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureChatterAudioActions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
+        save.Chatter.Recording.Fill(0x7A);
+        save.Chatter.Initialized = true;
+        CaptureAuxiliaryView(
+            new ChatterEditor
+            {
+                DataContext = new ChatterEditorViewModel(save,
+                    new RecordingDialogService(), Mock.Of<IAudioPlaybackService>()),
+            },
+            "chatter-audio-actions.png", 620, 350, "Chatter audio actions");
+    }
+
+    [AvaloniaFact]
     public void CaptureUnityTowerDetailTabs_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())

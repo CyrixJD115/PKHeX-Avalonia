@@ -519,7 +519,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new ChatterEditorViewModel(CurrentSave),
+            new ChatterEditorViewModel(CurrentSave, _dialogService, _audioPlaybackService),
             T("Dialog_ChatterEditor"));
     }
 

@@ -31,6 +31,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly ILivingDexService _livingDexService;
     private readonly IGiftRecordProvider _giftRecordProvider;
     private readonly IUiDispatcher? _uiDispatcher;
+    private readonly IAudioPlaybackService? _audioPlaybackService;
     private readonly UpdateCheckCoordinator _updateCoordinator;
 
     // Captured on the UI thread at construction so update-check continuations (which may complete on
@@ -150,7 +151,8 @@ public partial class MainWindowViewModel : ViewModelBase
         ILiveHexService liveHexService,
         ILivingDexService livingDexService,
         IGiftRecordProvider giftRecordProvider,
-        IUiDispatcher? uiDispatcher = null)
+        IUiDispatcher? uiDispatcher = null,
+        IAudioPlaybackService? audioPlaybackService = null)
     {
         _saveFileService = saveFileService;
         _dialogService = dialogService;
@@ -173,6 +175,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _livingDexService = livingDexService;
         _giftRecordProvider = giftRecordProvider;
         _uiDispatcher = uiDispatcher;
+        _audioPlaybackService = audioPlaybackService;
 
         // Mirror the coordinator's status-bar notification (raised by either the startup check or a
         // manual "Check for Updates" from the Settings/About dialogs) into the bound property.
