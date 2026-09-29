@@ -76,6 +76,7 @@ public static class ViewLocator
         [typeof(EntitySeekViewModel)] = () => new EntitySeekView(),
         [typeof(PartyViewerViewModel)] = () => new PartyViewer(),
         [typeof(Poffin8bEditorViewModel)] = () => new Poffin8bEditor(),
+        [typeof(PssExportViewModel)] = () => new PssExportView(),
         [typeof(PoffinCaseEditorViewModel)] = () => new PoffinCaseEditorView(),
         [typeof(PokeBlock3CaseEditorViewModel)] = () => new PokeBlock3CaseEditorView(),
         [typeof(PokeBlockEditorViewModel)] = () => new PokeBlockEditor(),
