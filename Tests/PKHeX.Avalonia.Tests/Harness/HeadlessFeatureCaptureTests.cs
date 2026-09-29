@@ -56,6 +56,16 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureFunfestMissions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var view = new EntralinkEditor { DataContext = new EntralinkEditorViewModel(new SAV5B2W2()) };
+        view.FindControl<TabControl>("EntralinkTabs")!.SelectedIndex = 1;
+        CaptureAuxiliaryView(view, "funfest-missions.png", 640, 550, "B2W2 Funfest mission editor");
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())

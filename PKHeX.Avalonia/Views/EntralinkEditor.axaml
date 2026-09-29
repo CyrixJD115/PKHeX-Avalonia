@@ -4,11 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:PKHeX.Presentation.ViewModels;assembly=PKHeX.Presentation"
              xmlns:loc="using:PKHeX.Avalonia.Localization"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="560"
              x:Class="PKHeX.Avalonia.Views.EntralinkEditor"
              x:DataType="vm:EntralinkEditorViewModel">
 
-    <TabControl Margin="5">
+    <DockPanel Margin="5">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="8">
+        <Button Content="{loc:Loc Common_Cancel}" Command="{Binding CancelCommand}" IsCancel="True" />
+        <Button Content="{loc:Loc Common_Save}" Command="{Binding SaveCommand}" IsDefault="True" Classes="compact-primary" />
+    </StackPanel>
+    <TabControl x:Name="EntralinkTabs" Margin="5" MinWidth="620" Height="500">
         <TabItem Header="{loc:Loc EntralinkEditor_TabGeneral}">
             <ScrollViewer>
                 <StackPanel Spacing="10" Margin="10">
@@ -37,7 +42,7 @@
 
                         <Separator />
                         <TextBlock Text="{loc:Loc EntralinkEditor_FunfestMissions}" FontWeight="Bold" />
-                        <Grid ColumnDefinitions="Auto, *, Auto, *" RowDefinitions="Auto, Auto">
+                        <Grid ColumnDefinitions="Auto, *, Auto, *" RowDefinitions="Auto, Auto, Auto">
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc EntralinkEditor_Hosted}" VerticalAlignment="Center" Margin="0,5,10,5"/>
                             <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding FestaHosted}" Minimum="0" Maximum="65535" />
 
@@ -49,8 +54,9 @@
 
                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{loc:Loc EntralinkEditor_TopScore}" VerticalAlignment="Center" Margin="20,5,10,5"/>
                             <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding FestaScore}" Minimum="0" Maximum="65535" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc EntralinkEditor_MostParticipants}" VerticalAlignment="Center" Margin="0,5,10,5"/>
+                            <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding FestaMostParticipants}" Minimum="0" Maximum="255" />
                         </Grid>
-                        <Button Content="{loc:Loc EntralinkEditor_UnlockAllMissions}" Command="{Binding UnlockAllMissionsCommand}" HorizontalAlignment="Left" />
                     </StackPanel>
 
                     <Separator />
@@ -64,6 +70,44 @@
 
                 </StackPanel>
             </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="{loc:Loc EntralinkEditor_MissionsTab}" IsVisible="{Binding IsB2W2}">
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="12" Margin="10">
+                <DockPanel Grid.Column="0">
+                    <TextBox DockPanel.Dock="Top" Text="{Binding MissionFilter}" Watermark="{loc:Loc EntralinkEditor_SearchMissions}"
+                             AutomationProperties.Name="{loc:Loc EntralinkEditor_SearchMissions}" Margin="0,0,0,8" />
+                    <Button DockPanel.Dock="Bottom" Content="{loc:Loc EntralinkEditor_UnlockAllMissions}"
+                            Command="{Binding UnlockAllMissionsCommand}" Margin="0,8,0,0" />
+                    <ListBox x:Name="MissionList" ItemsSource="{Binding FilteredMissions}" SelectedItem="{Binding SelectedMission}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="vm:FunfestMissionRow">
+                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+
+                <ScrollViewer Grid.Column="1" IsVisible="{Binding SelectedMission, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{Binding SelectedMission.Name}" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SelectedMission.StatusText}" />
+                        <Button Content="{loc:Loc EntralinkEditor_UnlockSelected}" Command="{Binding UnlockSelectedMissionCommand}" HorizontalAlignment="Left" />
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="{loc:Loc EntralinkEditor_MissionLevel}" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding SelectedMission.Level}" Minimum="0" Maximum="7"
+                                           AutomationProperties.Name="{loc:Loc EntralinkEditor_MissionLevel}" />
+                            <TextBlock Grid.Row="1" Text="{loc:Loc EntralinkEditor_MissionBestTotal}" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SelectedMission.BestTotal}" Minimum="0" Maximum="16383"
+                                           AutomationProperties.Name="{loc:Loc EntralinkEditor_MissionBestTotal}" />
+                            <TextBlock Grid.Row="2" Text="{loc:Loc EntralinkEditor_MissionBestScore}" VerticalAlignment="Center" />
+                            <NumericUpDown x:Name="MissionBestScoreInput" Grid.Row="2" Grid.Column="1" Value="{Binding SelectedMission.BestScore}" Minimum="0" Maximum="16383"
+                                           AutomationProperties.Name="{loc:Loc EntralinkEditor_MissionBestScore}" />
+                            <CheckBox Grid.Row="3" Grid.ColumnSpan="2" IsChecked="{Binding SelectedMission.IsNew}" Content="{loc:Loc EntralinkEditor_MissionNew}" />
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
         </TabItem>
 
         <TabItem Header="{loc:Loc EntralinkEditor_TabEntreeForest}">
@@ -146,4 +190,5 @@
             </Grid>
         </TabItem>
     </TabControl>
+    </DockPanel>
 </UserControl>
