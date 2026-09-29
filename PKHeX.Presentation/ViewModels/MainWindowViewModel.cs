@@ -62,6 +62,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(OpenBoxWorkspaceCommand))]
     [NotifyCanExecuteChangedFor(nameof(OpenPartyWorkspaceCommand))]
     [NotifyCanExecuteChangedFor(nameof(OpenEncounterDatabaseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(OpenPssExportCommand))]
     [NotifyCanExecuteChangedFor(nameof(UnlockFriendSafariCommand))]
     [NotifyCanExecuteChangedFor(nameof(DumpBoxesCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoadBoxesCommand))]

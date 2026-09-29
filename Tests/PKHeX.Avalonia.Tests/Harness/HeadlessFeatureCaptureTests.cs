@@ -56,6 +56,21 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CapturePssContactPreview_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new PssExportView
+            {
+                DataContext = new PssExportViewModel(
+                    global::PKHeX.Avalonia.Tests.PssExportTests.MakeMultiRecordSave(),
+                    Mock.Of<IClipboardService>(), new RecordingDialogService()),
+            },
+            "pss-contact-preview.png", 620, 520, "Gen 6 PSS contact preview");
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
