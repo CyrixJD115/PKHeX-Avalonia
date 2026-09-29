@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
-using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Presentation.ViewModels;
 
@@ -12,19 +11,12 @@ public partial class Geonet4EditorViewModel : ViewModelBase, ICloseableDialog
     private readonly SAV4? _working;
     private readonly Geonet4? _geonet;
     private readonly List<GeonetLocationRow> _allLocations = [];
-    private readonly string[] _countryNames = Util.GetStringList("gen4_countries");
-    private readonly int _languageColumn = Math.Max(1, GeoLocation.GetLanguageIndex(GameInfo.CurrentLanguage) + 1);
+    private readonly NdsGeoNames _names = new(4);
 
     public Action? CloseRequested { get; set; }
     public bool IsSupported => _geonet is not null;
     public ObservableCollection<GeonetLocationRow> Locations { get; } = [];
-    public IReadOnlyList<GeonetPointOption> PointOptions { get; } =
-    [
-        new(GeonetPoint.None, LocalizedStrings.Instance["Geonet4Editor_PointNone"]),
-        new(GeonetPoint.Blue, LocalizedStrings.Instance["Geonet4Editor_PointBlue"]),
-        new(GeonetPoint.Yellow, LocalizedStrings.Instance["Geonet4Editor_PointYellow"]),
-        new(GeonetPoint.Red, LocalizedStrings.Instance["Geonet4Editor_PointRed"]),
-    ];
+    public IReadOnlyList<GeonetPointOption> PointOptions { get; } = GeonetPointOptions.Create();
 
     [ObservableProperty] private bool _globalFlag;
     [ObservableProperty] private string _filterText = string.Empty;
@@ -47,36 +39,26 @@ public partial class Geonet4EditorViewModel : ViewModelBase, ICloseableDialog
         {
             var regionCount = Geonet4.GetSubregionCount(country);
             if (regionCount == 0)
-                AddLocation(country, 0, null);
+                AddLocation(country, 0);
             else
             {
-                var regionNames = Util.GetStringList($"gen4_sr_{country:000}");
                 for (byte region = 1; region <= regionCount; region++)
-                    AddLocation(country, region, regionNames);
+                    AddLocation(country, region);
             }
         }
         RefreshFilter();
     }
 
-    private void AddLocation(byte country, byte region, string[]? regionNames)
+    private void AddLocation(byte country, byte region)
     {
         // The 3DS GeoLocation table uses different country IDs. Read the Gen 4 NDS resources
         // used by the upstream Geonet editor so an ID never displays another country's name.
-        var countryName = GetLocalizedName(_countryNames, country);
-        var regionName = regionNames is null ? string.Empty : GetLocalizedName(regionNames, region);
+        var countryName = _names.Country(country);
+        var regionName = _names.Region(country, region);
         var point = _geonet!.GetCountrySubregion(country, region);
         _allLocations.Add(new GeonetLocationRow(country, region,
             $"{countryName} ({country})", regionName,
             PointOptions, PointOptions[(int)point], option => _geonet.SetCountrySubregion(country, region, option.Value)));
-    }
-
-    private string GetLocalizedName(string[] rows, byte id)
-    {
-        if (id >= rows.Length) return id.ToString();
-        var columns = rows[id].Split('\t');
-        return _languageColumn < columns.Length && !string.IsNullOrWhiteSpace(columns[_languageColumn])
-            ? columns[_languageColumn]
-            : id.ToString();
     }
 
     partial void OnFilterTextChanged(string value) => RefreshFilter();
@@ -149,24 +131,4 @@ public partial class Geonet4EditorViewModel : ViewModelBase, ICloseableDialog
 
     [RelayCommand]
     private void Cancel() => CloseRequested?.Invoke();
-}
-
-public sealed record GeonetPointOption(GeonetPoint Value, string Name);
-
-public partial class GeonetLocationRow(
-    byte countryId, byte regionId, string country, string region,
-    IReadOnlyList<GeonetPointOption> pointOptions,
-    GeonetPointOption selectedPoint, Action<GeonetPointOption> onChanged) : ObservableObject
-{
-    public byte CountryId { get; } = countryId;
-    public byte RegionId { get; } = regionId;
-    public string Country { get; } = country;
-    public string Region { get; } = region;
-    public IReadOnlyList<GeonetPointOption> PointOptions { get; } = pointOptions;
-
-    [ObservableProperty] private GeonetPointOption _selectedPoint = selectedPoint;
-
-    partial void OnSelectedPointChanged(GeonetPointOption value) => onChanged(value);
-
-    public void SetFromGeonet(GeonetPointOption value) => SelectedPoint = value;
 }

@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "Locations",
+  "UnityTower5Editor_Floors": "Tower floors",
+  "UnityTower5Editor_FloorUnlocked": "Unlocked",
   "Unsaved_Title": "Unsaved changes",
   "Unsaved_Message": "Save changes before closing?",
   "Unsaved_Discard": "Discard",

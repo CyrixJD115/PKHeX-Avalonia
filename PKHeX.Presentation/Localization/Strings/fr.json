@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "Lieux",
+  "UnityTower5Editor_Floors": "Étages de la tour",
+  "UnityTower5Editor_FloorUnlocked": "Déverrouillé",
   "Unsaved_Title": "Modifications non enregistrées",
   "Unsaved_Message": "Enregistrer les modifications avant de fermer ?",
   "Unsaved_Discard": "Ignorer",

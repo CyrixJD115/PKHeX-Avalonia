@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "Orte",
+  "UnityTower5Editor_Floors": "Turmetagen",
+  "UnityTower5Editor_FloorUnlocked": "Freigeschaltet",
   "Unsaved_Title": "Ungespeicherte Änderungen",
   "Unsaved_Message": "Änderungen vor dem Schließen speichern?",
   "Unsaved_Discard": "Verwerfen",

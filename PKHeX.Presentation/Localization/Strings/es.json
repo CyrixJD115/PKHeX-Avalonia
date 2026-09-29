@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "Ubicaciones",
+  "UnityTower5Editor_Floors": "Pisos de la torre",
+  "UnityTower5Editor_FloorUnlocked": "Desbloqueado",
   "Unsaved_Title": "Cambios sin guardar",
   "Unsaved_Message": "¿Guardar los cambios antes de cerrar?",
   "Unsaved_Discard": "Descartar",
