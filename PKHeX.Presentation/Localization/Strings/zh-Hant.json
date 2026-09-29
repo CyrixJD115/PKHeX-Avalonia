@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "地點",
+  "UnityTower5Editor_Floors": "塔樓樓層",
+  "UnityTower5Editor_FloorUnlocked": "已解鎖",
   "Unsaved_Title": "未儲存的變更",
   "Unsaved_Message": "關閉前儲存變更嗎？",
   "Unsaved_Discard": "捨棄",

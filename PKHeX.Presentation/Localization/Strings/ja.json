@@ -1,4 +1,7 @@
 {
+  "UnityTower5Editor_Locations": "場所",
+  "UnityTower5Editor_Floors": "タワーのフロア",
+  "UnityTower5Editor_FloorUnlocked": "解放済み",
   "Unsaved_Title": "未保存の変更",
   "Unsaved_Message": "閉じる前に変更を保存しますか？",
   "Unsaved_Discard": "破棄",

@@ -42,6 +42,20 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureUnityTowerDetailTabs_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new UnityTower5Editor { DataContext = new UnityTower5EditorViewModel(new SAV5B2W2()) },
+            "unity-tower-locations.png", 620, 620, "Gen 5 Unity Tower locations");
+        var floors = new UnityTower5Editor { DataContext = new UnityTower5EditorViewModel(new SAV5B2W2()) };
+        floors.FindControl<TabControl>("DetailTabs")!.SelectedIndex = 1;
+        CaptureAuxiliaryView(floors,
+            "unity-tower-floors.png", 620, 620, "Gen 5 Unity Tower floors");
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
