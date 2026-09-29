@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "성별, 폼, 애니메이션을 보려면 오른쪽으로 스크롤하세요.",
+  "EntralinkEditor_RandomizeAll": "모든 구역 무작위화",
+  "EntralinkEditor_UndoRandomize": "무작위화 실행 취소",
+  "EntralinkEditor_RandomizeTitle": "하이링크 숲 무작위화",
+  "EntralinkEditor_RandomizeConfirm": "하이링크 숲의 모든 포켓몬을 바꾸시겠습니까? 저장 전에 실행 취소하거나 대화상자를 취소할 수 있습니다.",
+  "EntralinkEditor_SelectedPreview": "선택한 포켓몬",
   "UnityTower5Editor_Locations": "위치",
   "UnityTower5Editor_Floors": "타워 층",
   "UnityTower5Editor_FloorUnlocked": "잠금 해제",

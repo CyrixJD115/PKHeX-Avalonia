@@ -18,11 +18,19 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
     private readonly Entralink5 _entralink;
     private readonly EntreeForest _forest;
     private readonly FestaBlock5? _festa;
+    private readonly ISpriteRenderer? _spriteRenderer;
+    private readonly IDialogService? _dialogService;
+    private readonly Random _random;
+    private byte[]? _beforeRandomize;
 
     public Action? CloseRequested { get; set; }
 
-    public EntralinkEditorViewModel(SaveFile sav)
+    public EntralinkEditorViewModel(SaveFile sav, ISpriteRenderer? spriteRenderer = null,
+        IDialogService? dialogService = null, Random? random = null)
     {
+        _spriteRenderer = spriteRenderer;
+        _dialogService = dialogService;
+        _random = random ?? Random.Shared;
         _source = (SAV5)sav;
         var editedBeforeClone = _source.State.Edited;
         _sav = (SAV5)_source.Clone();
@@ -158,6 +166,10 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
     // Forest
     [ObservableProperty] private ObservableCollection<EntreeAreaViewModel> _areas = [];
     [ObservableProperty] private EntreeAreaViewModel? _selectedArea;
+    [ObservableProperty] private EntreeSlotViewModel? _selectedEntreeSlot;
+
+    partial void OnSelectedAreaChanged(EntreeAreaViewModel? value) =>
+        SelectedEntreeSlot = value?.Slots.FirstOrDefault();
     
     [ObservableProperty] private int _unlockedAreas;
     partial void OnUnlockedAreasChanged(int value) => _forest.Unlock38Areas = value; // 0-6 maps to Areas 3-8
@@ -188,10 +200,9 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
             }
         }
 
+        LoadForest();
         UnlockedAreas = _forest.Unlock38Areas;
         Unlock9thArea = _forest.Unlock9thArea;
-
-        LoadForest();
     }
 
     private void LoadForest()
@@ -205,7 +216,7 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
         foreach (var group in areaGroups)
         {
             var name = GetAreaName(group.Key);
-            var vm = new EntreeAreaViewModel(name, group.Select(s => new EntreeSlotViewModel(s)).ToList());
+            var vm = new EntreeAreaViewModel(name, group.Select(s => new EntreeSlotViewModel(s, _spriteRenderer)).ToList());
             Areas.Add(vm);
         }
 
@@ -263,6 +274,61 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
         UnlockedAreas = _forest.Unlock38Areas;
         Unlock9thArea = _forest.Unlock9thArea;
     }
+
+    private bool CanRandomizeForest => _dialogService is not null;
+    private bool CanUndoRandomizeForest => _beforeRandomize is not null;
+
+    [RelayCommand(CanExecute = nameof(CanRandomizeForest))]
+    private async Task RandomizeForestAsync()
+    {
+        if (_dialogService is null) return;
+        var confirmed = await _dialogService.ShowConfirmationAsync(
+            LocalizedStrings.Instance["EntralinkEditor_RandomizeTitle"],
+            LocalizedStrings.Instance["EntralinkEditor_RandomizeConfirm"],
+            LocalizedStrings.Instance["Common_OK"],
+            LocalizedStrings.Instance["Common_Cancel"]);
+        if (!confirmed) return;
+
+        var source = (_sav is SAV5BW ? Encounters5BW.DreamWorld_BW : Encounters5B2W2.DreamWorld_B2W2)
+            .Concat(Encounters5DR.DreamWorld_Common).ToArray();
+        if (source.Length == 0) return;
+
+        _beforeRandomize = _forest.Data.ToArray();
+        var remaining = source.ToList();
+        foreach (var slot in _forest.Slots)
+        {
+            if (remaining.Count == 0)
+                remaining.AddRange(source);
+            var index = _random.Next(remaining.Count);
+            var encounter = remaining[index];
+            remaining.RemoveAt(index);
+            slot.Species = encounter.Species;
+            slot.Form = encounter.Form;
+            slot.Gender = !((IFixedGender)encounter).IsFixedGender
+                ? PersonalTable.B2W2[encounter.Species].RandomGender()
+                : encounter.Gender;
+            ReadOnlySpan<ushort> candidateMoves = encounter.Moves;
+            var moves = candidateMoves.ToArray().Where(move => move != 0).ToArray();
+            slot.Move = moves.Length == 0 ? (ushort)0 : moves[_random.Next(moves.Length)];
+        }
+        _forest.UnlockAllAreas();
+        UnlockedAreas = _forest.Unlock38Areas;
+        Unlock9thArea = _forest.Unlock9thArea;
+        LoadForest();
+        UndoRandomizeForestCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanUndoRandomizeForest))]
+    private void UndoRandomizeForest()
+    {
+        if (_beforeRandomize is null) return;
+        _beforeRandomize.CopyTo(_forest.Data);
+        _beforeRandomize = null;
+        UnlockedAreas = _forest.Unlock38Areas;
+        Unlock9thArea = _forest.Unlock9thArea;
+        LoadForest();
+        UndoRandomizeForestCommand.NotifyCanExecuteChanged();
+    }
 }
 
 public partial class EntreeAreaViewModel : ObservableObject
@@ -280,10 +346,12 @@ public partial class EntreeAreaViewModel : ObservableObject
 public partial class EntreeSlotViewModel : ViewModelBase
 {
     private readonly EntreeSlot _slot;
+    private readonly ISpriteRenderer? _spriteRenderer;
 
-    public EntreeSlotViewModel(EntreeSlot slot)
+    public EntreeSlotViewModel(EntreeSlot slot, ISpriteRenderer? spriteRenderer = null)
     {
         _slot = slot;
+        _spriteRenderer = spriteRenderer;
         Species = _slot.Species;
         Move = _slot.Move;
         Gender = _slot.Gender;
@@ -306,21 +374,45 @@ public partial class EntreeSlotViewModel : ViewModelBase
     {
         _slot.Species = value;
         OnPropertyChanged(nameof(SpeciesName));
+        OnPropertyChanged(nameof(Sprite));
     }
     
     public string SpeciesName => GameInfo.Strings.Species[Species];
+    public string MoveName => Move < GameInfo.Strings.Move.Count ? GameInfo.Strings.Move[Move] : Move.ToString();
+    public string GenderSymbol => Gender switch { 0 => "♂", 1 => "♀", _ => "–" };
+    public string AnimationName => ((EntreeForestAnimation)Animation).ToString();
+    public byte[]? Sprite => Species == 0 ? null :
+        _spriteRenderer?.GetSprite(Species, (byte)Math.Clamp(Form, 0, byte.MaxValue),
+            (byte)Math.Clamp(Gender, 0, byte.MaxValue), 0, false, EntityContext.Gen5);
 
     [ObservableProperty] private ushort _move;
-    partial void OnMoveChanged(ushort value) => _slot.Move = value;
+    partial void OnMoveChanged(ushort value)
+    {
+        _slot.Move = value;
+        OnPropertyChanged(nameof(MoveName));
+    }
 
     [ObservableProperty] private int _gender;
-    partial void OnGenderChanged(int value) => _slot.Gender = (byte)value;
+    partial void OnGenderChanged(int value)
+    {
+        _slot.Gender = (byte)value;
+        OnPropertyChanged(nameof(GenderSymbol));
+        OnPropertyChanged(nameof(Sprite));
+    }
 
     [ObservableProperty] private int _form;
-    partial void OnFormChanged(int value) => _slot.Form = (byte)value;
+    partial void OnFormChanged(int value)
+    {
+        _slot.Form = (byte)value;
+        OnPropertyChanged(nameof(Sprite));
+    }
     
     [ObservableProperty] private int _animation;
-    partial void OnAnimationChanged(int value) => _slot.Animation = (EntreeForestAnimation)value;
+    partial void OnAnimationChanged(int value)
+    {
+        _slot.Animation = (EntreeForestAnimation)value;
+        OnPropertyChanged(nameof(AnimationName));
+    }
 }
 
 public partial class FunfestMissionRow : ObservableObject

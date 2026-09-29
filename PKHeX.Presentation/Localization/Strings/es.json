@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "Desplázate a la derecha para ver Género, Forma y Animación.",
+  "EntralinkEditor_RandomizeAll": "Aleatorizar todas las áreas",
+  "EntralinkEditor_UndoRandomize": "Deshacer aleatorización",
+  "EntralinkEditor_RandomizeTitle": "Aleatorizar Bosque Nexo",
+  "EntralinkEditor_RandomizeConfirm": "¿Reemplazar todos los encuentros del Bosque Nexo? Puedes deshacerlo antes de guardar o cancelar el diálogo.",
+  "EntralinkEditor_SelectedPreview": "Encuentro seleccionado",
   "UnityTower5Editor_Locations": "Ubicaciones",
   "UnityTower5Editor_Floors": "Pisos de la torre",
   "UnityTower5Editor_FloorUnlocked": "Desbloqueado",

@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "Scorri a destra per Genere, Forma e Animazione.",
+  "EntralinkEditor_RandomizeAll": "Riempi casualmente tutte le aree",
+  "EntralinkEditor_UndoRandomize": "Annulla casualizzazione",
+  "EntralinkEditor_RandomizeTitle": "Casualizza la Foresta Intramondo",
+  "EntralinkEditor_RandomizeConfirm": "Sostituire tutti gli incontri della Foresta Intramondo? Puoi annullare prima di salvare o chiudere la finestra senza salvare.",
+  "EntralinkEditor_SelectedPreview": "Incontro selezionato",
   "UnityTower5Editor_Locations": "Località",
   "UnityTower5Editor_Floors": "Piani della torre",
   "UnityTower5Editor_FloorUnlocked": "Sbloccato",

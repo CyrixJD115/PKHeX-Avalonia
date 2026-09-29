@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "向右滚动以查看性别、形态和动画。",
+  "EntralinkEditor_RandomizeAll": "随机化所有区域",
+  "EntralinkEditor_UndoRandomize": "撤销随机化",
+  "EntralinkEditor_RandomizeTitle": "随机化梦境森林",
+  "EntralinkEditor_RandomizeConfirm": "要替换梦境森林中的所有遭遇吗？保存前可以撤销，或取消对话框。",
+  "EntralinkEditor_SelectedPreview": "选中的遭遇",
   "UnityTower5Editor_Locations": "地点",
   "UnityTower5Editor_Floors": "塔楼楼层",
   "UnityTower5Editor_FloorUnlocked": "已解锁",

@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "Faites défiler vers la droite pour voir Sexe, Forme et Animation.",
+  "EntralinkEditor_RandomizeAll": "Répartir au hasard toutes les zones",
+  "EntralinkEditor_UndoRandomize": "Annuler le tirage",
+  "EntralinkEditor_RandomizeTitle": "Répartir au hasard la Forêt du Heylink",
+  "EntralinkEditor_RandomizeConfirm": "Remplacer toutes les rencontres de la Forêt du Heylink ? Vous pouvez annuler avant d’enregistrer ou fermer la fenêtre sans enregistrer.",
+  "EntralinkEditor_SelectedPreview": "Rencontre sélectionnée",
   "UnityTower5Editor_Locations": "Lieux",
   "UnityTower5Editor_Floors": "Étages de la tour",
   "UnityTower5Editor_FloorUnlocked": "Déverrouillé",

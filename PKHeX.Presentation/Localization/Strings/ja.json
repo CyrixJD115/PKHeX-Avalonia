@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "右にスクロールすると性別・フォルム・アニメーションを編集できます。",
+  "EntralinkEditor_RandomizeAll": "すべてのエリアをランダム化",
+  "EntralinkEditor_UndoRandomize": "ランダム化を元に戻す",
+  "EntralinkEditor_RandomizeTitle": "ハイリンクの森をランダム化",
+  "EntralinkEditor_RandomizeConfirm": "ハイリンクの森のすべての出会いを置き換えますか？保存前に元に戻すか、ダイアログをキャンセルできます。",
+  "EntralinkEditor_SelectedPreview": "選択した出会い",
   "UnityTower5Editor_Locations": "場所",
   "UnityTower5Editor_Floors": "タワーのフロア",
   "UnityTower5Editor_FloorUnlocked": "解放済み",

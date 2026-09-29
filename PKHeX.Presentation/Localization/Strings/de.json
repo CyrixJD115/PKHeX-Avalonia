@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "Für Geschlecht, Form und Animation nach rechts scrollen.",
+  "EntralinkEditor_RandomizeAll": "Alle Bereiche zufällig füllen",
+  "EntralinkEditor_UndoRandomize": "Zufall rückgängig",
+  "EntralinkEditor_RandomizeTitle": "Entree-Wald zufällig füllen",
+  "EntralinkEditor_RandomizeConfirm": "Alle Begegnungen im Entree-Wald ersetzen? Du kannst dies vor dem Speichern rückgängig machen oder den Dialog abbrechen.",
+  "EntralinkEditor_SelectedPreview": "Ausgewählte Begegnung",
   "UnityTower5Editor_Locations": "Orte",
   "UnityTower5Editor_Floors": "Turmetagen",
   "UnityTower5Editor_FloorUnlocked": "Freigeschaltet",

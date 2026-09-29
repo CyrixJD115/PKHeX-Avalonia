@@ -1,4 +1,10 @@
 {
+  "EntralinkEditor_HorizontalScrollHint": "Scroll right for Gender, Form, and Animation.",
+  "EntralinkEditor_RandomizeAll": "Randomize all areas",
+  "EntralinkEditor_UndoRandomize": "Undo randomize",
+  "EntralinkEditor_RandomizeTitle": "Randomize Entrée Forest",
+  "EntralinkEditor_RandomizeConfirm": "Replace every Entrée Forest encounter? You can undo this before saving or cancel the dialog.",
+  "EntralinkEditor_SelectedPreview": "Selected encounter",
   "UnityTower5Editor_Locations": "Locations",
   "UnityTower5Editor_Floors": "Tower floors",
   "UnityTower5Editor_FloorUnlocked": "Unlocked",
