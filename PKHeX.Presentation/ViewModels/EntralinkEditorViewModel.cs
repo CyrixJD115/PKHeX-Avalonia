@@ -18,6 +18,7 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
     private readonly Entralink5 _entralink;
     private readonly EntreeForest _forest;
     private readonly FestaBlock5? _festa;
+    private readonly bool[] _originalEventFlags;
     private readonly ISpriteRenderer? _spriteRenderer;
     private readonly IDialogService? _dialogService;
     private readonly Random _random;
@@ -40,6 +41,8 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
         _entralink = _sav.Entralink;
         _forest = _sav.EntreeForest;
         _festa = _b2w2?.Festa;
+        _originalEventFlags = _b2w2 is null ? [] : Enumerable.Range(0, _sav.EventWork.EventFlagCount)
+            .Select(_sav.EventWork.GetEventFlag).ToArray();
 
         IsB2W2 = _b2w2 is not null;
         IsBW = _bw is not null;
@@ -256,12 +259,32 @@ public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
         // Slots are decrypted for editing. Re-encrypt the staged forest before committing any
         // bytes so merely opening and saving this dialog cannot corrupt the forest block.
         _forest.EndAccess();
-        if (!_source.Data.SequenceEqual(_sav.Data))
+        var changed = CopyChangedBlock(_entralink.Data, _source.Entralink.Data);
+        changed |= CopyChangedBlock(_forest.Data, _source.EntreeForest.Data);
+        if (_festa is not null && _source is SAV5B2W2 b2w2)
         {
-            _source.CopyChangesFrom(_sav);
-            _source.State.Edited = true;
+            changed |= CopyChangedBlock(_festa.Data, b2w2.Festa.Data);
+            // Funfest unlocks also change EventWork flags. Apply only staged bit changes,
+            // preserving unrelated flags and work values that changed in the live save.
+            for (var flag = 0; flag < _originalEventFlags.Length; flag++)
+            {
+                var staged = _sav.EventWork.GetEventFlag(flag);
+                if (staged == _originalEventFlags[flag] || staged == _source.EventWork.GetEventFlag(flag))
+                    continue;
+                _source.EventWork.SetEventFlag(flag, staged);
+                changed = true;
+            }
         }
+        if (changed)
+            _source.State.Edited = true;
         CloseRequested?.Invoke();
+    }
+
+    private static bool CopyChangedBlock(ReadOnlySpan<byte> staged, Span<byte> target)
+    {
+        if (staged.SequenceEqual(target)) return false;
+        staged.CopyTo(target);
+        return true;
     }
 
     [RelayCommand]

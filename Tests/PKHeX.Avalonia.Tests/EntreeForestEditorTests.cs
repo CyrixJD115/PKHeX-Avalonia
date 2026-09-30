@@ -80,7 +80,9 @@ public sealed class EntreeForestEditorTests
 
         vm = new EntralinkEditorViewModel(save, dialogService: dialogs, random: new Random(17));
         await vm.RandomizeForestCommand.ExecuteAsync(null);
+        save.Money = 12345;
         vm.SaveCommand.Execute(null);
+        Assert.Equal(12345u, save.Money);
         Assert.NotEqual(originalBytes, save.Data.ToArray());
         SAV5 reloaded = save is SAV5BW
             ? new SAV5BW(save.Write().ToArray())
