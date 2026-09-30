@@ -133,7 +133,7 @@
                     </DockPanel>
                 </Border>
 
-                <Grid Grid.Column="1" RowDefinitions="Auto,*,145" RowSpacing="6" IsVisible="{Binding SelectedArea, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="6" IsVisible="{Binding SelectedArea, Converter={x:Static ObjectConverters.IsNotNull}}">
                      <TextBlock Grid.Row="0" Text="{loc:Loc EntralinkEditor_HorizontalScrollHint}" TextWrapping="Wrap" Opacity="0.65" FontSize="10" />
                      <DataGrid x:Name="ForestGrid" Grid.Row="1" ItemsSource="{Binding SelectedArea.Slots}" SelectedItem="{Binding SelectedEntreeSlot}"
                                AutoGenerateColumns="False" CanUserResizeColumns="True" CanUserSortColumns="False"
@@ -148,7 +148,7 @@
                                                   SelectedValue="{Binding Species}"
                                                   SelectedValueBinding="{Binding Value}"
                                                   DisplayMemberBinding="{Binding Text}"
-                                                  AutomationProperties.Name="Species"
+                                                  AutomationProperties.Name="{loc:Loc EntralinkEditor_Species}"
                                                   HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -161,7 +161,7 @@
                                                   SelectedValue="{Binding Move}"
                                                   SelectedValueBinding="{Binding Value}"
                                                   DisplayMemberBinding="{Binding Text}"
-                                                  AutomationProperties.Name="Move"
+                                                  AutomationProperties.Name="{loc:Loc EntralinkEditor_Move}"
                                                   HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -174,7 +174,7 @@
                                                   SelectedValue="{Binding Gender}"
                                                   SelectedValueBinding="{Binding Value}"
                                                   DisplayMemberBinding="{Binding Text}"
-                                                  AutomationProperties.Name="Gender"
+                                                  AutomationProperties.Name="{loc:Loc EntralinkEditor_Gender}"
                                                   HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -183,7 +183,7 @@
                             <DataGridTemplateColumn Header="{loc:Loc EntralinkEditor_Form}" Width="85">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding Form}" Minimum="0" Maximum="31" AutomationProperties.Name="Form" ShowButtonSpinner="False" />
+                                        <NumericUpDown Value="{Binding Form}" Minimum="0" Maximum="31" AutomationProperties.Name="{loc:Loc EntralinkEditor_Form}" ShowButtonSpinner="False" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -191,7 +191,7 @@
                             <DataGridTemplateColumn Header="{loc:Loc EntralinkEditor_Anim}" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding Animation}" Minimum="0" Maximum="7" AutomationProperties.Name="Animation" ShowButtonSpinner="False" />
+                                        <NumericUpDown Value="{Binding Animation}" Minimum="0" Maximum="7" AutomationProperties.Name="{loc:Loc EntralinkEditor_Anim}" ShowButtonSpinner="False" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

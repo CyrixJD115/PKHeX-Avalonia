@@ -51,6 +51,24 @@ public sealed class WindowService : IWindowService
             StabilizeInitialBounds(dialog);
         }
 
+        if (viewModel is CosmeticInventory4EditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = 620;
+            dialog.Height = Math.Min(620, dialog.MaxHeight);
+            dialog.MinWidth = 480;
+            dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
+        }
+
+        if (viewModel is Pokedex5EditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = Math.Min(900, dialog.MaxWidth);
+            dialog.Height = Math.Min(650, dialog.MaxHeight);
+            dialog.MinWidth = Math.Min(700, dialog.MaxWidth);
+            dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
+        }
+
         if (viewModel is RecordsEditorViewModel)
         {
             var key = typeof(RecordsEditorViewModel).FullName!;

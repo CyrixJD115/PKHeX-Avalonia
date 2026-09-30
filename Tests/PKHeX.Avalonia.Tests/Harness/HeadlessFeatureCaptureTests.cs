@@ -56,6 +56,21 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CapturePssContactPreview_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new PssExportView
+            {
+                DataContext = new PssExportViewModel(
+                    global::PKHeX.Avalonia.Tests.PssExportTests.MakeMultiRecordSave(),
+                    Mock.Of<IClipboardService>(), new RecordingDialogService()),
+            },
+            "pss-contact-preview.png", 620, 520, "Gen 6 PSS contact preview");
+    }
+
+    [AvaloniaFact]
     public void CaptureFunfestMissions_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
@@ -76,7 +91,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
             foreach (var language in new[] { "en", "de" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
-                var save = new SAV5B2W2();
+                var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
                 var renderer = new global::PKHeX.Avalonia.Services.AvaloniaSpriteRenderer(new global::PKHeX.Application.Services.AppSettings());
                 renderer.Initialize(save);
                 var vm = new EntralinkEditorViewModel(save, renderer, new RecordingDialogService());

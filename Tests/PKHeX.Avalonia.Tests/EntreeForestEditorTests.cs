@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Headless;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Moq;
 using PKHeX.Application.Abstractions;
 using PKHeX.Avalonia.Tests.Harness;
@@ -43,10 +44,13 @@ public sealed class EntreeForestEditorTests
         Assert.Same(vm.Areas[1].Slots[0], vm.SelectedEntreeSlot);
     }
 
-    [Fact]
-    public async Task RandomizeRequiresConfirmationAndCanBeUndoneBeforeSave()
+    [Theory]
+    [InlineData("gen5_black.sav")]
+    [InlineData("gen5_white2.sav")]
+    public async Task RandomizeRequiresConfirmationAndCanBeUndoneBeforeSave(string fixture)
     {
-        var save = LoadWhite2();
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../savefiles", fixture));
+        var save = Assert.IsAssignableFrom<SAV5>(FileUtil.GetSupportedFile(path));
         var originalBytes = save.Data.ToArray();
         var dialogs = new RecordingDialogService();
         var vm = new EntralinkEditorViewModel(save, dialogService: dialogs, random: new Random(17));
@@ -78,7 +82,9 @@ public sealed class EntreeForestEditorTests
         await vm.RandomizeForestCommand.ExecuteAsync(null);
         vm.SaveCommand.Execute(null);
         Assert.NotEqual(originalBytes, save.Data.ToArray());
-        var reloaded = new SAV5B2W2(save.Write().ToArray());
+        SAV5 reloaded = save is SAV5BW
+            ? new SAV5BW(save.Write().ToArray())
+            : new SAV5B2W2(save.Write().ToArray());
         var forest = reloaded.EntreeForest;
         forest.StartAccess();
         Assert.Equal(6, forest.Unlock38Areas);
@@ -98,6 +104,7 @@ public sealed class EntreeForestEditorTests
         renderer.Initialize(save);
         var vm = new EntralinkEditorViewModel(save, renderer);
         vm.SelectedEntreeSlot!.Species = 25;
+        vm.SelectedEntreeSlot.Move = 33;
         var view = new EntralinkEditor
         {
             DataContext = vm,
@@ -118,6 +125,16 @@ public sealed class EntreeForestEditorTests
             var grid = Assert.IsType<DataGrid>(view.FindControl<DataGrid>("ForestGrid"));
             var preview = Assert.IsType<Image>(view.FindControl<Image>("ForestPreview"));
             Assert.Equal(6, grid.Columns.Count);
+            var selectors = grid.GetVisualDescendants().OfType<ComboBox>().ToArray();
+            var speciesSelector = selectors.First(c => ReferenceEquals(c.ItemsSource, vm.SpeciesList));
+            var moveSelector = selectors.First(c => ReferenceEquals(c.ItemsSource, vm.MoveList));
+            Assert.Equal(25, Assert.IsType<ComboItem>(speciesSelector.SelectedItem).Value);
+            Assert.Equal(33, Assert.IsType<ComboItem>(moveSelector.SelectedItem).Value);
+            speciesSelector.SelectedItem = vm.SpeciesList.First(item => item.Value == 26);
+            moveSelector.SelectedItem = vm.MoveList.First(item => item.Value == 45);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(26, vm.SelectedEntreeSlot!.Species);
+            Assert.Equal(45, vm.SelectedEntreeSlot.Move);
             Assert.Equal("Visible", ScrollViewer.GetHorizontalScrollBarVisibility(grid).ToString());
             Assert.True(preview.Bounds.Width >= 64,
                 $"Preview width={preview.Bounds.Width}; visible={preview.IsVisible}; tab={view.FindControl<TabControl>("EntralinkTabs")!.SelectedIndex}");

@@ -62,6 +62,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(OpenBoxWorkspaceCommand))]
     [NotifyCanExecuteChangedFor(nameof(OpenPartyWorkspaceCommand))]
     [NotifyCanExecuteChangedFor(nameof(OpenEncounterDatabaseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(OpenPssExportCommand))]
     [NotifyCanExecuteChangedFor(nameof(UnlockFriendSafariCommand))]
     [NotifyCanExecuteChangedFor(nameof(DumpBoxesCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoadBoxesCommand))]
@@ -75,7 +76,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private InventoryEditorViewModel? _inventoryEditor;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEventsWorkspace))]
-    private EventFlagsEditorViewModel? _eventFlagsEditor;
+    private EventEditorViewModel? _eventFlagsEditor;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGiftsWorkspace))]
     private MysteryGiftEditorViewModel? _mysteryGiftEditor;
@@ -294,7 +295,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
                 TrainerEditor = new TrainerEditorViewModel(sav);
                 InventoryEditor = new InventoryEditorViewModel(sav, _spriteRenderer, IsHaXMode);
-                EventFlagsEditor = new EventFlagsEditorViewModel(sav);
+                (EventFlagsEditor as IDisposable)?.Dispose();
+                EventFlagsEditor = sav is SAV7 or SAV7b or SAV8BS
+                    ? new CategorizedEventEditorViewModel(sav, _dialogService)
+                    : new EventFlagsEditorViewModel(sav);
                 MysteryGiftEditor = new MysteryGiftEditorViewModel(sav, _dialogService, _giftRecordProvider);
                 BatchEditor = new BatchEditorViewModel(sav, _dialogService, _undoRedo, _uiDispatcher);
                 BatchEditor.BatchEditCompleted += OnBatchEditCompleted;
@@ -332,6 +336,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             TrainerEditor = null;
             InventoryEditor = null;
+            (EventFlagsEditor as IDisposable)?.Dispose();
             EventFlagsEditor = null;
             MysteryGiftEditor = null;
 

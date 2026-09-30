@@ -369,10 +369,11 @@ public partial class EntreeSlotViewModel : ViewModelBase
         return "Center";
     }
 
-    [ObservableProperty] private ushort _species;
-    partial void OnSpeciesChanged(ushort value)
+    // ComboItem.Value is an int; matching it keeps Avalonia's SelectedValue lookup exact.
+    [ObservableProperty] private int _species;
+    partial void OnSpeciesChanged(int value)
     {
-        _slot.Species = value;
+        _slot.Species = (ushort)value;
         OnPropertyChanged(nameof(SpeciesName));
         OnPropertyChanged(nameof(Sprite));
     }
@@ -380,15 +381,15 @@ public partial class EntreeSlotViewModel : ViewModelBase
     public string SpeciesName => GameInfo.Strings.Species[Species];
     public string MoveName => Move < GameInfo.Strings.Move.Count ? GameInfo.Strings.Move[Move] : Move.ToString();
     public string GenderSymbol => Gender switch { 0 => "♂", 1 => "♀", _ => "–" };
-    public string AnimationName => ((EntreeForestAnimation)Animation).ToString();
+    public string AnimationName => LocalizedStrings.Instance[$"EntralinkEditor_Animation{Animation}"];
     public byte[]? Sprite => Species == 0 ? null :
-        _spriteRenderer?.GetSprite(Species, (byte)Math.Clamp(Form, 0, byte.MaxValue),
+        _spriteRenderer?.GetSprite((ushort)Species, (byte)Math.Clamp(Form, 0, byte.MaxValue),
             (byte)Math.Clamp(Gender, 0, byte.MaxValue), 0, false, EntityContext.Gen5);
 
-    [ObservableProperty] private ushort _move;
-    partial void OnMoveChanged(ushort value)
+    [ObservableProperty] private int _move;
+    partial void OnMoveChanged(int value)
     {
-        _slot.Move = value;
+        _slot.Move = (ushort)value;
         OnPropertyChanged(nameof(MoveName));
     }
 

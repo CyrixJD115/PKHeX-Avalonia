@@ -230,6 +230,8 @@ public partial class MainWindowViewModel
             "Menu_Gen3", () => CurrentSave is SAV3RS or SAV3E);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc4Command, "Menu_Gen4");
+        RegisterConditionalMenuCapability("Cosmetic4_Title", OpenCosmeticInventory4Command,
+            "Menu_Gen4", () => CurrentSave is SAV4);
         RegisterMenuCapability("Menu_Gen4_PoffinsDPPt", OpenPoffinCaseCommand, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_PoketchDPPt", OpenPoketchCommand, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_BlockLayout", OpenBoxLayoutCommand, "Menu_Gen4");
@@ -264,6 +266,9 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen6_SuperTraining", OpenSuperTrainingCommand, "Menu_Gen6");
         RegisterMenuCapability("Menu_Roamer", OpenRoamer6Command, "Menu_Gen6");
         RegisterMenuCapability("Menu_Gen6_PokemonLink", OpenLink6Command, "Menu_Gen6");
+        _capabilityRegistry.Add(new("Menu_Gen6_PSSExport", string.Empty, string.Empty,
+            OpenPssExportCommand, menuGroupTitleKey: "Menu_Gen6",
+            capabilityPredicate: () => CurrentSave is SAV6 { PSS: >= 0 }));
         RegisterMenuCapability("Menu_Gen6_SecretBaseEditor", OpenSecretBase6Command, "Menu_Gen6");
         RegisterConditionalMenuCapability("Dialog_PokePuffEditor", OpenPokepuffCommand,
             "Menu_Gen6", () => CurrentSave is ISaveBlock6Main);
