@@ -14,11 +14,11 @@ public sealed class EventDataField
     private readonly Action<long> _commit;
     public EventDataKind Kind { get; }
     public int Index { get; }
-    public string Name { get; }
-    public string Category { get; }
+    public string Name { get; private set; }
+    public string Category { get; private set; }
     public long Minimum { get; }
     public long Maximum { get; }
-    public IReadOnlyList<EventDataOption> Options { get; }
+    public IReadOnlyList<EventDataOption> Options { get; private set; }
     public long OriginalValue { get; private set; }
     public long Value => _read();
     public bool IsChanged => Value != OriginalValue;
@@ -51,6 +51,12 @@ public sealed class EventDataField
     }
     public void Reset() => _stage(OriginalValue);
     internal void AcceptChanges() => OriginalValue = Value;
+    internal void RefreshLabels(EventDataField other)
+    {
+        Name = other.Name;
+        Category = other.Category;
+        Options = other.Options;
+    }
     internal void Commit()
     {
         _commit(Value);
@@ -86,6 +92,12 @@ public sealed class EventDataSession
     public void Reset()
     {
         foreach (var field in Fields) field.Reset();
+    }
+    public void RefreshLabels()
+    {
+        var labels = Create(_snapshot)!;
+        foreach (var pair in Fields.Zip(labels.Fields))
+            pair.First.RefreshLabels(pair.Second);
     }
     public int Commit()
     {

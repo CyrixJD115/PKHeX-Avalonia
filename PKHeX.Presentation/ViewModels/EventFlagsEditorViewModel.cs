@@ -5,7 +5,7 @@ using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class EventFlagsEditorViewModel : ViewModelBase
+public partial class EventFlagsEditorViewModel : EventEditorViewModel
 {
     private readonly SaveFile _sav;
     private readonly IEventFlagArray? _flagArray;
@@ -40,7 +40,7 @@ public partial class EventFlagsEditorViewModel : ViewModelBase
 
     public int FlagCount { get; }
     public int MaxFlagIndex => Math.Max(0, FlagCount - 1);
-    public bool IsSupported { get; }
+    public override bool IsSupported { get; }
 
     [ObservableProperty]
     private ObservableCollection<EventFlagViewModel> _flags = [];
