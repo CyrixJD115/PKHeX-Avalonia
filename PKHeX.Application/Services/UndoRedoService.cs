@@ -158,6 +158,29 @@ public sealed class UndoRedoService
         return true;
     }
 
+    /// <summary>Commits a fixed-size save block as one operation alongside slot history.</summary>
+    public bool ApplyBlockChange(SaveFile owner, Func<byte[]> read, Action<byte[]> write, ReadOnlySpan<byte> updated)
+    {
+        if (!ReferenceEquals(_sav, owner) || _pendingBatch is not null)
+            throw new InvalidOperationException("The block must belong to the current save with no open batch.");
+        var before = read().ToArray();
+        if (before.Length != updated.Length)
+            throw new ArgumentException("Block lengths must match.", nameof(updated));
+        if (before.AsSpan().SequenceEqual(updated)) return false;
+        var after = updated.ToArray();
+        try { write(after.ToArray()); }
+        catch
+        {
+            write(before.ToArray());
+            throw;
+        }
+        owner.State.Edited = true;
+        _undoStack.Push(new BlockUnit(before, after, write));
+        _redoStack.Clear();
+        SetChangeCount(_changeCount + 1);
+        return true;
+    }
+
     public void AddChange(ISlotInfo info)
     {
         if (_pendingBatch is { } batch && _sav is not null)
@@ -185,7 +208,7 @@ public sealed class UndoRedoService
     {
         if (_sav is null || _undoStack.Count == 0) return;
 
-        var unit = _undoStack.Pop();
+        var unit = _undoStack.Peek();
         if (unit is SingleUnit or CoreBatchUnit)
         {
             if (_changelog is null || !_changelog.CanUndo) return;
@@ -201,6 +224,13 @@ public sealed class UndoRedoService
             }
         }
 
+        if (unit is BlockUnit block)
+        {
+            try { block.Write(block.Before.ToArray()); }
+            catch { block.Write(block.After.ToArray()); throw; }
+            _sav.State.Edited = true;
+        }
+        _undoStack.Pop();
         _redoStack.Push(unit);
         SetChangeCount(_changeCount + 1);
     }
@@ -209,7 +239,7 @@ public sealed class UndoRedoService
     {
         if (_sav is null || _redoStack.Count == 0) return;
 
-        var unit = _redoStack.Pop();
+        var unit = _redoStack.Peek();
         if (unit is SingleUnit or CoreBatchUnit)
         {
             if (_changelog is null || !_changelog.CanRedo) return;
@@ -225,8 +255,22 @@ public sealed class UndoRedoService
             }
         }
 
+        if (unit is BlockUnit block)
+        {
+            try { block.Write(block.After.ToArray()); }
+            catch { block.Write(block.Before.ToArray()); throw; }
+            _sav.State.Edited = true;
+        }
+        _redoStack.Pop();
         _undoStack.Push(unit);
         SetChangeCount(_changeCount + 1);
+    }
+
+    private sealed class BlockUnit(byte[] before, byte[] after, Action<byte[]> write) : UndoUnit
+    {
+        public byte[] Before { get; } = before;
+        public byte[] After { get; } = after;
+        public Action<byte[]> Write { get; } = write;
     }
 
     /// <summary>Common type for entries on <see cref="_undoStack"/>/<see cref="_redoStack"/>.</summary>
