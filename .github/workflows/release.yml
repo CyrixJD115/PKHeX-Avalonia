@@ -454,29 +454,10 @@ jobs:
         if: matrix.rid == 'linux-x64'
         shell: bash
         run: |
-          mkdir -p AppDir/usr/bin
-
-          cp publish/* AppDir/usr/bin/
-
-          cp PKHeX.Avalonia/Assets/Icons/icon.png AppDir/pkhex.png
-
-          cat > AppDir/AppRun << 'EOF'
-          #!/bin/bash
-          HERE="$(dirname "$(readlink -f "$0")")"
-          exec "$HERE/usr/bin/PKHeX.Avalonia" "$@"
-          EOF
-
-          chmod +x AppDir/AppRun
-
-          cat > AppDir/pkhex.desktop << 'EOF'
-          [Desktop Entry]
-          Type=Application
-          Name=PKHeX
-          Exec=PKHeX.Avalonia
-          Icon=pkhex
-          Categories=Utility;
-          Terminal=false
-          EOF
+          sudo apt-get update
+          sudo apt-get install -y appstream desktop-file-utils zsync
+          bash .github/scripts/prepare-appdir.sh publish AppDir \
+            '${{ needs.version.outputs.version }}' '${{ needs.version.outputs.release_sha }}'
 
           wget -q \
             https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -486,8 +467,14 @@ jobs:
           ARCH=x86_64 \
             ./appimagetool-x86_64.AppImage \
             --appimage-extract-and-run \
+            --updateinformation 'gh-releases-zsync|realgarit|PKHeX-Avalonia|latest|PKHeX-Avalonia-*x86_64.AppImage.zsync' \
             AppDir \
-            PKHeX-Avalonia-linux-x64.AppImage
+            PKHeX-Avalonia-${{ needs.version.outputs.version }}-x86_64.AppImage
+
+          # Missing update metadata or a missing delta file must fail the release.
+          ./PKHeX-Avalonia-${{ needs.version.outputs.version }}-x86_64.AppImage --appimage-updateinformation \
+            | grep -Fx 'gh-releases-zsync|realgarit|PKHeX-Avalonia|latest|PKHeX-Avalonia-*x86_64.AppImage.zsync'
+          test -s PKHeX-Avalonia-${{ needs.version.outputs.version }}-x86_64.AppImage.zsync
 
           # remove the AppImage tool from the artifact list since we don't need it anymore
           rm appimagetool-x86_64.AppImage
@@ -574,6 +561,7 @@ jobs:
           path: |
             ${{ matrix.artifact }}.zip
             *.AppImage
+            *.AppImage.zsync
             *.dmg
             PKHeX-Avalonia-Setup*.exe
           if-no-files-found: ignore
@@ -610,6 +598,7 @@ jobs:
           files: |
             artifacts/**/*.zip
             artifacts/**/*.AppImage
+            artifacts/**/*.AppImage.zsync
             artifacts/**/*.dmg
             artifacts/**/PKHeX-Avalonia-Setup*.exe
           draft: false
