@@ -119,6 +119,7 @@ public partial class App : global::Avalonia.Application
 
         // Host (Frameworks & Drivers): Avalonia/Skia implementations of the Application ports.
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IAudioPlaybackService, PlatformAudioPlaybackService>();
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<ISpriteRenderer, AvaloniaSpriteRenderer>();
         services.AddSingleton<IClipboardService, ClipboardService>();
