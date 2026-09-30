@@ -195,6 +195,19 @@ screenshots. No save file is added to the distributed application.
 The catalog [supports supplied AppStream screenshots](https://github.com/AppImage/appimage.github.io#checklist-for-submitting-your-own-appimage);
 its entry needs to be re-tested against the new release to refresh cached metadata.
 
+To refresh an existing listing, comment `/retest` on its catalog PR. If the PR
+is already merged, the catalog bot opens a new refresh PR. After it passes and
+merges, a second test run writes the generated entry in `apps/` and metadata in
+`database/`. The PR report still includes a screenshot captured at application
+startup; the catalog page instead uses the supplied AppStream default image.
+
+Updating the generated entry does **not** publish the website. As verified on
+2026-09-30, the catalog uses GitHub Actions for Pages, and its
+[`Build website` workflow](https://github.com/AppImage/appimage.github.io/blob/master/.github/workflows/build-website.yml)
+is manual-only. A catalog maintainer must run it before the public page changes.
+Check the generated entry's `screenshots` URL and then the live page's image;
+a passed re-test or merged refresh PR alone does not prove the screenshot is live.
+
 The .NET runtime is bundled, but Linux system libraries are still required. The
 catalog's initial report identified a glibc 2.27 reference; this is not a guarantee
 that every distribution with that glibc version supports the bundled .NET runtime.

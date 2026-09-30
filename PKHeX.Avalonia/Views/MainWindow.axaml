@@ -281,11 +281,14 @@
                             </TabItem>
                             <TabItem Header="{loc:Loc Tab_Events}" Classes="workspace-tab" IsVisible="{Binding IsEventsWorkspace}">
                                 <ContentControl Content="{Binding EventFlagsEditor}">
-                                    <ContentControl.ContentTemplate>
+                                    <ContentControl.DataTemplates>
                                         <DataTemplate DataType="vm:EventFlagsEditorViewModel">
                                             <views:EventFlagsEditor />
                                         </DataTemplate>
-                                    </ContentControl.ContentTemplate>
+                                        <DataTemplate DataType="vm:CategorizedEventEditorViewModel">
+                                            <views:CategorizedEventEditor />
+                                        </DataTemplate>
+                                    </ContentControl.DataTemplates>
                                 </ContentControl>
                             </TabItem>
                             <TabItem Header="{loc:Loc Tab_Gifts}" Classes="workspace-tab" IsVisible="{Binding IsGiftsWorkspace}">
