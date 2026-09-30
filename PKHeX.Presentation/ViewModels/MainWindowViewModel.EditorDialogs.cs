@@ -362,7 +362,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV5 sav) return;
         await _windowService.ShowDialogAsync(
-            new EntralinkEditorViewModel(sav),
+            new EntralinkEditorViewModel(sav, _spriteRenderer, _dialogService),
             T("Dialog_EntralinkEditor"));
     }
 
