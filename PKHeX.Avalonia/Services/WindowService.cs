@@ -57,7 +57,7 @@ public sealed class WindowService : IWindowService
             dialog.Width = 620;
             dialog.Height = Math.Min(620, dialog.MaxHeight);
             dialog.MinWidth = 480;
-            dialog.MinHeight = 500;
+            dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
         }
 
         if (viewModel is RecordsEditorViewModel)
