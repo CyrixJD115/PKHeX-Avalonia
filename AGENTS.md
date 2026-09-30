@@ -74,6 +74,8 @@ Patterns to know:
 ### Branch + PR flow
 - Work in feature branches, commit there, push, and open a PR. Never `git push origin main`.
 - A clean build is expected to produce **0 warnings**.
+- Markdown-only changes use quick CI checks under the same three platform check names; any
+  non-Markdown change retains the full build, tests, and Linux catalog validation.
 
 ### Auto-merge policy
 - Claude-created PRs are automatically merged once CI/checks pass — no manual check-in needed.

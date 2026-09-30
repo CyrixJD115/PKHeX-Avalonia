@@ -29,23 +29,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Classify changed files
+        id: changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          else
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            docs_only=$(bash .github/scripts/is-documentation-only.sh "$BASE_SHA" HEAD)
+            echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Documentation-only check
+        if: steps.changes.outputs.docs_only == 'true'
+        shell: bash
+        run: echo "Markdown-only changes; application build and tests are not needed."
+
       - name: Setup .NET
+        if: steps.changes.outputs.docs_only != 'true'
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
           dotnet-quality: 'ga'
 
       - name: Restore
+        if: steps.changes.outputs.docs_only != 'true'
         run: dotnet restore PKHeX.sln
 
       - name: Build
+        if: steps.changes.outputs.docs_only != 'true'
         run: dotnet build PKHeX.sln -c Release --no-restore
 
       - name: Test
+        if: steps.changes.outputs.docs_only != 'true'
         run: dotnet test PKHeX.sln -c Release --no-build --logger "trx;LogFileName=results.trx"
 
       - name: Validate Linux catalog metadata
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.changes.outputs.docs_only != 'true'
         shell: bash
         run: |
           sudo apt-get update
@@ -60,7 +83,7 @@ jobs:
             tmp/catalog-validation/AppDir "$VERSION" "$(git rev-parse HEAD)"
 
       - name: Upload test results
-        if: always()
+        if: always() && steps.changes.outputs.docs_only != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}
