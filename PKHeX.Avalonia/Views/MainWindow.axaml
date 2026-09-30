@@ -288,6 +288,9 @@
                                         <DataTemplate DataType="vm:CategorizedEventEditorViewModel">
                                             <views:CategorizedEventEditor />
                                         </DataTemplate>
+                                        <DataTemplate DataType="vm:ZaEventEditorViewModel">
+                                            <views:ZaEventEditor />
+                                        </DataTemplate>
                                     </ContentControl.DataTemplates>
                                 </ContentControl>
                             </TabItem>
