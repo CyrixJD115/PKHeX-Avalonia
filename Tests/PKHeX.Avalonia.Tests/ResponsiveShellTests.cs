@@ -754,7 +754,7 @@ public sealed class ResponsiveShellTests
     }
 
     [AvaloniaFact]
-    public void SaveWorkspace_HidesUnsupportedZaEventAndGiftTabs()
+    public void SaveWorkspace_ShowsSupportedZaEventsAndHidesUnsupportedGifts()
     {
         using var app = new HeadlessAppFixture();
         app.LoadSaveInstance(new SAV9ZA());
@@ -768,7 +768,8 @@ public sealed class ResponsiveShellTests
         var tabs = app.Window.GetVisualDescendants().OfType<TabItem>().ToList();
         var events = tabs.Single(tab => Equals(tab.Header, LocalizedStrings.Instance["Tab_Events"]));
         var gifts = tabs.Single(tab => Equals(tab.Header, LocalizedStrings.Instance["Tab_Gifts"]));
-        Assert.False(events.IsVisible);
+        Assert.True(events.IsVisible);
+        Assert.IsType<ZaEventEditorViewModel>(app.ViewModel.EventFlagsEditor);
         Assert.False(gifts.IsVisible);
     }
 
