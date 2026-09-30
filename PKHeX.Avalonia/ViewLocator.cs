@@ -29,6 +29,7 @@ public static class ViewLocator
         [typeof(BoxViewerViewModel)] = () => new BoxViewer(),
         [typeof(Capture7GGEditorViewModel)] = () => new Capture7GGEditor(),
         [typeof(ChatterEditorViewModel)] = () => new ChatterEditor(),
+        [typeof(CosmeticInventory4EditorViewModel)] = () => new CosmeticInventory4Editor(),
         [typeof(DLC5EditorViewModel)] = () => new DLC5Editor(),
         [typeof(DaycareEditorViewModel)] = () => new DaycareEditorView(),
         [typeof(DonutEditorViewModel)] = () => new DonutEditor(),

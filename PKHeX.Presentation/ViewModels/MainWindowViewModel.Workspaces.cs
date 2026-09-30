@@ -230,6 +230,8 @@ public partial class MainWindowViewModel
             "Menu_Gen3", () => CurrentSave is SAV3RS or SAV3E);
 
         RegisterMenuCapability("Menu_Misc", OpenMisc4Command, "Menu_Gen4");
+        RegisterConditionalMenuCapability("Cosmetic4_Title", OpenCosmeticInventory4Command,
+            "Menu_Gen4", () => CurrentSave is SAV4);
         RegisterMenuCapability("Menu_Gen4_PoffinsDPPt", OpenPoffinCaseCommand, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_PoketchDPPt", OpenPoketchCommand, "Menu_Gen4");
         RegisterMenuCapability("Menu_Gen4_BlockLayout", OpenBoxLayoutCommand, "Menu_Gen4");
