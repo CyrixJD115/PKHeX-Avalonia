@@ -35,9 +35,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     /// <summary>Process-wide singleton the markup extension and ViewModels bind against.</summary>
     public static LocalizedStrings Instance { get; } = new();
 
-    /// <summary>Language codes matching PKHeX.Core's supported data languages / the resource file names.</summary>
+    /// <summary>
+    /// UI language codes / the resource file names: PKHeX.Core's nine data languages plus <c>pt-BR</c>,
+    /// a UI-only language whose game data falls back to English.
+    /// </summary>
     public static readonly string[] SupportedLanguages =
-        ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant"];
+        ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant", "pt-BR"];
 
     private readonly IReadOnlyDictionary<string, string> _english;
     private IReadOnlyDictionary<string, string> _active;
