@@ -42,6 +42,60 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureChatterAudioActions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
+        save.Chatter.Recording.Fill(0x7A);
+        save.Chatter.Initialized = true;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var (width, height) in new[] { (620, 350), (420, 300) })
+                {
+                    CaptureAuxiliaryView(
+                        new ChatterEditor
+                        {
+                            DataContext = new ChatterEditorViewModel(save,
+                                new RecordingDialogService(), Mock.Of<IAudioPlaybackService>()),
+                        },
+                        $"chatter-audio-{language}-{width}.png", width, height, "Chatter audio actions");
+                }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous);
+        }
+    }
+
+    [AvaloniaFact]
+    public void CapturePortugueseFashionCatalogs_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var priorLanguage = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            LocalizedStrings.Instance.SetLanguage("pt-BR");
+            CaptureAuxiliaryView(
+                new Fashion9Editor { DataContext = new Fashion9EditorViewModel(LoadCaptureSave<SAV9SV>("gen9_scarlet.main")) },
+                "fashion9-sv-pt-BR.png", 900, 680, "Portuguese SV fashion catalog");
+            CaptureAuxiliaryView(
+                new Fashion9Editor { DataContext = new Fashion9EditorViewModel(LoadCaptureSave<SAV9ZA>("gen9a_legendsza.main")) },
+                "fashion9-za-pt-BR.png", 900, 680, "Portuguese ZA fashion catalog");
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(priorLanguage);
+        }
+    }
+
+    [AvaloniaFact]
     public void CaptureUnityTowerDetailTabs_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
@@ -88,7 +142,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var priorLanguage = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");

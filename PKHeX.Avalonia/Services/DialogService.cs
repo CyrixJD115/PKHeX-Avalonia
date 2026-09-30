@@ -95,7 +95,8 @@ public sealed class DialogService : IDialogService
         var options = new FilePickerSaveOptions
         {
             Title = title,
-            SuggestedFileName = defaultFileName
+            SuggestedFileName = defaultFileName,
+            FileTypeChoices = filters is null ? null : FileDialogFilterFactory.BuildOpenFileTypes(filters),
         };
 
         var result = await window.StorageProvider.SaveFilePickerAsync(options);
