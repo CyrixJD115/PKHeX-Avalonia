@@ -97,6 +97,7 @@ public sealed class EntreeForestEditorTests
     [AvaloniaTheory]
     [InlineData("en")]
     [InlineData("de")]
+    [InlineData("pt-BR")]
     public void ForestGridAndPreviewRemainReachableAtCompactSize(string language)
     {
         var previous = LocalizedStrings.Instance.CurrentLanguage;
