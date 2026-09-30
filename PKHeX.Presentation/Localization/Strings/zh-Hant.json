@@ -2457,5 +2457,21 @@
   "Cosmetic4_ID": "ID",
   "Cosmetic4_Status": "發布狀態",
   "Cosmetic4_Released": "已發布",
-  "Cosmetic4_Unreleased": "未發布"
+  "Cosmetic4_Unreleased": "未發布",
+  "Dex5Bulk_WholeDex": "整個圖鑑（取消勾選則僅限所選種類）",
+  "Dex5Bulk_SeenAll": "標記已見",
+  "Dex5Bulk_CaughtAll": "標記已捕獲",
+  "Dex5Bulk_ClearEntries": "清空項目",
+  "Dex5Bulk_Advanced": "已見、語言與形態設定",
+  "Dex5Bulk_ApplySeen": "套用已見選項",
+  "Dex5Bulk_SetLanguages": "設定語言",
+  "Dex5Bulk_ClearLanguages": "清空語言",
+  "Dex5Bulk_RegularForms": "普通形態",
+  "Dex5Bulk_ShinyForms": "異色形態",
+  "Dex5Bulk_SetForms": "設定形態",
+  "Dex5Bulk_ClearForms": "清空形態",
+  "Dex5Bulk_AllLanguages": "所有支援的語言",
+  "Dex5Bulk_Scope": "批次操作影響{0}個種類。清空刪除項目旗標，保留全域設定。",
+  "Dex5Bulk_Staging": "變更暫存。儲存將套用整個編輯工作階段；取消或關閉將捨棄。重設復原全部待套用變更，包括批次操作。",
+  "Dex5Bulk_InvalidPid": "儲存前請輸入最多八位十六進位數字的晃晃斑PID。"
 }

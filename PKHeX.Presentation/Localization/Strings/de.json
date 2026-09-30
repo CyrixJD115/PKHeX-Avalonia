@@ -2457,5 +2457,21 @@
   "Cosmetic4_ID": "ID",
   "Cosmetic4_Status": "Verfügbarkeit",
   "Cosmetic4_Released": "Veröffentlicht",
-  "Cosmetic4_Unreleased": "Unveröffentlicht"
+  "Cosmetic4_Unreleased": "Unveröffentlicht",
+  "Dex5Bulk_WholeDex": "Gesamter Pokédex (abwählen für die ausgewählte Art)",
+  "Dex5Bulk_SeenAll": "Als gesehen markieren",
+  "Dex5Bulk_CaughtAll": "Als gefangen markieren",
+  "Dex5Bulk_ClearEntries": "Einträge leeren",
+  "Dex5Bulk_Advanced": "Vorlagen für Sichtungen, Sprachen und Formen",
+  "Dex5Bulk_ApplySeen": "Sichtungsauswahl anwenden",
+  "Dex5Bulk_SetLanguages": "Sprachen setzen",
+  "Dex5Bulk_ClearLanguages": "Sprachen leeren",
+  "Dex5Bulk_RegularForms": "Normale Formen",
+  "Dex5Bulk_ShinyForms": "Schillernde Formen",
+  "Dex5Bulk_SetForms": "Formen setzen",
+  "Dex5Bulk_ClearForms": "Formen leeren",
+  "Dex5Bulk_AllLanguages": "Alle unterstützten Sprachen",
+  "Dex5Bulk_Scope": "Sammelaktionen betreffen {0} Arten. Leeren entfernt Eintragsflags; globale Einstellungen bleiben erhalten.",
+  "Dex5Bulk_Staging": "Änderungen sind vorgemerkt. Speichern übernimmt die gesamte Sitzung; Abbrechen oder Schliessen verwirft sie. Zurücksetzen macht alle ausstehenden Änderungen einschliesslich Sammelaktionen rückgängig.",
+  "Dex5Bulk_InvalidPid": "Vor dem Speichern eine Spinda-PID mit bis zu acht hexadezimalen Ziffern eingeben."
 }
