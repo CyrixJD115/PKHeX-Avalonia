@@ -2689,5 +2689,12 @@
   "ZaEvents_Category_Spawner4": "出現装置のハッシュ",
   "ZaEvents_Category_Obstruction": "障害物",
   "ZaEvents_Category_FieldItems": "フィールド道具",
-  "ZaEvents_Category_FieldObjectInteractable": "操作可能なフィールド物体"
+  "ZaEvents_Category_FieldObjectInteractable": "操作可能なフィールド物体",
+  "BoxReport_ResultCount": "{2} ボックス中 {0} / {1} 匹のポケモン",
+  "BoxReport_ExportTitle": "ボックスレポートをエクスポート",
+  "BoxReport_OpenSelected": "選択を開く",
+  "BoxReport_Columns": "列",
+  "BoxReport_ResetColumns": "列をリセット",
+  "BoxReport_Search": "すべての項目を検索…",
+  "BoxReport_Instructions": "Enter キーまたはダブルクリックで選択したポケモンを開きます。見出しをドラッグして列の順序を変更し、境界をドラッグして幅を調整します。横にスクロールして他の項目を表示します。"
 }

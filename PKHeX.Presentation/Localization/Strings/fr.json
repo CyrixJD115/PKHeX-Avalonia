@@ -2689,5 +2689,12 @@
   "ZaEvents_Category_Spawner4": "Hash des générateurs",
   "ZaEvents_Category_Obstruction": "Obstacles",
   "ZaEvents_Category_FieldItems": "Objets du terrain",
-  "ZaEvents_Category_FieldObjectInteractable": "Objets interactifs du terrain"
+  "ZaEvents_Category_FieldObjectInteractable": "Objets interactifs du terrain",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} dans {2} boîtes",
+  "BoxReport_ExportTitle": "Exporter le rapport des boîtes",
+  "BoxReport_OpenSelected": "Ouvrir la sélection",
+  "BoxReport_Columns": "Colonnes",
+  "BoxReport_ResetColumns": "Réinitialiser les colonnes",
+  "BoxReport_Search": "Rechercher dans tous les champs…",
+  "BoxReport_Instructions": "Entrée ou un double-clic ouvre le Pokémon sélectionné. Faites glisser les en-têtes pour réordonner les colonnes et leurs bords pour ajuster la largeur. Défilez horizontalement pour les autres champs."
 }

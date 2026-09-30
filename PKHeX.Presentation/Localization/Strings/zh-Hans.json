@@ -2689,5 +2689,12 @@
   "ZaEvents_Category_Spawner4": "生成器哈希",
   "ZaEvents_Category_Obstruction": "障碍物",
   "ZaEvents_Category_FieldItems": "场地道具",
-  "ZaEvents_Category_FieldObjectInteractable": "可交互场地对象"
+  "ZaEvents_Category_FieldObjectInteractable": "可交互场地对象",
+  "BoxReport_ResultCount": "{2} 个盒子中显示 {0} / {1} 只宝可梦",
+  "BoxReport_ExportTitle": "导出盒子报告",
+  "BoxReport_OpenSelected": "打开所选项",
+  "BoxReport_Columns": "列",
+  "BoxReport_ResetColumns": "重置列",
+  "BoxReport_Search": "搜索所有报告字段…",
+  "BoxReport_Instructions": "按 Enter 或双击打开所选宝可梦。拖动标题调整列顺序，拖动边缘调整宽度。横向滚动可查看其他字段。"
 }

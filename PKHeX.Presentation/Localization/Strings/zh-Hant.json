@@ -2689,5 +2689,12 @@
   "ZaEvents_Category_Spawner4": "生成器雜湊",
   "ZaEvents_Category_Obstruction": "障礙物",
   "ZaEvents_Category_FieldItems": "場地道具",
-  "ZaEvents_Category_FieldObjectInteractable": "可互動場地物件"
+  "ZaEvents_Category_FieldObjectInteractable": "可互動場地物件",
+  "BoxReport_ResultCount": "{2} 個盒子中顯示 {0} / {1} 隻寶可夢",
+  "BoxReport_ExportTitle": "匯出盒子報告",
+  "BoxReport_OpenSelected": "開啟所選項目",
+  "BoxReport_Columns": "欄",
+  "BoxReport_ResetColumns": "重設欄位",
+  "BoxReport_Search": "搜尋所有報告欄位…",
+  "BoxReport_Instructions": "按 Enter 或連按兩下開啟所選寶可夢。拖曳標題調整欄位順序，拖曳邊緣調整寬度。橫向捲動可查看其他欄位。"
 }

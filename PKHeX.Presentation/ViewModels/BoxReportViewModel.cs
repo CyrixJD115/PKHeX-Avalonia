@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
 using PKHeX.Presentation.Localization;
+using PKHeX.Application.Abstractions;
+using PKHeX.Application.Services;
 
 namespace PKHeX.Presentation.ViewModels;
 
@@ -18,11 +21,19 @@ public partial class BoxReportViewModel : ViewModelBase
 {
     private readonly SaveFile _sav;
     private readonly IDialogService _dialogService;
+    private readonly AppSettings _settings;
+    private readonly ISettingsStore? _settingsStore;
+    private BoxReportRow[] _allRows = [];
+    public BoxReportColumn[] Columns { get; } = BoxReportColumn.CreateDefaults();
+    private bool _resettingColumns;
+    public event Action<bool>? ColumnLayoutChanged;
+    [ObservableProperty] private string _searchText = string.Empty;
 
     [ObservableProperty]
     private ObservableCollection<BoxReportRow> _rows = [];
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ActivateSelectedRowCommand))]
     private BoxReportRow? _selectedRow;
 
     [ObservableProperty]
@@ -31,10 +42,18 @@ public partial class BoxReportViewModel : ViewModelBase
     /// <summary>Raised when the user activates (double-clicks) a row.</summary>
     public event Action<BoxReportRow>? RowActivated;
 
-    public BoxReportViewModel(SaveFile sav, IDialogService dialogService)
+    public BoxReportViewModel(SaveFile sav, IDialogService dialogService, AppSettings? settings = null, ISettingsStore? settingsStore = null)
     {
         _sav = sav;
         _dialogService = dialogService;
+        _settings = settings ?? new AppSettings();
+        _settingsStore = settingsStore;
+        foreach (var column in Columns)
+        {
+            var saved = _settings.BoxReportColumns.FirstOrDefault(c => c.Id == column.Id);
+            column.IsVisible = column.IsIdentity || (saved?.Visible ?? column.DefaultVisible);
+            column.PropertyChanged += (_, e) => { if (!_resettingColumns && e.PropertyName == nameof(BoxReportColumn.IsVisible)) ColumnLayoutChanged?.Invoke(false); };
+        }
         Refresh();
     }
 
@@ -54,11 +73,44 @@ public partial class BoxReportViewModel : ViewModelBase
             rows.Add(new BoxReportRow(pk, strings, i / slotsPerBox, i % slotsPerBox));
         }
 
-        Rows = rows;
-        StatusText = $"{rows.Count} Pokémon across {_sav.BoxCount} boxes";
+        _allRows = rows.ToArray();
+        ApplyFilter();
+    }
+
+    partial void OnSearchTextChanged(string value) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        var search = SearchText.Trim();
+        Rows = new ObservableCollection<BoxReportRow>(_allRows.Where(row => search.Length == 0 ||
+            Columns.Any(column => column.GetValue(row)?.ToString()?.Contains(search, StringComparison.CurrentCultureIgnoreCase) == true)));
+        if (SelectedRow is not null && !Rows.Contains(SelectedRow))
+            SelectedRow = null;
+        StatusText = LocalizedStrings.Instance.Format("BoxReport_ResultCount", Rows.Count, _allRows.Length, _sav.BoxCount);
+    }
+
+    public AppSettings.ReportColumnLayout? GetColumnLayout(string id) => _settings.BoxReportColumns.FirstOrDefault(c => c.Id == id);
+
+    public void SaveColumnLayout(System.Collections.Generic.IEnumerable<AppSettings.ReportColumnLayout> layout)
+    {
+        _settings.BoxReportColumns = layout.ToList();
+        _settingsStore?.Save(_settings);
     }
 
     [RelayCommand]
+    private void ResetColumns()
+    {
+        _settings.BoxReportColumns.Clear();
+        _resettingColumns = true;
+        foreach (var column in Columns)
+            column.IsVisible = column.DefaultVisible;
+        _resettingColumns = false;
+        ColumnLayoutChanged?.Invoke(true);
+    }
+
+    private bool HasSelectedRow => SelectedRow is not null;
+
+    [RelayCommand(CanExecute = nameof(HasSelectedRow))]
     private void ActivateSelectedRow()
     {
         if (SelectedRow is not null)
@@ -68,7 +120,7 @@ public partial class BoxReportViewModel : ViewModelBase
     [RelayCommand]
     private async System.Threading.Tasks.Task ExportCsvAsync()
     {
-        var path = await _dialogService.SaveFileAsync("Export Box Data Report", "BoxReport.csv");
+        var path = await _dialogService.SaveFileAsync(LocalizedStrings.Instance["BoxReport_ExportTitle"], "BoxReport.csv", ["csv"]);
         if (string.IsNullOrEmpty(path))
             return;
 

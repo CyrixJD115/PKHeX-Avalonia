@@ -317,7 +317,7 @@ public partial class MainWindowViewModel
 
         if (_boxReport is null)
         {
-            _boxReport = new BoxReportViewModel(CurrentSave, _dialogService);
+            _boxReport = new BoxReportViewModel(CurrentSave, _dialogService, _settings, _settingsStore);
             _boxReport.RowActivated += row =>
             {
                 ((IBoxNavigator?)BoxViewer)?.NavigateTo(row.Box, row.Slot);

@@ -29,6 +29,7 @@ public sealed class AppSettings : IProgramSettings
     public ThemeSettings Theme { get; set; } = new();
     public DensitySettings Density { get; set; } = new();
     public EditorBehaviorSettings EditorBehavior { get; set; } = new();
+    public List<ReportColumnLayout> BoxReportColumns { get; set; } = [];
 
     public string DisplayLanguage { get; set; } = "en";
 
@@ -119,6 +120,14 @@ public sealed class AppSettings : IProgramSettings
     public class EditorBehaviorSettings
     {
         public bool WarnClosingModified { get; set; } = true;
+    }
+
+    public class ReportColumnLayout
+    {
+        public string Id { get; set; } = string.Empty;
+        public double Width { get; set; }
+        public int Order { get; set; }
+        public bool Visible { get; set; }
     }
 
     /// <summary>

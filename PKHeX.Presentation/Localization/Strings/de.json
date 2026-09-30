@@ -2689,5 +2689,12 @@
   "ZaEvents_Category_Spawner4": "Spawner-Hashes",
   "ZaEvents_Category_Obstruction": "Hindernisse",
   "ZaEvents_Category_FieldItems": "Feld-Items",
-  "ZaEvents_Category_FieldObjectInteractable": "Interaktive Feldobjekte"
+  "ZaEvents_Category_FieldObjectInteractable": "Interaktive Feldobjekte",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} in {2} Boxen",
+  "BoxReport_ExportTitle": "Box-Datenbericht exportieren",
+  "BoxReport_OpenSelected": "Auswahl öffnen",
+  "BoxReport_Columns": "Spalten",
+  "BoxReport_ResetColumns": "Spalten zurücksetzen",
+  "BoxReport_Search": "Alle Berichtsfelder durchsuchen…",
+  "BoxReport_Instructions": "Enter oder Doppelklick öffnet das ausgewählte Pokémon. Spaltenköpfe zum Sortieren ziehen; Ränder zum Ändern der Breite ziehen. Weitere Felder sind horizontal erreichbar."
 }

@@ -32,6 +32,26 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureBoxReportColumns_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                var save = new SAV6XY();
+                save.SetBoxSlotAtIndex(new PK6 { Species = 94, Nickname = "Long-name example", Ability = 130, Move1 = 421, CurrentLevel = 55 }, 0);
+                var vm = new BoxReportViewModel(save, new RecordingDialogService());
+                vm.Columns[11].IsVisible = true;
+                CaptureAuxiliaryView(new BoxReportView { DataContext = vm }, $"box-report-{language}.png", language == "en" ? 1100 : 700, language == "en" ? 600 : 400, "Box report column workflow");
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureGeonetLocationEditor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
