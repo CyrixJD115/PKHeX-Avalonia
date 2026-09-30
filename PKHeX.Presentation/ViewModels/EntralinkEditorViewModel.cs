@@ -5,11 +5,13 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
+using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class EntralinkEditorViewModel : ViewModelBase
+public partial class EntralinkEditorViewModel : ViewModelBase, ICloseableDialog
 {
+    private readonly SAV5 _source;
     private readonly SAV5 _sav;
     private readonly SAV5B2W2? _b2w2;
     private readonly SAV5BW? _bw;
@@ -17,9 +19,14 @@ public partial class EntralinkEditorViewModel : ViewModelBase
     private readonly EntreeForest _forest;
     private readonly FestaBlock5? _festa;
 
+    public Action? CloseRequested { get; set; }
+
     public EntralinkEditorViewModel(SaveFile sav)
     {
-        _sav = (SAV5)sav;
+        _source = (SAV5)sav;
+        var editedBeforeClone = _source.State.Edited;
+        _sav = (SAV5)_source.Clone();
+        _source.State.Edited = editedBeforeClone;
         _b2w2 = _sav as SAV5B2W2;
         _bw = _sav as SAV5BW;
         _entralink = _sav.Entralink;
@@ -87,11 +94,65 @@ public partial class EntralinkEditorViewModel : ViewModelBase
     [ObservableProperty] private int _festaParticipated;
     [ObservableProperty] private int _festaCompleted;
     [ObservableProperty] private int _festaScore;
+    [ObservableProperty] private int _festaMostParticipants;
 
     partial void OnFestaHostedChanged(int value) { if (_festa != null) _festa.Hosted = (ushort)value; }
     partial void OnFestaParticipatedChanged(int value) { if (_festa != null) _festa.Participated = (ushort)value; }
     partial void OnFestaCompletedChanged(int value) { if (_festa != null) _festa.Completed = (ushort)value; }
     partial void OnFestaScoreChanged(int value) { if (_festa != null) _festa.TopScores = (ushort)value; }
+    partial void OnFestaMostParticipantsChanged(int value) { if (_festa != null) _festa.Participants = (byte)Math.Clamp(value, 0, byte.MaxValue); }
+
+    public ObservableCollection<FunfestMissionRow> Missions { get; } = [];
+    public ObservableCollection<FunfestMissionRow> FilteredMissions { get; } = [];
+    [ObservableProperty] private FunfestMissionRow? _selectedMission;
+    [ObservableProperty] private string _missionFilter = string.Empty;
+
+    partial void OnMissionFilterChanged(string value) => RefreshMissionFilter();
+    partial void OnSelectedMissionChanged(FunfestMissionRow? value) => UnlockSelectedMissionCommand.NotifyCanExecuteChanged();
+
+    private bool CanUnlockSelectedMission => SelectedMission is { IsUnlocked: false };
+
+    private void RefreshMissionFilter()
+    {
+        FilteredMissions.Clear();
+        foreach (var mission in Missions)
+            if (string.IsNullOrWhiteSpace(MissionFilter)
+                || mission.Name.Contains(MissionFilter, StringComparison.CurrentCultureIgnoreCase))
+                FilteredMissions.Add(mission);
+        if (SelectedMission is null || !FilteredMissions.Contains(SelectedMission))
+            SelectedMission = FilteredMissions.FirstOrDefault();
+    }
+
+    private void LoadMissions()
+    {
+        if (_festa is null) return;
+        Missions.Clear();
+        for (var index = 0; index <= FestaBlock5.MaxMissionIndex; index++)
+        {
+            var id = index;
+            var mission = (Funfest5Mission)index;
+            var name = LocalizedStrings.Instance[$"Funfest5Mission_{mission}"];
+            Missions.Add(new FunfestMissionRow(id, name, _festa.GetMissionRecord(index),
+                _festa.IsFunfestMissionUnlocked(index), score => _festa.SetMissionRecord(id, score)));
+        }
+        RefreshMissionFilter();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanUnlockSelectedMission))]
+    private void UnlockSelectedMission()
+    {
+        if (_festa is null || SelectedMission is null) return;
+        _festa.UnlockFunfestMission(SelectedMission.Index);
+        RefreshMissionLocks();
+    }
+
+    private void RefreshMissionLocks()
+    {
+        if (_festa is null) return;
+        foreach (var mission in Missions)
+            mission.IsUnlocked = _festa.IsFunfestMissionUnlocked(mission.Index);
+        UnlockSelectedMissionCommand.NotifyCanExecuteChanged();
+    }
 
 
     // Forest
@@ -122,6 +183,8 @@ public partial class EntralinkEditorViewModel : ViewModelBase
                 FestaParticipated = _festa.Participated;
                 FestaCompleted = _festa.Completed;
                 FestaScore = _festa.TopScores;
+                FestaMostParticipants = _festa.Participants;
+                LoadMissions();
             }
         }
 
@@ -168,8 +231,30 @@ public partial class EntralinkEditorViewModel : ViewModelBase
     [RelayCommand]
     private void UnlockAllMissions()
     {
-        _festa?.UnlockAllFunfestMissions();
+        if (_festa is null) return;
+        // Core's bulk helper excludes the last mission; call the public per-mission API for
+        // the full inclusive range without changing the mirrored Core source.
+        for (var index = 0; index <= FestaBlock5.MaxMissionIndex; index++)
+            _festa.UnlockFunfestMission(index);
+        RefreshMissionLocks();
     }
+
+    [RelayCommand]
+    private void Save()
+    {
+        // Slots are decrypted for editing. Re-encrypt the staged forest before committing any
+        // bytes so merely opening and saving this dialog cannot corrupt the forest block.
+        _forest.EndAccess();
+        if (!_source.Data.SequenceEqual(_sav.Data))
+        {
+            _source.CopyChangesFrom(_sav);
+            _source.State.Edited = true;
+        }
+        CloseRequested?.Invoke();
+    }
+
+    [RelayCommand]
+    private void Cancel() => CloseRequested?.Invoke();
     
     [RelayCommand]
     private void UnlockAllAreasCmd()
@@ -236,4 +321,59 @@ public partial class EntreeSlotViewModel : ViewModelBase
     
     [ObservableProperty] private int _animation;
     partial void OnAnimationChanged(int value) => _slot.Animation = (EntreeForestAnimation)value;
+}
+
+public partial class FunfestMissionRow : ObservableObject
+{
+    private readonly Action<Funfest5Score> _onChanged;
+    private Funfest5Score _record;
+
+    public int Index { get; }
+    public string Name { get; }
+    public string StatusText => LocalizedStrings.Instance[IsUnlocked ? "EntralinkEditor_MissionUnlocked" : "EntralinkEditor_MissionLocked"];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    private bool _isUnlocked;
+    [ObservableProperty] private int _bestTotal;
+    [ObservableProperty] private int _bestScore;
+    [ObservableProperty] private int _level;
+    [ObservableProperty] private bool _isNew;
+
+    public FunfestMissionRow(int index, string name, Funfest5Score record, bool unlocked, Action<Funfest5Score> onChanged)
+    {
+        Index = index;
+        Name = name;
+        _record = record;
+        _onChanged = onChanged;
+        _isUnlocked = unlocked;
+        _bestTotal = record.Total;
+        _bestScore = record.Score;
+        _level = record.Level;
+        _isNew = record.IsNew;
+    }
+
+    partial void OnBestTotalChanged(int value)
+    {
+        _record.Total = Math.Clamp(value, 0, 0x3FFF);
+        _onChanged(_record);
+    }
+
+    partial void OnBestScoreChanged(int value)
+    {
+        _record.Score = Math.Clamp(value, 0, 0x3FFF);
+        _onChanged(_record);
+    }
+
+    partial void OnLevelChanged(int value)
+    {
+        _record.Level = Math.Clamp(value, 0, 7);
+        _onChanged(_record);
+    }
+
+    partial void OnIsNewChanged(bool value)
+    {
+        _record.IsNew = value;
+        _onChanged(_record);
+    }
 }

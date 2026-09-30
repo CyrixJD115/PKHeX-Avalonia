@@ -16,6 +16,9 @@ public sealed class RecordingDialogService : IDialogService
     public List<(string Title, string Message)> Errors { get; } = [];
     public List<(string Title, string Message)> Infos { get; } = [];
     public List<(string Title, string Message)> Confirmations { get; } = [];
+    public List<(string Title, string Message)> UnsavedPrompts { get; } = [];
+    public UnsavedChangesChoice UnsavedChoice { get; set; } = UnsavedChangesChoice.Cancel;
+    public string? SaveFileResult { get; set; }
 
     /// <summary>Path returned by <see cref="OpenFileAsync"/> (simulating the native picker result).</summary>
     public string? OpenFileResult { get; set; }
@@ -28,7 +31,7 @@ public sealed class RecordingDialogService : IDialogService
 
     public Task<string?> OpenFileAsync(string title, string[]? filters = null) => Task.FromResult(OpenFileResult);
     public Task<string?> OpenFolderAsync(string title) => Task.FromResult(OpenFolderResult);
-    public Task<string?> SaveFileAsync(string title, string? defaultFileName = null, string[]? filters = null) => Task.FromResult<string?>(null);
+    public Task<string?> SaveFileAsync(string title, string? defaultFileName = null, string[]? filters = null) => Task.FromResult(SaveFileResult);
 
     public Task ShowErrorAsync(string title, string message)
     {
@@ -46,6 +49,13 @@ public sealed class RecordingDialogService : IDialogService
     {
         Confirmations.Add((title, message));
         return Task.FromResult(ConfirmResult);
+    }
+
+    public Task<UnsavedChangesChoice> ShowUnsavedChangesAsync(string title, string message,
+        string saveText, string discardText, string cancelText)
+    {
+        UnsavedPrompts.Add((title, message));
+        return Task.FromResult(UnsavedChoice);
     }
 
     public void RevealInFileManager(string path) { }

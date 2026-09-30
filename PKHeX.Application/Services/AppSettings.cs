@@ -28,6 +28,7 @@ public sealed class AppSettings : IProgramSettings
     public SpriteSettings Sprite { get; set; } = new();
     public ThemeSettings Theme { get; set; } = new();
     public DensitySettings Density { get; set; } = new();
+    public EditorBehaviorSettings EditorBehavior { get; set; } = new();
 
     public string DisplayLanguage { get; set; } = "en";
 
@@ -113,6 +114,11 @@ public sealed class AppSettings : IProgramSettings
     public class DensitySettings
     {
         public AppDensity Selected { get; set; } = AppDensity.Compact;
+    }
+
+    public class EditorBehaviorSettings
+    {
+        public bool WarnClosingModified { get; set; } = true;
     }
 
     /// <summary>

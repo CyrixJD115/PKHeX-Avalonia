@@ -243,6 +243,7 @@ public partial class PartyViewerViewModel : ViewModelBase
             return;
 
         _sav.SetPartySlotAtIndex(pk, slot);
+        _sav.State.Edited = true;
         RefreshParty();
     }
 

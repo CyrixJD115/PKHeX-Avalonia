@@ -32,6 +32,55 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureGeonetLocationEditor_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new Geonet4Editor { DataContext = new Geonet4EditorViewModel(new SAV4HGSS()) },
+            "geonet-location-editor.png", 620, 570, "Gen 4 Geonet location editor");
+    }
+
+    [AvaloniaFact]
+    public void CaptureUnityTowerDetailTabs_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new UnityTower5Editor { DataContext = new UnityTower5EditorViewModel(new SAV5B2W2()) },
+            "unity-tower-locations.png", 620, 620, "Gen 5 Unity Tower locations");
+        var floors = new UnityTower5Editor { DataContext = new UnityTower5EditorViewModel(new SAV5B2W2()) };
+        floors.FindControl<TabControl>("DetailTabs")!.SelectedIndex = 1;
+        CaptureAuxiliaryView(floors,
+            "unity-tower-floors.png", 620, 620, "Gen 5 Unity Tower floors");
+    }
+
+    [AvaloniaFact]
+    public void CapturePssContactPreview_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new PssExportView
+            {
+                DataContext = new PssExportViewModel(
+                    global::PKHeX.Avalonia.Tests.PssExportTests.MakeMultiRecordSave(),
+                    Mock.Of<IClipboardService>(), new RecordingDialogService()),
+            },
+            "pss-contact-preview.png", 620, 520, "Gen 6 PSS contact preview");
+    }
+
+    [AvaloniaFact]
+    public void CaptureFunfestMissions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var view = new EntralinkEditor { DataContext = new EntralinkEditorViewModel(new SAV5B2W2()) };
+        view.FindControl<TabControl>("EntralinkTabs")!.SelectedIndex = 1;
+        CaptureAuxiliaryView(view, "funfest-missions.png", 640, 550, "B2W2 Funfest mission editor");
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())

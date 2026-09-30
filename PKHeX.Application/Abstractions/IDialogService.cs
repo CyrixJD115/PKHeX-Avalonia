@@ -1,5 +1,7 @@
 namespace PKHeX.Application.Abstractions;
 
+public enum UnsavedChangesChoice { Save, Discard, Cancel }
+
 /// <summary>
 /// Framework-free dialog/file services: native pickers (returning paths) and message boxes.
 /// Showing a ViewModel as a window is handled separately by <see cref="IWindowService"/>.
@@ -17,6 +19,9 @@ public interface IDialogService
     /// explicitly confirms. Used to gate destructive actions such as writing to a live console.
     /// </summary>
     Task<bool> ShowConfirmationAsync(string title, string message, string confirmText = "Yes", string cancelText = "Cancel");
+
+    Task<UnsavedChangesChoice> ShowUnsavedChangesAsync(string title, string message,
+        string saveText, string discardText, string cancelText);
 
     /// <summary>Opens the OS file manager (Explorer/Finder/xdg-open) and highlights the given file, if possible.</summary>
     void RevealInFileManager(string path);

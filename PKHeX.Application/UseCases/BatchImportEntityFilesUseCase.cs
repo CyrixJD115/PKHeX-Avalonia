@@ -65,6 +65,7 @@ public sealed class BatchImportEntityFilesUseCase
                 break;
 
             sav.SetBoxSlotAtIndex(pk, box, slot);
+            sav.State.Edited = true;
             placed++;
             slot++;
         }

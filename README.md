@@ -31,7 +31,7 @@ Get a self-contained package from the [official latest release](https://github.c
 | Platform | Portable package | Installer or app image |
 |---|---|---|
 | Windows x64 | `PKHeX-Avalonia-win-x64.zip` | `PKHeX-Avalonia-Setup-unsigned.exe` |
-| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` | `PKHeX-Avalonia-linux-x64.AppImage` |
+| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` | `PKHeX-Avalonia-<version>-x86_64.AppImage` |
 | macOS Apple Silicon | `PKHeX-Avalonia-osx-arm64.zip` | `PKHeX-Avalonia-osx-arm64-selfsigned.dmg` |
 | macOS Intel | `PKHeX-Avalonia-osx-x64.zip` | `PKHeX-Avalonia-osx-x64-selfsigned.dmg` |
 
@@ -39,7 +39,7 @@ These filenames match v1.49.12. Signing suffixes may change; always check the re
 
 - **Windows:** extract the complete ZIP before launching, or use the installer.
 - **macOS:** open the DMG and copy the app to Applications, or extract the ZIP. A self-signed build is not Apple-notarized and may require first-launch approval.
-- **Linux:** extract the ZIP, or make the AppImage executable with `chmod +x PKHeX-Avalonia-linux-x64.AppImage` and launch it.
+- **Linux:** extract the ZIP, or make the downloaded AppImage executable with `chmod +x PKHeX-Avalonia-*-x86_64.AppImage` and launch it. Its companion `.AppImage.zsync` release file enables updates through AppImageUpdate.
 
 See the [packaging guide](docs/packaging.md) for signing details and platform troubleshooting. The Homebrew and winget files under `packaging/` are distribution templates; they do not establish that a public package-manager listing is available.
 

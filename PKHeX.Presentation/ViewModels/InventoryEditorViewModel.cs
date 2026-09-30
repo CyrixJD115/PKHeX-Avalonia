@@ -92,14 +92,27 @@ public partial class InventoryEditorViewModel : ViewModelBase
     [RelayCommand]
     private void Save()
     {
-        foreach (var pouch in Pouches)
+        var changed = _sav is SAV9ZA
+            ? Pouches.Any(p => p.Items.Any(i => i.HasChanges))
+            : Pouches.Any(p => p.HasChanges);
+        if (!changed)
+            return;
+        if (_sav is SAV9ZA za)
         {
-            pouch.ApplyChanges();
+            // ZA is an item-indexed table. Generic bag writes normalize untouched slots
+            // and discard flag edits on empty items. Write changed records only.
+            foreach (var pouch in Pouches)
+                pouch.WriteZaRecords(za);
         }
-        // Flush the in-memory InventoryPouch items back to the save file bytes.
-        // Without this, changes only exist in the PlayerBag's in-memory arrays
-        // and are lost when the save is reloaded.
-        _bag?.CopyTo(_sav);
+        else
+        {
+            foreach (var pouch in Pouches)
+                pouch.ApplyChanges();
+            _bag?.CopyTo(_sav);
+        }
+        _sav.State.Edited = true;
+        foreach (var pouch in Pouches)
+            pouch.LoadFromPouch();
     }
 
     [RelayCommand]
@@ -169,6 +182,11 @@ public partial class InventoryPouchViewModel : ViewModelBase
 
     public string PouchName { get; }
     public int MaxCount { get; }
+    public bool SupportsFavorite => _pouch.Items.Any(i => i is IItemFavorite);
+    public bool SupportsNew => _pouch.Items.Any(i => i is IItemNewFlag);
+    public bool SupportsShopNew => _pouch.Items.Any(i => i is IItemNewShopFlag);
+    public bool SupportsHeld => _pouch.Items.Any(i => i is IItemHeldFlag);
+    public bool HasChanges => !Items.Select(i => i.CreateRecord()).SequenceEqual(_pouch.Items);
     [ObservableProperty] private IReadOnlyList<ComboItem> _itemList;
 
     public void RefreshLanguage()
@@ -205,9 +223,36 @@ public partial class InventoryPouchViewModel : ViewModelBase
     {
         for (int i = 0; i < Items.Count && i < _pouch.Items.Length; i++)
         {
-            _pouch.Items[i].Index = Items[i].ItemId;
-            _pouch.Items[i].Count = Items[i].Count;
+            _pouch.Items[i] = Items[i].CreateRecord();
         }
+    }
+
+    public void WriteZaRecords(SAV9ZA save)
+    {
+        var changed = Items.Where(row => row.HasChanges).ToArray();
+        foreach (var row in changed)
+        {
+            var originalIndex = row.OriginalItemId;
+            if (row.ItemId != originalIndex && originalIndex > 0)
+            {
+                var removed = save.Items.GetItem((ushort)originalIndex);
+                removed.Count = 0;
+                removed.IsFavorite = removed.IsNew = removed.IsNewShop = removed.IsHeld = false;
+                removed.Write(InventoryPouch9a.GetItemSpan(save.Items.Data, (ushort)originalIndex));
+            }
+        }
+        foreach (var row in changed)
+        {
+            if (row.CreateRecord() is not InventoryItem9a record)
+                continue;
+            if (record.Index == 0)
+                continue;
+            if (record.Index != row.OriginalItemId || record.Count != row.OriginalCount)
+                record.Pouch = MyItem9a.GetPouchIndex(_pouch.Type);
+            record.Write(InventoryPouch9a.GetItemSpan(save.Items.Data, (ushort)record.Index));
+        }
+        // Reload the bag too, so Reset after Apply reflects committed flags.
+        _pouch.GetPouch(save.Items.Data);
     }
 
     public void SortByName(string[] names)
@@ -233,12 +278,20 @@ public partial class InventoryPouchViewModel : ViewModelBase
     public void GiveAllItems()
     {
         var validItems = _availableItemIds;
+        var existing = Items.Where(i => i.ItemId != 0).GroupBy(i => i.ItemId)
+            .ToDictionary(g => g.Key, g => g.First());
         int slot = 0;
         foreach (var itemId in validItems)
         {
             if (slot >= Items.Count) break;
-            Items[slot].ItemId = itemId;
-            Items[slot].Count = MaxCount;
+            if (!existing.TryGetValue(itemId, out var row))
+            {
+                var item = _pouch.GetEmpty(itemId);
+                row = new InventoryItemViewModel(item, _itemNames[itemId], ItemList, MaxCount,
+                    _spriteRenderer, _context, _version);
+            }
+            row.Count = MaxCount;
+            Items[slot] = row;
             slot++;
         }
     }
@@ -249,6 +302,7 @@ public partial class InventoryPouchViewModel : ViewModelBase
         {
             item.ItemId = 0;
             item.Count = 0;
+            item.ClearStatus();
         }
     }
 }
@@ -264,13 +318,41 @@ public partial class InventoryItemViewModel : ViewModelBase
     {
         _context = context;
         _version = version;
-        _item = item;
+        _item = item with { };
         _itemId = item.Index;
         _count = item.Count;
         _itemName = name;
         ItemList = itemList;
         MaxCount = maxCount;
         _spriteRenderer = spriteRenderer;
+        _isFavorite = (item as IItemFavorite)?.IsFavorite ?? false;
+        _isNew = (item as IItemNewFlag)?.IsNew ?? false;
+        _isNewShop = (item as IItemNewShopFlag)?.IsNewShop ?? false;
+        _isHeld = (item as IItemHeldFlag)?.IsHeld ?? false;
+    }
+
+    public int OriginalItemId => _item.Index;
+    public int OriginalCount => _item.Count;
+    public bool HasChanges => CreateRecord() != _item;
+    public bool SupportsFavorite => _item is IItemFavorite;
+    public bool SupportsNew => _item is IItemNewFlag;
+    public bool SupportsShopNew => _item is IItemNewShopFlag;
+    public bool SupportsHeld => _item is IItemHeldFlag;
+    [ObservableProperty] private bool _isFavorite;
+    [ObservableProperty] private bool _isNew;
+    [ObservableProperty] private bool _isNewShop;
+    [ObservableProperty] private bool _isHeld;
+
+    public void ClearStatus() => IsFavorite = IsNew = IsNewShop = IsHeld = false;
+
+    public InventoryItem CreateRecord()
+    {
+        var record = _item with { Index = ItemId, Count = Count };
+        if (record is IItemFavorite favorite) favorite.IsFavorite = IsFavorite;
+        if (record is IItemNewFlag newFlag) newFlag.IsNew = IsNew;
+        if (record is IItemNewShopFlag shop) shop.IsNewShop = IsNewShop;
+        if (record is IItemHeldFlag held) held.IsHeld = IsHeld;
+        return record;
     }
 
     [ObservableProperty] private IReadOnlyList<ComboItem> _itemList;
@@ -297,6 +379,8 @@ public partial class InventoryItemViewModel : ViewModelBase
 
     partial void OnItemIdChanged(int value)
     {
+        // Status describes the item identity; replacement/clearing starts unmarked.
+        ClearStatus();
         var item = ItemList.FirstOrDefault(i => i.Value == value);
         ItemName = item?.Text ?? $"Item #{value}";
         OnPropertyChanged(nameof(Sprite));

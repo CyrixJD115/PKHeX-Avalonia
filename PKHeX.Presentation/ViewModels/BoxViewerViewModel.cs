@@ -345,6 +345,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
             return;
 
         _sav.SetBoxSlotAtIndex(pk, CurrentBox, slot);
+        _sav.State.Edited = true;
         RefreshCurrentBox();
     }
 
@@ -354,6 +355,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
             return;
 
         _sav.SetBoxSlotAtIndex(_sav.BlankPKM, CurrentBox, slot);
+        _sav.State.Edited = true;
         RefreshCurrentBox();
     }
 

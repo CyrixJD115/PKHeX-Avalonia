@@ -62,6 +62,8 @@ public sealed class ImportShowdownTeamUseCase
 
         for (int i = 0; i < pokemon.Count; i++)
             sav.SetBoxSlotAtIndex(pokemon[i], box, emptySlots[i]);
+        if (pokemon.Count > 0)
+            sav.State.Edited = true;
 
         return new ImportShowdownTeamResult(pokemon.Count, errors, null);
     }

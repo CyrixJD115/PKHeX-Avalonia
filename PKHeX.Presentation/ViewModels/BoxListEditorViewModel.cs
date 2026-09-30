@@ -57,6 +57,7 @@ public partial class BoxListEditorViewModel : ViewModelBase
         {
             _sav.SetBoxSlotAtIndex(_sav.BlankPKM, SelectedBox.Index, slot);
         }
+        _sav.State.Edited = true;
         LoadBoxes();
     }
 }

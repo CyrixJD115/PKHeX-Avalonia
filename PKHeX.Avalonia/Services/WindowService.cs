@@ -51,6 +51,15 @@ public sealed class WindowService : IWindowService
             StabilizeInitialBounds(dialog);
         }
 
+        if (viewModel is CosmeticInventory4EditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = 620;
+            dialog.Height = Math.Min(620, dialog.MaxHeight);
+            dialog.MinWidth = 480;
+            dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
+        }
+
         if (viewModel is RecordsEditorViewModel)
         {
             var key = typeof(RecordsEditorViewModel).FullName!;

@@ -23,6 +23,7 @@ public partial class SaveHandlerTroubleshooterViewModel : ViewModelBase, IClosea
 {
     private readonly IDialogService _dialogService;
     private readonly ISaveFileGateway _saveFileService;
+    public Func<Task<bool>>? CanReplaceSaveAsync { get; set; }
 
     public Action? CloseRequested { get; set; }
 
@@ -157,6 +158,8 @@ public partial class SaveHandlerTroubleshooterViewModel : ViewModelBase, IClosea
         Status = $"Success — loaded as {sav.GetType().Name} ({sav.Version}). Opening it in the main window…";
 
         // Integrate: hand the constructed save off to the main open flow.
+        if (CanReplaceSaveAsync is not null && !await CanReplaceSaveAsync())
+            return;
         _saveFileService.OpenLoadedSave(sav, path);
 
         await Task.Yield();
