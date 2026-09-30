@@ -1,4 +1,13 @@
 {
+  "InventoryStatus_Favorite": "お気に入り",
+  "InventoryStatus_New": "新規",
+  "InventoryStatus_ShopNew": "店で新規",
+  "InventoryStatus_Held": "所持中",
+  "InventoryStatus_FavoriteHelp": "バッグの並べ替え用のお気に入り。",
+  "InventoryStatus_NewHelp": "バッグでまだ確認していません。",
+  "InventoryStatus_ShopNewHelp": "店で新しく購入可能になった道具。",
+  "InventoryStatus_HeldHelp": "ポケモンが現在持っている道具。",
+  "InventoryStatus_Policy": "道具の交換や削除で状態マークを解除します。並べ替えでは道具と一緒に保持し、すべて追加ではIDが変わらない道具のマークを保持します。適用で保存し、リセットで未適用の変更を破棄します。",
   "PssExport_Title": "PSSの連絡先",
   "PssExport_Description": "コピーまたは保存する前に第6世代のPSS連絡先を確認できます。",
   "PssExport_Preview": "PSS連絡先のプレビュー",
