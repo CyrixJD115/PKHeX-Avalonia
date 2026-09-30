@@ -42,7 +42,7 @@ jobs:
         run: dotnet build PKHeX.sln -c Release --no-restore
 
       - name: Test
-        run: dotnet test PKHeX.sln -c Release --no-build --logger "trx;LogFileName=results.trx" --logger "console;verbosity=normal" --blame-hang-timeout 5m --blame-hang-dump-type none
+        run: dotnet test PKHeX.sln -c Release --no-build --logger "trx;LogFileName=results.trx"
 
       - name: Validate Linux catalog metadata
         if: runner.os == 'Linux'
@@ -64,7 +64,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}
-          path: |
-            **/TestResults/*.trx
-            **/TestResults/*_Sequence.xml
+          path: '**/TestResults/*.trx'
           retention-days: 14
