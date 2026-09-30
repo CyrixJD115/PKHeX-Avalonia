@@ -1,4 +1,13 @@
 {
+  "InventoryStatus_Favorite": "Preferito",
+  "InventoryStatus_New": "Nuovo",
+  "InventoryStatus_ShopNew": "Negozio nuovo",
+  "InventoryStatus_Held": "Tenuto",
+  "InventoryStatus_FavoriteHelp": "Segnato come preferito per ordinare la borsa.",
+  "InventoryStatus_NewHelp": "Non ancora visualizzato nella borsa.",
+  "InventoryStatus_ShopNewHelp": "Appena disponibile nei negozi.",
+  "InventoryStatus_HeldHelp": "Attualmente tenuto da un Pokémon.",
+  "InventoryStatus_Policy": "Sostituire o svuotare cancella i contrassegni. Ordinare li mantiene con lo strumento; Dai tutti li conserva se l’ID non cambia. Applica salva; Ripristina annulla le modifiche in sospeso.",
   "PssExport_Title": "Contatti PSS",
   "PssExport_Description": "Controlla i contatti PSS della sesta generazione prima di copiarli o salvarli.",
   "PssExport_Preview": "Anteprima contatti PSS",
