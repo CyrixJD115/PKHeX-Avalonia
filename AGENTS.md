@@ -74,6 +74,8 @@ Patterns to know:
 ### Branch + PR flow
 - Work in feature branches, commit there, push, and open a PR. Never `git push origin main`.
 - A clean build is expected to produce **0 warnings**.
+- Markdown-only changes use quick CI checks under the same three platform check names; any
+  non-Markdown change retains the full build, tests, and Linux catalog validation.
 
 ### Auto-merge policy
 - Claude-created PRs are automatically merged once CI/checks pass — no manual check-in needed.
@@ -83,8 +85,9 @@ Patterns to know:
 ### Shipped update communication
 - After a PR is merged and the release version and live merge state are verified, post a concise
   user-facing update in the project Discord through the connected Chrome extension. Include the
-  shipped version, merged PR link, and a short summary of visible changes; do not post private save
-  data or announce work before merge.
+  shipped version and a short summary of visible changes as text only. Do not include links,
+  PR/issue numbers, download instructions, or link embeds; updates already reach users through
+  the app. Do not post private save data or announce work before merge.
 
 ### Worktree shipping
 - Git commit/push/PR must run from inside the agent's worktree (not the repo root).
@@ -220,6 +223,7 @@ WinForms UI changes, version bump, PR, and auto-merge once CI is green — is en
 - Session continuity across tools: before ending substantial work in ANY tool (Claude Code, Codex, Copilot), record durable context — decisions made, gotchas discovered, in-progress state worth resuming — in the "Working notes" section below, or fold it into the relevant section above. This is the shared memory between agents.
 
 ## Working notes
+- 2026-09-30 — Discord release announcements are text only at the user's request: version plus a short summary of visible changes, without links, PR/issue numbers, download instructions, or embeds. The app already delivers update information. This preference applies to shipped updates; support replies may retain relevant issue links.
 - 2026-09-30 — PR #428 completes the temporary English Entralink/Fashion labels in Brazilian Portuguese. `Fashion9Flow_Category_Satchels` is ZA-only (`KFashionSatchels`), so use neutral `Bolsas`, not a school-backpack label. Portuguese joins the real 640x550 Forest grid/preview reachability and selector round-trip test; opt-in captures cover the Forest and both SV/ZA fashion catalogs. Preserve catalog key order and all placeholders when updating translation-only PRs.
 - 2026-09-30 — #418 final refresh after #409/#427: resolved only the working-note insertion conflict and added all 11 new Chatter keys to pt-BR using the now-approved English fallback. Existing Portuguese values are preserved. Release build is 0 warnings/errors; 57 Chatter/layout/accessibility/localization/language-lifecycle tests pass, including all ten UI locales. The earlier full CI head passed on all three platforms; new current-head CI is required after this refresh.
 - 2026-09-30 — Shipping status: #416 is merged and published as v1.62.1, with its Discord update verified at message 1554823203472539679 in downloads-and-updates. #417 is merged as 8d864ef2b after all current-head CI platforms passed; #294 is closed and v1.63.0 is published with all nine assets. #418 is integrated with both releases: note/JSON insertion conflicts preserve all main values and all 11 Chatter keys in each language. Final combined Release build is 0 warnings/errors; 55 focused tests and six architecture tests pass. Its fresh CI, merge, final release announcement, and branch cleanup remain. No temporary CI diagnostics remain in the feature diff.

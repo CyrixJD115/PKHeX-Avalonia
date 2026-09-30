@@ -1,6 +1,6 @@
 ---
 name: discord-feedback-triage
-description: Use when the agent must review PKHeX-Avalonia Discord feedback, prepare ASD-STE100 replies, or create evidence-backed GitHub issues through the authenticated Chrome extension, including continuous scans for new messages.
+description: Use when the agent must review PKHeX-Avalonia Discord feedback, prepare ASD-STE100 replies or text-only release announcements, or create evidence-backed GitHub issues through the authenticated Chrome extension, including continuous scans for new messages.
 ---
 
 # PKHeX-Avalonia Discord feedback triage
@@ -8,6 +8,26 @@ description: Use when the agent must review PKHeX-Avalonia Discord feedback, pre
 Use this skill for every PKHeX-Avalonia Discord feedback run. The goal is to
 collect new feedback, separate facts from assumptions, prepare concise replies,
 and act only within the approval boundary.
+
+## Shipped release announcements
+
+After verifying the merged change and published release, post a short text-only
+update in the project's `#downloads-and-updates` channel when posting is authorized.
+Include the shipped version and a brief summary of changes users can see.
+Do not include URLs, Markdown links, PR/issue numbers, download instructions,
+or link embeds. Users already receive updates through the app.
+
+Example:
+
+```text
+PKHeX-Avalonia v1.67.0 is available.
+ZA now has a categorized event editor with search and staged changes.
+Apply saves your changes. Cancel discards them.
+```
+
+Keep merge/release links in the verification record, outside the Discord post.
+This text-only rule applies to release announcements. Support and bug-report
+replies may still include a relevant issue link when it helps the recipient.
 
 ## Non-negotiable boundary: Discord through Chrome only
 
@@ -173,7 +193,7 @@ the user asks for another language. Use ASD-STE100-style wording:
 - use concrete technical terms and clear subjects;
 - avoid idioms, vague promises, unnecessary context, and speculation;
 - do not use the em dash character (`—`), including in pasted links or edits;
-- preserve issue links and exact product names;
+- preserve exact product names and relevant issue links in support replies;
 - do not add emojis or extra claims to an approved draft.
 
 Before posting, scan the complete reply for `—` and remove it. A normal
