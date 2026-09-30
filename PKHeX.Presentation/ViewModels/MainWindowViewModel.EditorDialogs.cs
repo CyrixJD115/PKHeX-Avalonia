@@ -317,7 +317,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new Raid9EditorViewModel(CurrentSave),
+            new Raid9EditorViewModel(CurrentSave, dialogs: _dialogService),
             T("Dialog_TeraRaidEditor"));
     }
 
@@ -326,7 +326,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new RaidSevenStar9EditorViewModel(CurrentSave),
+            new Raid9EditorViewModel(CurrentSave, dialogs: _dialogService, initialTab: 1),
             T("Dialog_SevenStarTeraRaidEditor"));
     }
 

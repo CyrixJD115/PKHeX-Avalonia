@@ -87,6 +87,15 @@ public sealed class WindowService : IWindowService
             dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
         }
 
+        if (viewModel is Raid9EditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = Math.Min(780, dialog.MaxWidth);
+            dialog.Height = Math.Min(650, dialog.MaxHeight);
+            dialog.MinWidth = Math.Min(480, dialog.MaxWidth);
+            dialog.MinHeight = Math.Min(320, dialog.MaxHeight);
+        }
+
         if (viewModel is RaidEditorViewModel)
         {
             dialog.SizeToContent = SizeToContent.Manual;

@@ -32,6 +32,36 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureSvRaidRegionsAndRecords_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var tab in new[] { 0, 1 })
+                {
+                    var save = global::PKHeX.Avalonia.Tests.SvRaidDataSessionTests.CreateSave();
+                    foreach (var region in new[] { save.RaidPaldea, save.RaidKitakami, save.RaidBlueberry })
+                    {
+                        region.GetRaid(0).AreaID = 1; region.GetRaid(0).LotteryGroup = 2;
+                        region.GetRaid(0).SpawnPointID = 3; region.GetRaid(0).Seed = 0xABCDEF01;
+                        region.GetRaid(0).Content = TeraRaidContentType.Might7; region.GetRaid(0).IsEnabled = true;
+                    }
+                    save.RaidSevenStar.GetRaid(0).Identifier = 20260930;
+                    save.RaidSevenStar.GetRaid(0).Captured = true;
+                    using var vm = new Raid9EditorViewModel(save, dialogs: new RecordingDialogService(), initialTab: tab);
+                    CaptureAuxiliaryView(new Raid9Editor { DataContext = vm }, $"sv-raids-{language}-tab{tab}.png",
+                        language == "en" ? 780 : 480, language == "en" ? 650 : 360, "SV shared raid and seven-star session");
+                }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureBoxReportColumns_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;
