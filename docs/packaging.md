@@ -17,11 +17,11 @@ workflow signs when it can and clearly labels artifacts as unsigned when it can'
 | Platform | Artifact(s) | Notes |
 |---|---|---|
 | Windows x64 | `PKHeX-Avalonia-win-x64.zip` (unchanged) + `PKHeX-Avalonia-Setup.exe` (or `PKHeX-Avalonia-Setup-unsigned.exe`) | Installer built with Inno Setup via chocolatey |
-| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` (unchanged) + `PKHeX-Avalonia-linux-x64.AppImage` (unchanged) | See "Why AppImage, not Flatpak" below |
+| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` + `PKHeX-Avalonia-<version>-x86_64.AppImage` + `.AppImage.zsync` | AppImageUpdate metadata and AppStream catalog screenshots included |
 | macOS arm64 / x64 | `PKHeX-Avalonia-osx-{arm64,x64}.zip` (unchanged, ad-hoc signed as before) + `PKHeX-Avalonia-osx-{arm64,x64}.dmg` or `-unsigned.dmg` | `.dmg` contains the `.app` bundle plus an `Applications` symlink |
 
-The existing `.zip` and `.AppImage` artifacts are unchanged — this is
-additive, per the acceptance criteria.
+The ZIP naming stays stable. AppImages use the catalog's application/version/architecture
+convention; older releases retain their original `PKHeX-Avalonia-linux-x64.AppImage` name.
 
 ## macOS: signing & notarization
 
@@ -162,9 +162,7 @@ steps above; only the secret contents change.
 
 ## Linux: why AppImage, not Flatpak/Flathub
 
-The existing `.AppImage` build (via `appimagetool`) is kept as-is, per the
-issue's scope ("AppImage stays as-is"). Flathub distribution is **not**
-implemented here:
+The AppImage build uses `appimagetool`. Flathub distribution is a separate effort:
 
 - Flathub requires a manifest-driven build from source inside a Flatpak
   sandbox (no bundling a self-contained `dotnet publish` output directly),
@@ -175,6 +173,34 @@ implemented here:
 - AppImage requires no external approval and works today, so it remains the
   primary Linux distribution channel until a Flatpak manifest is built as
   follow-up work.
+
+### AppImage catalog metadata and updates
+
+`.github/scripts/prepare-appdir.sh` stages the published application, desktop entry,
+icon and AppStream metadata from `packaging/linux/`. Both metadata formats are
+validated before packaging. The desktop and AppStream display name is **PKHeX-Avalonia**.
+
+The embedded update string is
+`gh-releases-zsync|realgarit|PKHeX-Avalonia|latest|PKHeX-Avalonia-*x86_64.AppImage.zsync`.
+`appimagetool` creates the delta-update file, and CI publishes it beside the AppImage.
+The release fails if that file or the embedded update information is missing.
+This enables external AppImageUpdate tools; the application does not automatically
+download updates because this metadata exists.
+
+The AppStream default screenshot uses the README dark-theme capture with the
+checked-in legal Pokémon Legends: Z-A save; the light capture is also supplied.
+See [screenshot provenance](screenshots/README.md). Image URLs are pinned to the
+release's source commit, so future README changes cannot alter an older package's
+screenshots. No save file is added to the distributed application.
+The catalog [supports supplied AppStream screenshots](https://github.com/AppImage/appimage.github.io#checklist-for-submitting-your-own-appimage);
+its entry needs to be re-tested against the new release to refresh cached metadata.
+
+The .NET runtime is bundled, but Linux system libraries are still required. The
+catalog's initial report identified a glibc 2.27 reference; this is not a guarantee
+that every distribution with that glibc version supports the bundled .NET runtime.
+Use a [supported .NET 10 Linux distribution](https://learn.microsoft.com/dotnet/core/install/linux)
+with the runtime's native dependencies. On systems without FUSE, launch with
+`--appimage-extract-and-run`.
 
 ## Package managers (Homebrew cask, winget)
 

@@ -98,6 +98,32 @@ public class UpdateAssetSelectorTests
     }
 
     [Fact]
+    public void Linux_appimage_accepts_catalog_name_and_ignores_delta_metadata()
+    {
+        var assets = new[]
+        {
+            Asset("PKHeX-Avalonia-1.57.1-x86_64.AppImage.zsync"),
+            Asset("PKHeX-Avalonia-1.57.1-aarch64.AppImage"),
+            Asset("PKHeX-Avalonia-linux-x64.zip"),
+            Asset("PKHeX-Avalonia-1.57.1-x86_64.AppImage"),
+        };
+
+        var selected = UpdateAssetSelector.SelectAsset(assets, "linux", "x64", InstallKind.LinuxAppImage);
+
+        Assert.Equal("PKHeX-Avalonia-1.57.1-x86_64.AppImage", selected?.Name);
+        Assert.Equal("PKHeX-Avalonia-linux-x64.zip",
+            UpdateAssetSelector.SelectAsset(assets, "linux", "x64", InstallKind.LinuxPortable)?.Name);
+    }
+
+    [Fact]
+    public void Linux_appimage_refuses_delta_metadata_without_an_appimage()
+    {
+        var assets = new[] { Asset("PKHeX-Avalonia-1.57.1-x86_64.AppImage.zsync") };
+
+        Assert.Null(UpdateAssetSelector.SelectAsset(assets, "linux", "x64", InstallKind.LinuxAppImage));
+    }
+
+    [Fact]
     public void Unknown_kind_returns_null()
     {
         var selected = UpdateAssetSelector.SelectAsset(RealAssets, "macos", "arm64", InstallKind.Unknown);

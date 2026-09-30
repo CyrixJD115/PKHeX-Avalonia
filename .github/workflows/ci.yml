@@ -44,6 +44,21 @@ jobs:
       - name: Test
         run: dotnet test PKHeX.sln -c Release --no-build --logger "trx;LogFileName=results.trx"
 
+      - name: Validate Linux catalog metadata
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y appstream desktop-file-utils
+          # Exercise production staging with a tiny executable; this validates
+          # desktop/AppStream metadata without rebuilding the published payload.
+          mkdir -p tmp/catalog-validation/publish
+          printf '#!/bin/sh\nexit 0\n' > tmp/catalog-validation/publish/PKHeX.Avalonia
+          chmod +x tmp/catalog-validation/publish/PKHeX.Avalonia
+          VERSION=$(sed -n 's/.*<UIVersion>\(.*\)<\/UIVersion>.*/\1/p' Directory.Build.props)
+          bash .github/scripts/prepare-appdir.sh tmp/catalog-validation/publish \
+            tmp/catalog-validation/AppDir "$VERSION" "$(git rev-parse HEAD)"
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
