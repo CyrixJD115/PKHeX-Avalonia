@@ -10,7 +10,7 @@
         <Panel>
             <TextBlock IsVisible="{Binding !IsSupported}" Text="{loc:Loc FashionEditorView_NotSupported}" TextWrapping="Wrap" />
             <DockPanel IsVisible="{Binding IsSupported}">
-                <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
+                <StackPanel Classes="save-editor-header" DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
                     <TextBlock Text="{loc:Loc FashionEditorView_Title}" Classes="view-title" />
                     <TextBlock Text="{Binding GameInfo}" Classes="muted" />
                     <TextBlock Text="{loc:Loc FashionReview_Staging}" TextWrapping="Wrap" />
@@ -44,6 +44,7 @@
                         <Button Content="{loc:Loc Common_Save}" Command="{Binding SaveCommand}" Classes="compact-primary" IsDefault="True" />
                     </WrapPanel>
                 </StackPanel>
+                <Border Classes="editor-section-padded" Padding="0" ClipToBounds="True">
                 <DataGrid x:Name="FashionGrid" ItemsSource="{Binding VisibleItems}" AutoGenerateColumns="False" CanUserResizeColumns="True"
                           CanUserSortColumns="True" GridLinesVisibility="Horizontal" ClipToBounds="True">
                     <DataGrid.Columns>
@@ -74,6 +75,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+                </Border>
             </DockPanel>
         </Panel>
     </Border>
