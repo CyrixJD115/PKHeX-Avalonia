@@ -623,7 +623,6 @@ public sealed class ResponsiveShellTests
             "RTCEditor.axaml",
             "Raid9Editor.axaml",
             "RaidEditor.axaml",
-            "RaidSevenStar9Editor.axaml",
             "RecordsEditorView.axaml",
             "RibbonEditor.axaml",
             "Roamer3Editor.axaml",

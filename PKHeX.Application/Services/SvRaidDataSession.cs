@@ -76,7 +76,9 @@ public sealed class SvRaidDataSession
                 if (!_original[CapturedKey].AsSpan(offset, 4).SequenceEqual(capture.Data.Slice(offset, 4)))
                 {
                     CopyField(CapturedKey, offset, 4, ref changed);
-                    if (separateDefeat) CopyField(DefeatedKey, offset + 4, 4, ref changed);
+                    // Identifier is one logical field shared by both records. An explicit edit
+                    // synchronizes the pair, even if the new ID matched the old defeat ID.
+                    if (separateDefeat) WriteField(DefeatedKey, offset + 4, 4, ref changed);
                 }
                 CopyBoolean(CapturedKey, offset + 4, 1, true, ref changed);
                 if (separateDefeat) CopyBoolean(DefeatedKey, offset + 8, 1, true, ref changed);
@@ -102,6 +104,11 @@ public sealed class SvRaidDataSession
         {
             var value = staged[key].Data.Slice(offset, length);
             if (value.SequenceEqual(_original[key].AsSpan(offset, length))) return;
+            WriteField(key, offset, length, ref anyChanged);
+        }
+        void WriteField(uint key, int offset, int length, ref bool anyChanged)
+        {
+            var value = staged[key].Data.Slice(offset, length);
             var target = source[key].Data.Slice(offset, length);
             if (value.SequenceEqual(target)) return;
             value.CopyTo(target);

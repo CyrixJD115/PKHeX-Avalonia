@@ -6,7 +6,7 @@ namespace PKHeX.Avalonia.Tests;
 
 public class SvRaidDataSessionTests
 {
-    private static SAV9SV CreateSave(int revision = 2, int? paldeaLength = null)
+    public static SAV9SV CreateSave(int revision = 2, int? paldeaLength = null)
     {
         var allocated = new SAV9SV { Version = GameVersion.SL };
         var remove = revision switch
@@ -141,5 +141,19 @@ public class SvRaidDataSessionTests
         session.WorkingSave.RaidSevenStar.GetRaid(0).Captured = true;
         Assert.False(session.TryCommit(out var changed)); Assert.False(changed);
         AssertUnchanged(save, before); Assert.False(save.State.Edited);
+    }
+
+    [Fact]
+    public void ExplicitIdentifierEdit_SynchronizesBothRecords_WhenOldIdentifiersDiffer()
+    {
+        var save = CreateSave();
+        save.RaidSevenStar.Captured.GetRaid(0).Identifier = 1;
+        save.RaidSevenStar.Defeated.GetRaid(0)!.Identifier = 2;
+        var session = new SvRaidDataSession(save);
+        session.WorkingSave.RaidSevenStar.GetRaid(0).Identifier = 2;
+        save.RaidSevenStar.Defeated.GetRaid(0)!.Identifier = 4;
+        Assert.True(session.TryCommit(out var changed)); Assert.True(changed);
+        Assert.Equal(2u, save.RaidSevenStar.Captured.GetRaid(0).Identifier);
+        Assert.Equal(2u, save.RaidSevenStar.Defeated.GetRaid(0)!.Identifier);
     }
 }
