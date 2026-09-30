@@ -52,6 +52,25 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureRaid8Regions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                var vm = new RaidEditorViewModel(global::PKHeX.Avalonia.Tests.Raid8TransactionTests.CreateSave());
+                vm.SelectedRegion = vm.Regions[2];
+                vm.SelectedDen!.WattsHarvested = true;
+                CaptureAuxiliaryView(new RaidEditor { DataContext = vm }, $"raids8-{language}.png", language == "en" ? 700 : 480, language == "en" ? 650 : 360, "SWSH staged raid regions");
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureGeonetLocationEditor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())
