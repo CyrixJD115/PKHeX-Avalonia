@@ -69,6 +69,15 @@ public sealed class WindowService : IWindowService
             dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
         }
 
+        if (viewModel is FashionEditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = Math.Min(700, dialog.MaxWidth);
+            dialog.Height = Math.Min(620, dialog.MaxHeight);
+            dialog.MinWidth = Math.Min(480, dialog.MaxWidth);
+            dialog.MinHeight = Math.Min(460, dialog.MaxHeight);
+        }
+
         if (viewModel is Fashion9EditorViewModel)
         {
             dialog.SizeToContent = SizeToContent.Manual;
