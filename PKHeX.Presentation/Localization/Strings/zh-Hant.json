@@ -2710,5 +2710,12 @@
   "RaidSession_Type3": "許願星塊（普通）",
   "RaidSession_Type4": "許願星塊（稀有）",
   "RaidSession_Type5": "活動",
-  "RaidSession_Type6": "極巨結晶"
+  "RaidSession_Type6": "極巨結晶",
+  "BoxReport_ResultCount": "{2} 個盒子中顯示 {0} / {1} 隻寶可夢",
+  "BoxReport_ExportTitle": "匯出盒子報告",
+  "BoxReport_OpenSelected": "開啟所選項目",
+  "BoxReport_Columns": "欄",
+  "BoxReport_ResetColumns": "重設欄位",
+  "BoxReport_Search": "搜尋所有報告欄位…",
+  "BoxReport_Instructions": "按 Enter 或連按兩下開啟所選寶可夢。拖曳標題調整欄位順序，拖曳邊緣調整寬度。橫向捲動可查看其他欄位。"
 }

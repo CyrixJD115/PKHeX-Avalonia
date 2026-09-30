@@ -2710,5 +2710,12 @@
   "RaidSession_Type3": "Wunschbrocken (normal)",
   "RaidSession_Type4": "Wunschbrocken (selten)",
   "RaidSession_Type5": "Event",
-  "RaidSession_Type6": "Dynamax-Kristall"
+  "RaidSession_Type6": "Dynamax-Kristall",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} in {2} Boxen",
+  "BoxReport_ExportTitle": "Box-Datenbericht exportieren",
+  "BoxReport_OpenSelected": "Auswahl öffnen",
+  "BoxReport_Columns": "Spalten",
+  "BoxReport_ResetColumns": "Spalten zurücksetzen",
+  "BoxReport_Search": "Alle Berichtsfelder durchsuchen…",
+  "BoxReport_Instructions": "Enter oder Doppelklick öffnet das ausgewählte Pokémon. Spaltenköpfe zum Sortieren ziehen; Ränder zum Ändern der Breite ziehen. Weitere Felder sind horizontal erreichbar."
 }

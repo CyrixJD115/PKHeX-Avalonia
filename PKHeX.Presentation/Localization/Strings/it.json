@@ -2710,5 +2710,12 @@
   "RaidSession_Type3": "Desioblocco (comune)",
   "RaidSession_Type4": "Desioblocco (raro)",
   "RaidSession_Type5": "Evento",
-  "RaidSession_Type6": "Cristallo Dynamax"
+  "RaidSession_Type6": "Cristallo Dynamax",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} in {2} box",
+  "BoxReport_ExportTitle": "Esporta rapporto dei box",
+  "BoxReport_OpenSelected": "Apri selezione",
+  "BoxReport_Columns": "Colonne",
+  "BoxReport_ResetColumns": "Ripristina colonne",
+  "BoxReport_Search": "Cerca in tutti i campi…",
+  "BoxReport_Instructions": "Invio o doppio clic apre il Pokémon selezionato. Trascina le intestazioni per riordinare e i bordi per ridimensionare. Scorri orizzontalmente per gli altri campi."
 }

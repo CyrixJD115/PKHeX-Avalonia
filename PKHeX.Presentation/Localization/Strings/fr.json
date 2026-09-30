@@ -2710,5 +2710,12 @@
   "RaidSession_Type3": "Morceau Vœu (commun)",
   "RaidSession_Type4": "Morceau Vœu (rare)",
   "RaidSession_Type5": "Événement",
-  "RaidSession_Type6": "Cristal Dynamax"
+  "RaidSession_Type6": "Cristal Dynamax",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} dans {2} boîtes",
+  "BoxReport_ExportTitle": "Exporter le rapport des boîtes",
+  "BoxReport_OpenSelected": "Ouvrir la sélection",
+  "BoxReport_Columns": "Colonnes",
+  "BoxReport_ResetColumns": "Réinitialiser les colonnes",
+  "BoxReport_Search": "Rechercher dans tous les champs…",
+  "BoxReport_Instructions": "Entrée ou un double-clic ouvre le Pokémon sélectionné. Faites glisser les en-têtes pour réordonner les colonnes et leurs bords pour ajuster la largeur. Défilez horizontalement pour les autres champs."
 }

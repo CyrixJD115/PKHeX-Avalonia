@@ -2710,5 +2710,12 @@
   "RaidSession_Type3": "Trozo Deseo (común)",
   "RaidSession_Type4": "Trozo Deseo (raro)",
   "RaidSession_Type5": "Evento",
-  "RaidSession_Type6": "Cristal Dinamax"
+  "RaidSession_Type6": "Cristal Dinamax",
+  "BoxReport_ResultCount": "{0} Pokémon / {1} en {2} cajas",
+  "BoxReport_ExportTitle": "Exportar informe de cajas",
+  "BoxReport_OpenSelected": "Abrir selección",
+  "BoxReport_Columns": "Columnas",
+  "BoxReport_ResetColumns": "Restablecer columnas",
+  "BoxReport_Search": "Buscar en todos los campos…",
+  "BoxReport_Instructions": "Intro o doble clic abre el Pokémon seleccionado. Arrastra las cabeceras para reordenar y sus bordes para ajustar el ancho. Desplázate horizontalmente para ver más campos."
 }

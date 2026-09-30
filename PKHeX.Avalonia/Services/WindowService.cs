@@ -146,8 +146,23 @@ public sealed class WindowService : IWindowService
         else
         {
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            window.SizeToContent = SizeToContent.WidthAndHeight;
-            StabilizeInitialBounds(window);
+            if (viewModel is BoxReportViewModel)
+            {
+                window.Width = Math.Min(1100, window.MaxWidth);
+                window.Height = Math.Min(600, maxToolHeight);
+            }
+            else
+            {
+                window.SizeToContent = SizeToContent.WidthAndHeight;
+                StabilizeInitialBounds(window);
+            }
+        }
+
+        if (viewModel is BoxReportViewModel)
+        {
+            window.MinWidth = Math.Min(480, window.MaxWidth);
+            window.MinHeight = Math.Min(300, maxToolHeight);
+            window.Width = Math.Min(window.Width, window.MaxWidth);
         }
 
         if (viewModel is ICloseableDialog closeable)
