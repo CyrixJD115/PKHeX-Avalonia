@@ -49,6 +49,9 @@ public sealed class EntralinkMissionEditorTests
         vm.FestaMostParticipants = 24;
         vm.SelectedMission = mission;
         vm.UnlockSelectedMissionCommand.Execute(null);
+        var unrelatedFlag = !save.EventWork.GetEventFlag(0);
+        save.EventWork.SetEventFlag(0, unrelatedFlag);
+        save.EventWork.SetWork(0, 12345);
         vm.SaveCommand.Execute(null);
 
         var reloaded = new SAV5B2W2(save.Write().ToArray());
@@ -59,6 +62,8 @@ public sealed class EntralinkMissionEditorTests
         Assert.True(record.IsNew);
         Assert.Equal(24, reloaded.Festa.Participants);
         Assert.True(reloaded.Festa.IsFunfestMissionUnlocked(2));
+        Assert.Equal(unrelatedFlag, reloaded.EventWork.GetEventFlag(0));
+        Assert.Equal(12345, reloaded.EventWork.GetWork(0));
         Assert.True(save.State.Edited);
     }
 

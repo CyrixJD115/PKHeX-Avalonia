@@ -83,11 +83,13 @@ Dark, Light, High Contrast, and Follow System themes, switchable at runtime with
   dictionaries live in `PKHeX.Avalonia/Styles/Theme.axaml`. Follow System tracks the OS light/dark
   setting live. Your choice persists in app settings across restarts.
 
-## Localization (9 languages)
+## Localization (10 languages)
 
 The app shell — menus, dialogs, settings, status messages — is localized into English, Japanese,
 Korean, French, Italian, German, Spanish, Simplified Chinese, and Traditional Chinese (the same
-nine languages `PKHeX.Core` uses for game data).
+nine languages `PKHeX.Core` uses for game data), plus Brazilian Portuguese. `PKHeX.Core` has no
+Portuguese game data, so with Portuguese selected the shell is translated and species, moves, items
+and locations show in English.
 
 - **Change it:** Options → Language, or Settings → Appearance → Language. Switching applies
   immediately across the whole UI, no restart required.

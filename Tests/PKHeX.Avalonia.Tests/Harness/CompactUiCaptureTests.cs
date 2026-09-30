@@ -53,6 +53,7 @@ public sealed class CompactUiCaptureTests
     [AvaloniaTheory]
     [InlineData("de")]
     [InlineData("ja")]
+    [InlineData("pt-BR")]
     public async Task CompactNavigationRemainsInsideTheEditorWhenLocalized(string language)
     {
         using var app = new HeadlessAppFixture();

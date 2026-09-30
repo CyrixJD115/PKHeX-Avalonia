@@ -81,6 +81,39 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureEntreeForestPreview_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        var priorLanguage = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
+                var renderer = new global::PKHeX.Avalonia.Services.AvaloniaSpriteRenderer(new global::PKHeX.Application.Services.AppSettings());
+                renderer.Initialize(save);
+                var vm = new EntralinkEditorViewModel(save, renderer, new RecordingDialogService());
+                var selected = vm.SelectedEntreeSlot!;
+                selected.Species = 25;
+                selected.Move = 33;
+                selected.Form = 0;
+                selected.Gender = 0;
+                selected.Animation = 0;
+                var view = new EntralinkEditor { DataContext = vm };
+                view.FindControl<TabControl>("EntralinkTabs")!.SelectedIndex = 2;
+                CaptureAuxiliaryView(view, $"entree-forest-{language}.png", 640, 550,
+                    $"Gen 5 Entree Forest {language} preview");
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(priorLanguage);
+        }
+    }
+
+    [AvaloniaFact]
     public void CapturePokeRadar_Misc4Editor_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled())

@@ -17,11 +17,12 @@ names here.
 ```
 PKHeX.Presentation/Localization/Strings/
   en.json        <- source of truth (English). Edit keys here first.
-  ja.json  ko.json  fr.json  it.json  de.json  es.json  zh-Hans.json  zh-Hant.json
+  ja.json  ko.json  fr.json  it.json  de.json  es.json  zh-Hans.json  zh-Hant.json  pt-BR.json
 ```
 
-Each file is a flat JSON object of `"Key": "Translated value"`. The nine languages match the nine
-data languages PKHeX.Core supports. English is authoritative; any key missing from another language
+Each file is a flat JSON object of `"Key": "Translated value"`. Nine languages match the nine
+data languages PKHeX.Core supports; `pt-BR` (Brazilian Portuguese) is a UI-only language: the shell is
+translated and game data (species, moves, items) falls back to English, since Core has none for it. English is authoritative; any key missing from another language
 **falls back to the English string at runtime** (never blank, never the raw key).
 
 The initial non-English files are a machine-assisted first pass — **native review is very welcome.**
@@ -64,7 +65,7 @@ The initial non-English files are a machine-assisted first pass — **native rev
 
 `Tests/PKHeX.Avalonia.Tests/LocalizationAuditTests.cs` fails the build if a `.axaml` view or a
 ViewModel introduces a hardcoded user-facing string instead of going through the resource system, and
-`LocalizationServiceTests.cs` verifies all nine files are key-complete and that placeholders are
+`LocalizationServiceTests.cs` verifies all ten files are key-complete and that placeholders are
 preserved.
 
 The editor views and ViewModels are now migrated into the resource system, so
@@ -73,7 +74,7 @@ documented, justified exception (e.g. a glyph-only control or a technical litera
 ViewModels are enforced by default. If you ever need to defer a file or justify a single literal:
 
 1. Prefer migrating it: replace its literals with `{loc:Loc Key}` / `LocalizedStrings.Instance["Key"]`
-   and add the keys to all nine JSON files.
+   and add the keys to all ten JSON files.
 2. Only if migration is genuinely not applicable, add a `RelativePath` (whole file) or
    `RelativePath|snippet` (single literal) line to `localization-allowlist.txt` with a comment saying why.
 3. Run `dotnet test Tests/PKHeX.Avalonia.Tests` — it must stay green.

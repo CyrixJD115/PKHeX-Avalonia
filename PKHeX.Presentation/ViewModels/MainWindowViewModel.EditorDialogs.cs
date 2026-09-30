@@ -335,7 +335,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not (SAV9SV or SAV9ZA)) return;
         await _windowService.ShowDialogAsync(
-            new Fashion9EditorViewModel(CurrentSave!),
+            new Fashion9EditorViewModel(CurrentSave!, _dialogService),
             T("Dialog_FashionEditor"));
     }
 
@@ -362,7 +362,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV5 sav) return;
         await _windowService.ShowDialogAsync(
-            new EntralinkEditorViewModel(sav),
+            new EntralinkEditorViewModel(sav, _spriteRenderer, _dialogService),
             T("Dialog_EntralinkEditor"));
     }
 
