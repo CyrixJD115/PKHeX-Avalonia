@@ -650,6 +650,13 @@ public partial class MainWindowViewModel
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]
+    private async Task OpenCosmeticInventory4Async()
+    {
+        if (CurrentSave is not SAV4 save) return;
+        await _windowService.ShowDialogAsync(new CosmeticInventory4EditorViewModel(save), T("Cosmetic4_Title"));
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSave))]
     private async Task OpenMisc4Async()
     {
         if (CurrentSave is not SAV4 sav) return;
