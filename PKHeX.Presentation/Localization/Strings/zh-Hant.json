@@ -1,4 +1,13 @@
 {
+  "InventoryStatus_Favorite": "收藏",
+  "InventoryStatus_New": "新獲得",
+  "InventoryStatus_ShopNew": "商店上新",
+  "InventoryStatus_Held": "攜帶中",
+  "InventoryStatus_FavoriteHelp": "用於背包排序的收藏標記。",
+  "InventoryStatus_NewHelp": "尚未在背包中查看。",
+  "InventoryStatus_ShopNewHelp": "商店新上架的道具。",
+  "InventoryStatus_HeldHelp": "目前由寶可夢攜帶。",
+  "InventoryStatus_Policy": "替換或清空道具會清除狀態標記。排序時標記隨道具移動；全部給予時保留ID未變更的道具標記。套用儲存，重設捨棄待套用的變更。",
   "PssExport_Title": "PSS 聯絡人",
   "PssExport_Description": "複製或儲存前預覽第六世代儲存的 PSS 聯絡人。",
   "PssExport_Preview": "PSS 聯絡人預覽",
