@@ -600,7 +600,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new FashionEditorViewModel(CurrentSave),
+            new FashionEditorViewModel(CurrentSave, _dialogService, _undoRedo),
             T("Dialog_FashionEditor"));
     }
 
