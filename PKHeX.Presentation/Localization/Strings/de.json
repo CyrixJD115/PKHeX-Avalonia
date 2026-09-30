@@ -1,4 +1,13 @@
 {
+  "InventoryStatus_Favorite": "Favorit",
+  "InventoryStatus_New": "Neu",
+  "InventoryStatus_ShopNew": "Shop neu",
+  "InventoryStatus_Held": "Gehalten",
+  "InventoryStatus_FavoriteHelp": "Für die Taschensortierung als Favorit markiert.",
+  "InventoryStatus_NewHelp": "In der Tasche noch nicht angesehen.",
+  "InventoryStatus_ShopNewHelp": "Neu in Geschäften verfügbar.",
+  "InventoryStatus_HeldHelp": "Wird derzeit von einem Pokémon gehalten.",
+  "InventoryStatus_Policy": "Ersetzen oder Leeren entfernt die Statusmarkierungen. Sortieren behält sie beim Item; Alle geben behält sie bei unveränderter Item-ID. Anwenden speichert, Zurücksetzen verwirft ausstehende Änderungen.",
   "PssExport_Title": "PSS-Kontakte",
   "PssExport_Description": "Gespeicherte PSS-Kontakte aus Gen 6 vor dem Kopieren oder Speichern prüfen.",
   "PssExport_Preview": "Vorschau der PSS-Kontakte",

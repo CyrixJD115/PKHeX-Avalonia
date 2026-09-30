@@ -1,4 +1,13 @@
 {
+  "InventoryStatus_Favorite": "Favori",
+  "InventoryStatus_New": "Nouveau",
+  "InventoryStatus_ShopNew": "Boutique neuf",
+  "InventoryStatus_Held": "Tenu",
+  "InventoryStatus_FavoriteHelp": "Marqué comme favori pour trier le sac.",
+  "InventoryStatus_NewHelp": "Pas encore consulté dans le sac.",
+  "InventoryStatus_ShopNewHelp": "Nouvellement disponible en boutique.",
+  "InventoryStatus_HeldHelp": "Actuellement tenu par un Pokémon.",
+  "InventoryStatus_Policy": "Remplacer ou vider efface les marques. Le tri les conserve avec l’objet ; Tout donner les conserve si l’identifiant reste identique. Appliquer enregistre ; Réinitialiser annule les modifications en attente.",
   "PssExport_Title": "Contacts PSS",
   "PssExport_Description": "Vérifiez les contacts PSS de la sixième génération avant de les copier ou de les enregistrer.",
   "PssExport_Preview": "Aperçu des contacts PSS",
