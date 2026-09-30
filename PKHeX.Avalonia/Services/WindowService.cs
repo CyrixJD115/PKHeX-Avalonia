@@ -60,6 +60,15 @@ public sealed class WindowService : IWindowService
             dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
         }
 
+        if (viewModel is Pokedex5EditorViewModel)
+        {
+            dialog.SizeToContent = SizeToContent.Manual;
+            dialog.Width = Math.Min(900, dialog.MaxWidth);
+            dialog.Height = Math.Min(650, dialog.MaxHeight);
+            dialog.MinWidth = Math.Min(700, dialog.MaxWidth);
+            dialog.MinHeight = Math.Min(500, dialog.MaxHeight);
+        }
+
         if (viewModel is FashionEditorViewModel)
         {
             dialog.SizeToContent = SizeToContent.Manual;
