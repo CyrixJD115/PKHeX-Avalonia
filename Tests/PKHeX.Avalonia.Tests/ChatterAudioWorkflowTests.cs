@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Moq;
@@ -8,6 +9,7 @@ using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
 using PKHeX.Core;
 using PKHeX.Presentation.ViewModels;
+using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Avalonia.Tests;
 
@@ -149,23 +151,86 @@ public sealed class ChatterAudioWorkflowTests
         Assert.All(GetChatter(save).Recording.ToArray(), value => Assert.Equal((byte)0, value));
     }
 
-    [AvaloniaFact]
-    public void CompactViewShowsActionsAndDisablesPlaybackWithoutAudioService()
+    [Fact]
+    public void SavingRecordingPreservesOtherSaveChangesAndNoOpDoesNotMarkEdited()
     {
+        var save = LoadWhite2();
+        save.State.Edited = false;
+        var vm = new ChatterEditorViewModel(save);
+        vm.SaveCommand.Execute(null);
+        Assert.False(save.State.Edited);
+
+        GetChatter(save).Recording.Fill(0x7A);
+        GetChatter(save).Initialized = true;
+        vm = new ChatterEditorViewModel(save);
+        vm.ClearRecordingCommand.Execute(null);
+        save.Money = 12345;
+        vm.SaveCommand.Execute(null);
+
+        Assert.Equal(12345u, save.Money);
+        Assert.False(GetChatter(save).Initialized);
+        Assert.All(GetChatter(save).Recording.ToArray(), value => Assert.Equal((byte)0, value));
+        Assert.True(save.State.Edited);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PlaybackFailureReportsAnErrorAndRestoresThePlayAction(bool throws)
+    {
+        var save = LoadWhite2();
+        GetChatter(save).Initialized = true;
+        var before = save.Data.ToArray();
+        var dialogs = new RecordingDialogService();
+        var audio = new Mock<IAudioPlaybackService>();
+        audio.SetupGet(a => a.IsAvailable).Returns(true);
+        if (throws)
+            audio.Setup(a => a.PlayWavAsync(It.IsAny<byte[]>())).ThrowsAsync(new IOException("Audio device unavailable"));
+        else
+            audio.Setup(a => a.PlayWavAsync(It.IsAny<byte[]>())).ReturnsAsync(false);
+        var vm = new ChatterEditorViewModel(save, dialogs, audio.Object);
+
+        await vm.PlayRecordingCommand.ExecuteAsync(null);
+
+        Assert.Single(dialogs.Errors);
+        Assert.False(vm.IsPlaying);
+        Assert.True(vm.PlayRecordingCommand.CanExecute(null));
+        Assert.Equal(before, save.Data.ToArray());
+    }
+
+    [AvaloniaTheory]
+    [InlineData("en", 620, 340)]
+    [InlineData("de", 620, 340)]
+    [InlineData("en", 420, 300)]
+    [InlineData("de", 420, 300)]
+    public void CompactViewShowsActionsAndDisablesPlaybackWithoutAudioService(string language, int width, int height)
+    {
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        LocalizedStrings.Instance.SetLanguage(language);
         var vm = new ChatterEditorViewModel(LoadWhite2(), new RecordingDialogService());
-        var view = new ChatterEditor { DataContext = vm, Width = 620, Height = 340 };
-        var window = new Window { Content = view, Width = 640, Height = 360 };
+        var view = new ChatterEditor { DataContext = vm, Width = width, Height = height };
+        var window = new Window { Content = view, Width = width + 20, Height = height + 20 };
         try
         {
             window.Show();
             window.UpdateLayout();
             Assert.NotNull(view.FindControl<Button>("ChatterImportButton"));
-            Assert.NotNull(view.FindControl<Button>("ChatterSaveButton"));
+            var save = Assert.IsType<Button>(view.FindControl<Button>("ChatterSaveButton"));
+            var savePosition = save.TranslatePoint(new Point(0, 0), view)!.Value;
+            Assert.True(savePosition.Y + save.Bounds.Height <= view.Bounds.Height);
+            var content = Assert.IsType<ScrollViewer>(view.FindControl<ScrollViewer>("ChatterContent"));
+            content.Offset = new Vector(0, content.Extent.Height);
+            window.UpdateLayout();
+            var clear = Assert.IsType<Button>(view.FindControl<Button>("ChatterClearButton"));
+            var clearPosition = clear.TranslatePoint(new Point(0, 0), view)!.Value;
+            Assert.True(clearPosition.Y >= 0);
+            Assert.True(clearPosition.Y + clear.Bounds.Height <= savePosition.Y);
             Assert.False(vm.PlayRecordingCommand.CanExecute(null));
         }
         finally
         {
             window.Close();
+            LocalizedStrings.Instance.SetLanguage(previous);
         }
     }
 

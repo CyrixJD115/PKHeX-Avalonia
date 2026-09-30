@@ -49,13 +49,28 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
         save.Chatter.Recording.Fill(0x7A);
         save.Chatter.Initialized = true;
-        CaptureAuxiliaryView(
-            new ChatterEditor
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
             {
-                DataContext = new ChatterEditorViewModel(save,
-                    new RecordingDialogService(), Mock.Of<IAudioPlaybackService>()),
-            },
-            "chatter-audio-actions.png", 620, 350, "Chatter audio actions");
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var (width, height) in new[] { (620, 350), (420, 300) })
+                {
+                    CaptureAuxiliaryView(
+                        new ChatterEditor
+                        {
+                            DataContext = new ChatterEditorViewModel(save,
+                                new RecordingDialogService(), Mock.Of<IAudioPlaybackService>()),
+                        },
+                        $"chatter-audio-{language}-{width}.png", width, height, "Chatter audio actions");
+                }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous);
+        }
     }
 
     [AvaloniaFact]
@@ -70,6 +85,21 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         floors.FindControl<TabControl>("DetailTabs")!.SelectedIndex = 1;
         CaptureAuxiliaryView(floors,
             "unity-tower-floors.png", 620, 620, "Gen 5 Unity Tower floors");
+    }
+
+    [AvaloniaFact]
+    public void CapturePssContactPreview_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled())
+            return;
+        CaptureAuxiliaryView(
+            new PssExportView
+            {
+                DataContext = new PssExportViewModel(
+                    global::PKHeX.Avalonia.Tests.PssExportTests.MakeMultiRecordSave(),
+                    Mock.Of<IClipboardService>(), new RecordingDialogService()),
+            },
+            "pss-contact-preview.png", 620, 520, "Gen 6 PSS contact preview");
     }
 
     [AvaloniaFact]

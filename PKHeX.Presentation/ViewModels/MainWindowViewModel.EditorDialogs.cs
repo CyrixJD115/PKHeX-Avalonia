@@ -443,6 +443,15 @@ public partial class MainWindowViewModel
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]
+    private async Task OpenPssExportAsync()
+    {
+        if (CurrentSave is not SAV6 { PSS: >= 0 } sav) return;
+        await _windowService.ShowDialogAsync(
+            new PssExportViewModel(sav, _clipboardService, _dialogService),
+            T("PssExport_Title"));
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSave))]
     private async Task OpenSimpleTrainerAsync()
     {
         if (CurrentSave is not (SAV1 or SAV2 or SAV3 or SAV4 or SAV5)) return;
@@ -638,6 +647,13 @@ public partial class MainWindowViewModel
         await _windowService.ShowDialogAsync(
             new Misc3EditorViewModel(sav),
             T("Dialog_MiscEditorGen3"));
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSave))]
+    private async Task OpenCosmeticInventory4Async()
+    {
+        if (CurrentSave is not SAV4 save) return;
+        await _windowService.ShowDialogAsync(new CosmeticInventory4EditorViewModel(save), T("Cosmetic4_Title"));
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]

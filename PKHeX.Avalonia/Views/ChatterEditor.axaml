@@ -24,6 +24,7 @@
                 </StackPanel>
 
                 <Border Classes="editor-section-padded" Padding="12">
+                    <ScrollViewer x:Name="ChatterContent" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="9">
                         <TextBlock Text="{loc:Loc ChatterEditor_Description}" TextWrapping="Wrap" Opacity="0.8" />
 
@@ -43,11 +44,12 @@
                             <Button Content="{loc:Loc ChatterEditor_ExportPcm}" Command="{Binding ExportPcmCommand}" Margin="0,0,7,7" />
                             <Button Content="{loc:Loc ChatterEditor_ExportWav}" Command="{Binding ExportWavCommand}" Margin="0,0,7,7" />
                             <Button x:Name="ChatterPlayButton" Content="{loc:Loc ChatterEditor_PlayRecording}" Command="{Binding PlayRecordingCommand}" Margin="0,0,7,7" />
-                            <Button Content="{loc:Loc ChatterEditor_ClearRecording}" Command="{Binding ClearRecordingCommand}" Margin="0,0,7,7" />
+                            <Button x:Name="ChatterClearButton" Content="{loc:Loc ChatterEditor_ClearRecording}" Command="{Binding ClearRecordingCommand}" Margin="0,0,7,7" />
                         </WrapPanel>
                         <TextBlock Text="{loc:Loc ChatterEditor_PlaybackUnavailable}" IsVisible="{Binding !IsAudioAvailable}"
                                    FontSize="11" TextWrapping="Wrap" Opacity="0.7" />
                     </StackPanel>
+                    </ScrollViewer>
                 </Border>
             </DockPanel>
         </Panel>

@@ -31,7 +31,6 @@ public sealed class PlatformAudioPlaybackService : IAudioPlaybackService
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                RedirectStandardError = true,
             };
             start.ArgumentList.Add(path);
             using var process = Process.Start(start);

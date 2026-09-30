@@ -8,7 +8,6 @@ namespace PKHeX.Presentation.ViewModels;
 public partial class ChatterEditorViewModel : ViewModelBase, ICloseableDialog
 {
     private readonly SaveFile _source;
-    private readonly SaveFile? _working;
     private readonly IChatter? _chatter;
     private readonly IDialogService? _dialogs;
     private readonly IAudioPlaybackService? _audio;
@@ -39,9 +38,9 @@ public partial class ChatterEditorViewModel : ViewModelBase, ICloseableDialog
         if (GetChatter(sav) is null) return;
 
         var editedBeforeClone = sav.State.Edited;
-        _working = sav.Clone();
+        var working = sav.Clone();
         sav.State.Edited = editedBeforeClone;
-        _chatter = GetChatter(_working);
+        _chatter = GetChatter(working);
         LoadData();
     }
 
@@ -158,6 +157,11 @@ public partial class ChatterEditorViewModel : ViewModelBase, ICloseableDialog
                 await _dialogs.ShowErrorAsync(LocalizedStrings.Instance["Common_Error"],
                     LocalizedStrings.Instance["ChatterEditor_PlaybackFailed"]);
         }
+        catch (Exception)
+        {
+            await _dialogs.ShowErrorAsync(LocalizedStrings.Instance["Common_Error"],
+                LocalizedStrings.Instance["ChatterEditor_PlaybackFailed"]);
+        }
         finally
         {
             IsPlaying = false;
@@ -167,9 +171,12 @@ public partial class ChatterEditorViewModel : ViewModelBase, ICloseableDialog
     [RelayCommand]
     private void Save()
     {
-        if (_working is not null && !_source.Data.SequenceEqual(_working.Data))
+        var target = GetChatter(_source);
+        if (_chatter is not null && target is not null &&
+            (target.Initialized != _chatter.Initialized || !target.Recording.SequenceEqual(_chatter.Recording)))
         {
-            _source.CopyChangesFrom(_working);
+            _chatter.Recording.CopyTo(target.Recording);
+            target.Initialized = _chatter.Initialized;
             _source.State.Edited = true;
         }
         CloseRequested?.Invoke();
