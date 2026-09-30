@@ -335,7 +335,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not (SAV9SV or SAV9ZA)) return;
         await _windowService.ShowDialogAsync(
-            new Fashion9EditorViewModel(CurrentSave!),
+            new Fashion9EditorViewModel(CurrentSave!, _dialogService),
             T("Dialog_FashionEditor"));
     }
 
