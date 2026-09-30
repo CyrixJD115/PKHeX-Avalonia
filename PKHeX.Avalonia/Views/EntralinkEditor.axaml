@@ -183,7 +183,7 @@
                             <DataGridTemplateColumn Header="{loc:Loc EntralinkEditor_Form}" Width="85">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding Form}" Minimum="0" Maximum="31" AutomationProperties.Name="{loc:Loc EntralinkEditor_Form}" ShowButtonSpinner="False" />
+                                        <NumericUpDown Value="{Binding Form}" Minimum="0" Maximum="63" AutomationProperties.Name="{loc:Loc EntralinkEditor_Form}" ShowButtonSpinner="False" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

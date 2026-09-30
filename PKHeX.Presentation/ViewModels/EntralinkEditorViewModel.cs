@@ -375,11 +375,12 @@ public partial class EntreeSlotViewModel : ViewModelBase
     {
         _slot = slot;
         _spriteRenderer = spriteRenderer;
-        Species = _slot.Species;
-        Move = _slot.Move;
-        Gender = _slot.Gender;
-        Form = _slot.Form;
-        Animation = (int)_slot.Animation;
+        // Loading a row must not invoke Core setters, which can normalize reserved bits.
+        _species = _slot.Species;
+        _move = _slot.Move;
+        _gender = _slot.Gender;
+        _form = _slot.Form;
+        _animation = (int)_slot.Animation;
     }
 
     public string SlotPosition => GetPositionName(_slot.Area);

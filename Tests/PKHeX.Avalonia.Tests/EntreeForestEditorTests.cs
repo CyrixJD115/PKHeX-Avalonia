@@ -148,4 +148,49 @@ public sealed class EntreeForestEditorTests
             LocalizedStrings.Instance.SetLanguage(previous);
         }
     }
+
+    [AvaloniaFact]
+    public void RealizingExistingForestValuesAndSavingPreservesTheirEncodedBytes()
+    {
+        var save = LoadWhite2();
+        var forest = save.EntreeForest;
+        forest.StartAccess();
+        var slot = forest.Slots[0];
+        slot.Species = 25;
+        slot.Form = 63;
+        slot.RawValue |= 1u << 10;
+        forest.EndAccess();
+        save.State.Edited = false;
+        var before = save.Data.ToArray();
+        var vm = new EntralinkEditorViewModel(save);
+        var view = new EntralinkEditor { DataContext = vm, Width = 640, Height = 550 };
+        var window = new Window { Content = view, Width = 650, Height = 560 };
+        try
+        {
+            view.FindControl<TabControl>("EntralinkTabs")!.SelectedIndex = 2;
+            window.Show();
+            var grid = view.FindControl<DataGrid>("ForestGrid")!;
+            grid.ScrollIntoView(vm.SelectedEntreeSlot, grid.Columns[4]);
+            for (var i = 0; i < 5; i++)
+            {
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            }
+            Assert.Equal(63, vm.SelectedEntreeSlot!.Form);
+            var form = grid.GetVisualDescendants().OfType<NumericUpDown>().First(control =>
+                ReferenceEquals(control.DataContext, vm.SelectedEntreeSlot) &&
+                global::Avalonia.Automation.AutomationProperties.GetName(control) ==
+                    LocalizedStrings.Instance["EntralinkEditor_Form"]);
+            Assert.Equal(63m, form.Value);
+            Assert.True(form.Maximum >= form.Value.GetValueOrDefault());
+            vm.SaveCommand.Execute(null);
+            Assert.Equal(before, save.Data.ToArray());
+            Assert.False(save.State.Edited);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 }
