@@ -44,7 +44,7 @@
                         <TextBlock Text="{loc:Loc EventFlagsEditor_FlagNumberLabel}" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.7" />
                         <NumericUpDown Value="{Binding SelectedFlagIndex}"
                                        Minimum="0"
-                                       Maximum="{Binding FlagCount}"
+                                       Maximum="{Binding MaxFlagIndex}"
                                        MinWidth="120"
                                        FormatString="0"
                                        ShowButtonSpinner="False" />
