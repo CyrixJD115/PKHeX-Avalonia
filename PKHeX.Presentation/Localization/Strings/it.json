@@ -2457,5 +2457,21 @@
   "Cosmetic4_ID": "ID",
   "Cosmetic4_Status": "Disponibilità",
   "Cosmetic4_Released": "Distribuito",
-  "Cosmetic4_Unreleased": "Non distribuito"
+  "Cosmetic4_Unreleased": "Non distribuito",
+  "Dex5Bulk_WholeDex": "Tutto il Pokédex (deseleziona per la specie scelta)",
+  "Dex5Bulk_SeenAll": "Segna visto",
+  "Dex5Bulk_CaughtAll": "Segna catturato",
+  "Dex5Bulk_ClearEntries": "Svuota voci",
+  "Dex5Bulk_Advanced": "Impostazioni di avvistamenti, lingue e forme",
+  "Dex5Bulk_ApplySeen": "Applica avvistamenti",
+  "Dex5Bulk_SetLanguages": "Attiva lingue",
+  "Dex5Bulk_ClearLanguages": "Cancella lingue",
+  "Dex5Bulk_RegularForms": "Forme normali",
+  "Dex5Bulk_ShinyForms": "Forme cromatiche",
+  "Dex5Bulk_SetForms": "Attiva forme",
+  "Dex5Bulk_ClearForms": "Cancella forme",
+  "Dex5Bulk_AllLanguages": "Tutte le lingue supportate",
+  "Dex5Bulk_Scope": "Le azioni interessano {0} specie. Svuota rimuove i flag delle voci; mantiene le impostazioni globali.",
+  "Dex5Bulk_Staging": "Le modifiche sono in sospeso. Salva applica l’intera sessione; Annulla o chiudi la scarta. Ripristina annulla tutte le modifiche, incluse le azioni collettive.",
+  "Dex5Bulk_InvalidPid": "Inserisci un PID di Spinda di massimo otto cifre esadecimali prima di salvare."
 }
