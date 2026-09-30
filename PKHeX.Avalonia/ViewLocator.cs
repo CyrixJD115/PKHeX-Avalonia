@@ -28,6 +28,7 @@ public static class ViewLocator
         [typeof(BoxReportViewModel)] = () => new BoxReportView(),
         [typeof(BoxViewerViewModel)] = () => new BoxViewer(),
         [typeof(Capture7GGEditorViewModel)] = () => new Capture7GGEditor(),
+        [typeof(CategorizedEventEditorViewModel)] = () => new CategorizedEventEditor(),
         [typeof(ChatterEditorViewModel)] = () => new ChatterEditor(),
         [typeof(CosmeticInventory4EditorViewModel)] = () => new CosmeticInventory4Editor(),
         [typeof(DLC5EditorViewModel)] = () => new DLC5Editor(),

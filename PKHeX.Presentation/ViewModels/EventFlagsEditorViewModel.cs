@@ -5,7 +5,7 @@ using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class EventFlagsEditorViewModel : ViewModelBase
+public partial class EventFlagsEditorViewModel : EventEditorViewModel
 {
     private readonly SaveFile _sav;
     private readonly IEventFlagArray? _flagArray;
@@ -39,7 +39,8 @@ public partial class EventFlagsEditorViewModel : ViewModelBase
     }
 
     public int FlagCount { get; }
-    public bool IsSupported { get; }
+    public int MaxFlagIndex => Math.Max(0, FlagCount - 1);
+    public override bool IsSupported { get; }
 
     [ObservableProperty]
     private ObservableCollection<EventFlagViewModel> _flags = [];
@@ -63,21 +64,20 @@ public partial class EventFlagsEditorViewModel : ViewModelBase
 
     partial void OnSelectedFlagIndexChanged(int value)
     {
-        if (_flagArray is not null && value >= 0 && value < FlagCount)
+        if (FlagCount == 0) return;
+        if (value < 0 || value >= FlagCount)
         {
-            SelectedFlagValue = _flagArray.GetEventFlag(value);
+            SelectedFlagIndex = Math.Clamp(value, 0, MaxFlagIndex);
+            return;
         }
+        SelectedFlagValue = Flags[value].IsSet;
     }
 
     partial void OnSelectedFlagValueChanged(bool value)
     {
         if (_flagArray is not null && SelectedFlagIndex >= 0 && SelectedFlagIndex < FlagCount)
         {
-            _flagArray.SetEventFlag(SelectedFlagIndex, value);
-            // Update the flag in the collection if it exists
-            var flag = Flags.FirstOrDefault(f => f.Index == SelectedFlagIndex);
-            if (flag is not null)
-                flag.IsSet = value;
+            Flags[SelectedFlagIndex].IsSet = value;
         }
     }
 
@@ -85,13 +85,26 @@ public partial class EventFlagsEditorViewModel : ViewModelBase
     {
         if (_flagArray is null) return;
 
+        foreach (var old in Flags)
+            old.PropertyChanged -= FlagChanged;
         Flags.Clear();
         for (int i = 0; i < FlagCount; i++)
         {
             var isSet = _flagArray.GetEventFlag(i);
-            Flags.Add(new EventFlagViewModel(i, isSet));
+            var flag = new EventFlagViewModel(i, isSet);
+            flag.PropertyChanged += FlagChanged;
+            Flags.Add(flag);
         }
+        if (FlagCount != 0)
+            SelectedFlagValue = Flags[SelectedFlagIndex].IsSet;
         FilterFlags();
+    }
+
+    private void FlagChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (sender is EventFlagViewModel row && row.Index == SelectedFlagIndex
+            && e.PropertyName == nameof(EventFlagViewModel.IsSet))
+            SelectedFlagValue = row.IsSet;
     }
 
     private void FilterFlags()
@@ -117,7 +130,9 @@ public partial class EventFlagsEditorViewModel : ViewModelBase
 
         foreach (var flag in Flags)
         {
+            if (_flagArray.GetEventFlag(flag.Index) == flag.IsSet) continue;
             _flagArray.SetEventFlag(flag.Index, flag.IsSet);
+            _sav.State.Edited = true;
         }
     }
 
