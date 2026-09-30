@@ -61,19 +61,22 @@ public sealed class LanguageLifecycleTests
         app.ViewModel.CurrentPokemonEditor!.LoadPKM(save.GetBoxSlotAtIndex(0));
         var originalSave = save.Data.ToArray();
         var originalPokemon = app.ViewModel.CurrentPokemonEditor.TargetPKM.Data.ToArray();
-        var originalEdited = save.State.Edited;
         var settingsStore = app.Services.GetRequiredService<ISettingsStore>();
 
-        foreach (var language in new[] { source, target, source })
+        foreach (var originalEdited in new[] { false, true })
         {
-            app.ViewModel.LanguageService.SetLanguage(language);
-            app.Pump();
-            AssertLanguage(app.ViewModel.LanguageService, language);
-            Assert.Equal(language, app.Services.GetRequiredService<AppSettings>().DisplayLanguage);
-            Assert.Equal(language, Assert.IsType<FakeSettingsStore>(settingsStore).Saved!.DisplayLanguage);
-            Assert.Equal(originalSave, save.Data.ToArray());
-            Assert.Equal(originalPokemon, app.ViewModel.CurrentPokemonEditor.TargetPKM.Data.ToArray());
-            Assert.Equal(originalEdited, save.State.Edited);
+            save.State.Edited = originalEdited;
+            foreach (var language in new[] { source, target, source })
+            {
+                app.ViewModel.LanguageService.SetLanguage(language);
+                app.Pump();
+                AssertLanguage(app.ViewModel.LanguageService, language);
+                Assert.Equal(language, app.Services.GetRequiredService<AppSettings>().DisplayLanguage);
+                Assert.Equal(language, Assert.IsType<FakeSettingsStore>(settingsStore).Saved!.DisplayLanguage);
+                Assert.Equal(originalSave, save.Data.ToArray());
+                Assert.Equal(originalPokemon, app.ViewModel.CurrentPokemonEditor.TargetPKM.Data.ToArray());
+                Assert.Equal(originalEdited, save.State.Edited);
+            }
         }
     }
 
