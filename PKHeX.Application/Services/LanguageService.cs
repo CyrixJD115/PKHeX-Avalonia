@@ -12,8 +12,21 @@ namespace PKHeX.Application.Services;
 /// </summary>
 public sealed class LanguageService : INotifyPropertyChanged
 {
-    private static readonly string[] SupportedLanguages = ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant"];
-    private static readonly string[] LanguageNames = ["English", "日本語", "Français", "Italiano", "Deutsch", "Español", "한국어", "简体中文", "繁體中文"];
+    private static readonly string[] SupportedLanguages = ["en", "ja", "fr", "it", "de", "es", "ko", "zh-Hans", "zh-Hant", "pt-BR"];
+    private static readonly string[] LanguageNames = ["English", "日本語", "Français", "Italiano", "Deutsch", "Español", "한국어", "简体中文", "繁體中文", "Português (Brasil)"];
+
+    /// <summary>
+    /// UI languages that PKHeX.Core has no game data for (species, moves, items, locations). The shell
+    /// is translated, and Core's strings fall back to English. See <see cref="GetDataLanguage"/>.
+    /// </summary>
+    private static readonly string[] UiOnlyLanguages = ["pt-BR"];
+
+    /// <summary>
+    /// The PKHeX.Core data language for a UI language: itself when Core ships game data for it,
+    /// English for a UI-only language such as <c>pt-BR</c>.
+    /// </summary>
+    public static string GetDataLanguage(string languageCode) =>
+        UiOnlyLanguages.Contains(languageCode) ? "en" : languageCode;
 
     private string _currentLanguage = "en";
 
@@ -62,16 +75,17 @@ public sealed class LanguageService : INotifyPropertyChanged
         foreach (var option in AvailableLanguages)
             option.SetCurrent(option.Code == languageCode);
         OnPropertyChanged(nameof(CurrentLanguageOption));
-        GameInfo.CurrentLanguage = languageCode;
-        GameInfo.Strings = GameInfo.GetStrings(languageCode);
+        var dataLanguage = GetDataLanguage(languageCode);
+        GameInfo.CurrentLanguage = dataLanguage;
+        GameInfo.Strings = GameInfo.GetStrings(dataLanguage);
         ApplyCulture(languageCode);
         LanguageChanged?.Invoke();
     }
 
     /// <summary>
     /// Aligns the thread/process culture with the selected language so date and number formatting in
-    /// the UI follows the same locale (issue #132 acceptance criterion). The nine supported codes are
-    /// all valid .NET culture names (including <c>zh-Hans</c>/<c>zh-Hant</c>); unknown codes are
+    /// the UI follows the same locale (issue #132 acceptance criterion). The supported codes are
+    /// all valid .NET culture names (including <c>zh-Hans</c>/<c>zh-Hant</c>/<c>pt-BR</c>); unknown codes are
     /// ignored rather than throwing.
     /// </summary>
     private static void ApplyCulture(string languageCode)
