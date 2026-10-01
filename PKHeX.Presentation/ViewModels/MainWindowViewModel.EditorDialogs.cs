@@ -609,7 +609,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new TrainerCard8EditorViewModel(CurrentSave),
+            new TrainerCard8EditorViewModel(CurrentSave, _spriteRenderer, _dialogService),
             T("Dialog_TrainerCardEditor"));
     }
 
