@@ -6,6 +6,33 @@ namespace PKHeX.Avalonia.Tests;
 public class CardPreviewReaderTests
 {
     [Fact]
+    public void LgpeRecordShowsStoredItemQuantitiesWithoutInventedMetadata()
+    {
+        var gift = new WR7 { IsItem = true, ItemCount = 2, ItemID = 100, ItemIDCount = 5,
+            ItemSet2Item = 101, ItemSet2Count = 7, Epoch = 86400 };
+        var before = gift.Data.ToArray();
+        var preview = new ReadCardPreviewUseCase().Execute(gift);
+        Assert.Equal([new CardPreviewItem(100, 5), new CardPreviewItem(101, 7)], preview.Items);
+        Assert.Null(preview.Collected);
+        Assert.Null(preview.Repeatable);
+        Assert.Null(preview.OncePerDay);
+        Assert.Contains(preview.Fields, field => field.Key == "ReceivedEpoch" && field.Value == "86400");
+        Assert.Equal(before, gift.Data.ToArray());
+    }
+
+    [Fact]
+    public void BdspSeventhItemAndGapsArePreservedInPreview()
+    {
+        var gift = new WB8 { IsItem = true };
+        gift.SetItem(0, 100);
+        gift.SetQuantity(0, 2);
+        gift.SetItem(6, 101);
+        gift.SetQuantity(6, 3);
+        var preview = new ReadCardPreviewUseCase().Execute(gift);
+        Assert.Equal([new CardPreviewItem(100, 2), new CardPreviewItem(101, 3)], preview.Items);
+    }
+
+    [Fact]
     public void MultiItemCardIncludesBothQuantitiesAndMetadataWithoutMutation()
     {
         var gift = new WC7 { IsItem = true, CardID = 123, GiftRepeatable = true, GiftUsed = true, GiftOncePerDay = true };

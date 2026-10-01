@@ -33,6 +33,35 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureWonderCardPreviews_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            foreach (var version in new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP })
+            {
+                using var app = new HeadlessAppFixture();
+                LocalizedStrings.Instance.SetLanguage(language);
+                var save = BlankSaveFile.Get(version);
+                var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
+                var gift = storage.GetMysteryGift(0);
+                gift.IsEntity = true;
+                gift.Species = 25;
+                gift.CardID = 123;
+                gift.HeldItem = 100;
+                storage.SetMysteryGift(0, gift);
+                app.LoadSaveInstance(save);
+                CaptureAuxiliaryView(new MysteryGiftEditor { DataContext = app.ViewModel.MysteryGiftEditor },
+                    $"wonder-card-{language}-{version}.png", language == "en" ? 900 : 700, language == "en" ? 650 : 420,
+                    "Wonder Card preview");
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureDlc5Images_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;

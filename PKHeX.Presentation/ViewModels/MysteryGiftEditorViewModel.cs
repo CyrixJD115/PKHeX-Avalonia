@@ -127,7 +127,7 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
 
         var path = await _dialogService.OpenFileAsync(
             LocalizedStrings.Instance["MysteryGiftEditor_ImportGiftTitle"],
-            ["*.wc9", "*.wa9", "*.wc8", "*.wa8", "*.wb8", "*.wb7", "*.wc7", "*.wc6", "*.pgf", "*.pgt", "*.pcd", "*"]);
+            ["*.wc9", "*.wa9", "*.wc8", "*.wa8", "*.wb8", "*.wr7", "*.wb7", "*.wc7", "*.wc6", "*.pgf", "*.pgt", "*.pcd", "*"]);
 
         if (string.IsNullOrEmpty(path)) return;
 

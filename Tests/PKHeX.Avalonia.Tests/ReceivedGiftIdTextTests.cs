@@ -8,6 +8,52 @@ namespace PKHeX.Avalonia.Tests;
 public class ReceivedGiftIdTextTests
 {
     [Fact]
+    public async Task ImportExportRoundtripRemainsStagedAndInvalidImportIsAtomic()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            var sav = new SAV6XY();
+            var flags = (IMysteryGiftFlags)((IMysteryGiftStorageProvider)sav).MysteryGiftStorage;
+            var dialog = new Mock<IDialogService>();
+            dialog.Setup(d => d.OpenFileAsync(It.IsAny<string>(), It.IsAny<string[]>())).ReturnsAsync(path);
+            dialog.Setup(d => d.SaveFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).ReturnsAsync(path);
+            var vm = new MysteryGiftEditorViewModel(sav, dialog.Object);
+            await File.WriteAllTextAsync(path, "0042\n0007\n0042");
+            await vm.ImportReceivedIdsCommand.ExecuteAsync(null);
+            Assert.Equal(["0007", "0042"], vm.ReceivedFlags);
+            Assert.False(flags.GetMysteryGiftReceivedFlag(42));
+            await vm.ExportReceivedIdsCommand.ExecuteAsync(null);
+            Assert.Equal(ReceivedGiftIdText.Export([7, 42]), await File.ReadAllTextAsync(path));
+            await File.WriteAllTextAsync(path, "0001\n2048");
+            await vm.ImportReceivedIdsCommand.ExecuteAsync(null);
+            Assert.Equal(["0007", "0042"], vm.ReceivedFlags);
+            dialog.Verify(d => d.ShowErrorAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            vm.SaveCommand.Execute(null);
+            Assert.True(flags.GetMysteryGiftReceivedFlag(42));
+            Assert.True(flags.GetMysteryGiftReceivedFlag(7));
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task BulkActionsRequireConfirmationAndResetDiscardsThem(bool confirmed)
+    {
+        var sav = new SAV6XY();
+        var flags = (IMysteryGiftFlags)((IMysteryGiftStorageProvider)sav).MysteryGiftStorage;
+        var dialog = new Mock<IDialogService>();
+        dialog.Setup(d => d.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(confirmed);
+        var vm = new MysteryGiftEditorViewModel(sav, dialog.Object);
+        await vm.AllUsedCommand.ExecuteAsync(null);
+        Assert.Equal(confirmed ? flags.MysteryGiftReceivedFlagMax : 0, vm.ReceivedFlags.Count);
+        Assert.False(flags.GetMysteryGiftReceivedFlag(7));
+        vm.ResetCommand.Execute(null);
+        Assert.Empty(vm.ReceivedFlags);
+    }
+
+    [Fact]
     public void ParseDeduplicatesSortsAndIncludesBoundaryIds()
     {
         Assert.True(ReceivedGiftIdText.TryParse("2047; 0000\n42,42\t7", 2048, out var ids));

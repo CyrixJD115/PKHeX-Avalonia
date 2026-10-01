@@ -3082,5 +3082,18 @@
   "GiftPreview_Kind_Clothing": "Clothing",
   "GiftPreview_Kind_Money": "Money",
   "GiftPreview_Kind_UnderGroundItem": "Underground item",
-  "GiftPreview_Kind_None": "Unknown"
+  "GiftPreview_Kind_None": "Unknown",
+  "GiftPreview_Goods": "Goods",
+  "GiftPreview_PoketchApp": "Pokétch app",
+  "GiftPreview_Course": "Pokéwalker course",
+  "GiftPreview_Seal": "Seal",
+  "GiftPreview_Accessory": "Accessory",
+  "GiftPreview_Backdrop": "Backdrop",
+  "GiftPreview_Subtype": "Subtype ID",
+  "GiftPreview_SubId": "Payload sub-ID",
+  "GiftPreview_Language": "Language ID",
+  "GiftPreview_Nickname": "Nickname",
+  "GiftPreview_LanguageVariant": "Redeem language → stored language: OT / nickname",
+  "GiftPreview_ReceivedEpoch": "Received time (Unix seconds)",
+  "GiftPreview_LevelRaw": "Stored level field"
 }

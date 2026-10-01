@@ -38,6 +38,12 @@ public partial class MysteryGiftSlotViewModel
                             "Species" => Name(GameInfo.Strings.Species, id),
                             "HeldItem" or "AdditionalItem" => Name(GameInfo.Strings.Item, id),
                             "Nature" => Name(GameInfo.Strings.Natures, id),
+                            "Goods" => Name(GameInfo.Strings.uggoods, id),
+                            "PoketchApp" => Name(GameInfo.Strings.poketchapps, id),
+                            "Course" => Name(GameInfo.Strings.walkercourses, id),
+                            "Seal" => Name(GameInfo.Strings.seals, id),
+                            "Accessory" => Name(GameInfo.Strings.accessories, id),
+                            "Backdrop" => Name(GameInfo.Strings.backdrops, id),
                             _ => value,
                         };
                     if (field.Key == "Moves")
