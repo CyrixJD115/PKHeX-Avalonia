@@ -32,6 +32,29 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureDlc5Images_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var tab in new[] { 0, 2, 5 })
+                {
+                    var save = LoadCaptureSave<SAV5>(language == "en" ? "gen5_black.sav" : "gen5_white2.sav");
+                    global::PKHeX.Avalonia.Tests.Dlc5ImageLayoutTests.Seed(save);
+                    var vm = new DLC5EditorViewModel(save, new RecordingDialogService(), new global::PKHeX.Avalonia.Services.PngImageCodec()) { SelectedTab = tab };
+                    CaptureAuxiliaryView(new DLC5Editor { DataContext = vm }, $"dlc5-{language}-tab{tab}.png",
+                        language == "en" ? 780 : 620, language == "en" ? 700 : 420, "Gen 5 DLC image workflow");
+                }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureFestivalPlaza_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;
