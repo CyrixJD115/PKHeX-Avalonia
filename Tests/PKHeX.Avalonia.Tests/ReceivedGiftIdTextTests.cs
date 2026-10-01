@@ -7,6 +7,33 @@ namespace PKHeX.Avalonia.Tests;
 
 public class ReceivedGiftIdTextTests
 {
+    [Theory]
+    [InlineData(GameVersion.B)]
+    [InlineData(GameVersion.W2)]
+    public void EncryptedGen5AlbumOpenResetAndNoOpApplyPreserveSourceBytes(GameVersion version)
+    {
+        var sav = Assert.IsAssignableFrom<SAV5>(BlankSaveFile.Get(version));
+        MysteryGiftPreviewLayoutTests.InitializeGen5Album(sav);
+        sav.Mystery.SetMysteryGiftReceivedFlag(42, true);
+        sav.Mystery.EndAccess();
+        sav.State.Edited = false;
+        var before = sav.Data.ToArray();
+        var vm = new MysteryGiftEditorViewModel(sav, new Mock<IDialogService>().Object);
+        Assert.Equal(before, sav.Data.ToArray());
+        Assert.Contains("0042", vm.ReceivedFlags);
+        vm.ReceivedFlags.Clear();
+        vm.ResetCommand.Execute(null);
+        Assert.Equal(before, sav.Data.ToArray());
+        vm.SaveCommand.Execute(null);
+        Assert.Equal(before, sav.Data.ToArray());
+        Assert.False(sav.State.Edited);
+        vm.ReceivedFlags.Add("0007");
+        vm.SaveCommand.Execute(null);
+        Assert.True(sav.State.Edited);
+        Assert.True(sav.Mystery.GetMysteryGiftReceivedFlag(7));
+        sav.Mystery.EndAccess();
+    }
+
     [Fact]
     public async Task ImportExportRoundtripRemainsStagedAndInvalidImportIsAtomic()
     {

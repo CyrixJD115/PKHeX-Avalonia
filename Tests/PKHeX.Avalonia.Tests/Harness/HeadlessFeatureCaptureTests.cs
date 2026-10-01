@@ -46,6 +46,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
                 using var app = new HeadlessAppFixture();
                 LocalizedStrings.Instance.SetLanguage(language);
                 var save = BlankSaveFile.Get(version);
+                MysteryGiftPreviewLayoutTests.InitializeGen5Album(save);
                 var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
                 var gift = storage.GetMysteryGift(0);
                 gift.CardID = 123;
@@ -67,6 +68,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
                     else gift.Level = 50;
                 }
                 storage.SetMysteryGift(0, gift);
+                if (save is SAV5 gen5) gen5.Mystery.EndAccess();
                 app.LoadSaveInstance(save);
                 CaptureAuxiliaryView(new MysteryGiftEditor { DataContext = app.ViewModel.MysteryGiftEditor },
                     $"wonder-card-{language}-{version}-{(itemCard ? "item" : "pokemon")}.png", language == "en" ? 900 : 700, language == "en" ? 650 : 420,

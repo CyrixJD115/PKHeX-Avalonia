@@ -14,6 +14,16 @@ namespace PKHeX.Avalonia.Tests;
 
 public class MysteryGiftPreviewLayoutTests
 {
+    internal static void InitializeGen5Album(SaveFile save)
+    {
+        if (save is not SAV5 gen5) return;
+        // BlankSaveFile uses zero encrypted bytes; initialize a valid empty encrypted album.
+        var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
+        for (int i = 0; i < storage.GiftCountMax; i++) storage.SetMysteryGift(i, new PGF());
+        gen5.Mystery.ClearReceivedFlags();
+        gen5.Mystery.EndAccess();
+    }
+
     public static IEnumerable<object[]> Cases => LocalizedStrings.SupportedLanguages.SelectMany(language =>
         new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP }.Select(version => new object[] { version, language }));
 
@@ -25,12 +35,14 @@ public class MysteryGiftPreviewLayoutTests
         using var app = new HeadlessAppFixture();
         LocalizedStrings.Instance.SetLanguage(language);
         var save = BlankSaveFile.Get(version);
+        InitializeGen5Album(save);
         var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
         var gift = storage.GetMysteryGift(0);
         gift.IsEntity = true;
         gift.Species = 25;
         gift.CardID = 123;
         storage.SetMysteryGift(0, gift);
+        if (save is SAV5 gen5) gen5.Mystery.EndAccess();
         save.State.Edited = false;
         var before = save.Data.ToArray();
         app.LoadSaveInstance(save);

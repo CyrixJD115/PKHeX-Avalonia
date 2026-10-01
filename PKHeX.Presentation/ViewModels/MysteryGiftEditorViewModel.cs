@@ -80,6 +80,7 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
         }
 
         SelectedGift = Gifts.Count == 0 ? null : Gifts[Math.Min(selected, Gifts.Count - 1)];
+        if (_sav is SAV5 gen5) gen5.Mystery.EndAccess();
     }
 
     [RelayCommand]
@@ -106,8 +107,11 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
         {
             var desired = ids.ToHashSet();
             for (int i = 0; i < _originalFlags.Length; i++)
-                if (desired.Contains(i) != _originalFlags[i])
+                if (desired.Contains(i) != _originalFlags[i] && _flags.GetMysteryGiftReceivedFlag(i) != desired.Contains(i))
+                {
                     _flags.SetMysteryGiftReceivedFlag(i, desired.Contains(i));
+                    _sav.State.Edited = true;
+                }
         }
         LoadGifts();
         LoadReceivedFlags();
@@ -151,7 +155,7 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
                 return;
             }
 
-            if (SelectedGift.Gift is { } current && current.GetType() != gift.GetType())
+            if (!gift.IsCardCompatible(_sav, out _) || SelectedGift.Gift is { } current && current.GetType() != gift.GetType())
             {
                 await _dialogService.ShowErrorAsync(LocalizedStrings.Instance["MysteryGiftEditor_ImportErrorTitle"],
                     LocalizedStrings.Instance["MysteryGiftEditor_RecordWrongGame"]);
@@ -222,6 +226,7 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
             if (_originalFlags[i])
                 ReceivedFlags.Add(i.ToString("0000"));
         }
+        if (_sav is SAV5 gen5) gen5.Mystery.EndAccess();
     }
 
     [RelayCommand]
