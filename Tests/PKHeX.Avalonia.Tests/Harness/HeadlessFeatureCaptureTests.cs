@@ -77,6 +77,28 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     }
 
     [AvaloniaFact]
+    public void CaptureFestivalPlaza_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var tab in new[] { 0, 1, 2 })
+                {
+                    var save = language == "en" ? LoadCaptureSave<SAV7>("gen7_sun.main") : LoadCaptureSave<SAV7>("gen7_ultrasun.main");
+                    using var vm = new FestivalPlazaEditorViewModel(save, new RecordingDialogService()) { SelectedTab = tab };
+                    CaptureAuxiliaryView(new FestivalPlazaEditor { DataContext = vm }, $"festival-plaza-{language}-tab{tab}.png",
+                        language == "en" ? 740 : 480, language == "en" ? 620 : 360, "Festival Plaza staged workspace");
+                }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureSvRaidRegionsAndRecords_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;

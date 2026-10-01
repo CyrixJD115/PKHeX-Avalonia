@@ -209,7 +209,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is null) return;
         await _windowService.ShowDialogAsync(
-            new FestivalPlazaEditorViewModel(CurrentSave),
+            new FestivalPlazaEditorViewModel(CurrentSave, _dialogService),
             T("Dialog_FestivalPlazaEditor"));
     }
 
