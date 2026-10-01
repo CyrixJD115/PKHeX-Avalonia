@@ -6,6 +6,25 @@ namespace PKHeX.Avalonia.Tests;
 public class TrainerCard8DataSessionTests
 {
     [Fact]
+    public void PartyCopyReadsCurrentPartyAndOwnsOnlySelectedTeamsKnownFields()
+    {
+        var save = new SAV8SWSH();
+        save.PartyData = [new PK8 { Species = 25 }];
+        var session = new TrainerCard8DataSession(save);
+        save.PartyData = [new PK8 { Species = 133, Gender = 1, EncryptionConstant = 42 }];
+        session.CopyFromParty(false);
+        Assert.Equal(133, session.Staged.TrainerCard.ViewPoke(0).Species);
+        save.TrainerCard.ViewPoke(0).Form = 7;
+        save.TrainerCard.ViewPoke(0).Unknown = 0xABCDEF12;
+        save.TitleScreen.ViewPoke(0).Species = 25;
+        Assert.True(session.Commit());
+        Assert.Equal(133, save.TrainerCard.ViewPoke(0).Species);
+        Assert.Equal(0, save.TrainerCard.ViewPoke(0).Form);
+        Assert.Equal(0xABCDEF12u, save.TrainerCard.ViewPoke(0).Unknown);
+        Assert.Equal(25, save.TitleScreen.ViewPoke(0).Species);
+    }
+
+    [Fact]
     public void CopyFromPartyPreservesNoncanonicalTrueShinyByteAndPadding()
     {
         var save = new SAV8SWSH();

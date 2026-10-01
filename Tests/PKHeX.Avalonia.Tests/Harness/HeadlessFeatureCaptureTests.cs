@@ -33,6 +33,63 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureSwshCardTeams_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        var dataLanguage = GameInfo.CurrentLanguage; var strings = GameInfo.Strings; var filtered = GameInfo.FilteredSources;
+        var culture = System.Globalization.CultureInfo.CurrentCulture; var uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            foreach (var tab in new[] { 0, 1, 2, 3 })
+            {
+                using var app = new HeadlessAppFixture();
+                app.ViewModel.LanguageService.SetLanguage(language);
+                var save = TrainerCard8WorkflowTests.CreateSave(language == "en" ? 2 : 0);
+                TrainerCard8LayoutTests.Seed(save, tab != 0);
+                save.TrainerCard.Hair = ulong.MaxValue;
+                var sprites = app.Services.GetRequiredService<ISpriteRenderer>(); sprites.Initialize(save);
+                using var vm = new TrainerCard8EditorViewModel(save, sprites);
+                var view = new TrainerCard8EditorView { DataContext = vm };
+                var window = new Window { Content = view, Width = language == "en" ? 900 : 700, Height = language == "en" ? 720 : 460 };
+                window.Show();
+                try
+                {
+                    view.FindControl<TabControl>("Card8Tabs")!.SelectedIndex = tab;
+                    PumpToStableLayout(window);
+                    CaptureOrSkip(window, $"swsh-card-{language}-tab{tab}.png", "SWSH card and title teams");
+                    if (tab == 0)
+                    {
+                        view.FindControl<Expander>("Card8StoredFields")!.IsExpanded = true;
+                        PumpToStableLayout(window);
+                        view.FindControl<ScrollViewer>("Card8InfoScroll")!.ScrollToEnd();
+                        PumpToStableLayout(window);
+                        CaptureOrSkip(window, $"swsh-card-{language}-metadata.png", "Stored card metadata");
+                    }
+                    if (tab is 1 or 2)
+                    {
+                        view.GetVisualDescendants().OfType<Expander>().Single(expander => expander.Name == "Card8UnknownFields").IsExpanded = true;
+                        PumpToStableLayout(window);
+                        view.GetVisualDescendants().OfType<ScrollViewer>().Single(scroll => scroll.Name == "TeamDetailScroll").ScrollToEnd();
+                        PumpToStableLayout(window);
+                        CaptureOrSkip(window, $"swsh-card-{language}-tab{tab}-fields.png", "Team fields and preserved unknown words");
+                    }
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous); GameInfo.CurrentLanguage = dataLanguage;
+            GameInfo.Strings = strings; GameInfo.FilteredSources = filtered;
+            System.Globalization.CultureInfo.CurrentCulture = culture; System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = defaultCulture; System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = defaultUiCulture;
+        }
+    }
+
+    [AvaloniaFact]
     public void CaptureWonderCardPreviews_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;

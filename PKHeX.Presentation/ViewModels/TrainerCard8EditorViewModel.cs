@@ -20,12 +20,13 @@ public partial class TrainerCard8EditorViewModel : ViewModelBase, ICloseableDial
     private bool _loading, _closed;
     public Action? CloseRequested { get; set; }
     public bool IsSupported => _session is not null;
-    public int TrainerNameMaxLength { get; }
+    private readonly int _nameLimit;
+    public int TrainerNameMaxLength => Math.Max(_nameLimit, _originalName.Length);
     private TrainerCard8? Card => _session?.Staged.TrainerCard;
 
     public TrainerCard8EditorViewModel(SaveFile sav, ISpriteRenderer? sprites = null, IDialogService? dialogs = null)
     {
-        _sprites = sprites; _dialogs = dialogs; TrainerNameMaxLength = sav.MaxStringLengthTrainer;
+        _sprites = sprites; _dialogs = dialogs; _nameLimit = sav.MaxStringLengthTrainer;
         if (sav is SAV8SWSH swsh) { _session = new TrainerCard8DataSession(swsh); LoadData(); }
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) => ((TrainerCard8EditorViewModel)recipient).RefreshLanguage());
     }
@@ -49,9 +50,12 @@ public partial class TrainerCard8EditorViewModel : ViewModelBase, ICloseableDial
     public bool CanSave => !_closed && IsSupported && DateError.Length == 0 && NameError.Length == 0 && NumberError.Length == 0
         && Statistics.Concat(Metadata).Concat(Appearance).All(row => !row.HasError)
         && CardTeam.Concat(TitleTeam).All(row => !row.HasError);
-    public string NameError => TrainerName.Length > TrainerNameMaxLength ? LocalizedStrings.Instance["Card8Flow_NameError"] : string.Empty;
+    public string NameError => TrainerName != _originalName && TrainerName.Length > _nameLimit ? LocalizedStrings.Instance["Card8Flow_NameError"] : string.Empty;
     public string NumberError => Number != _originalNumber && (Number.Length > 3 || Number.Any(c => !char.IsAsciiDigit(c)))
         ? LocalizedStrings.Instance["Card8Flow_NumberTextError"] : string.Empty;
+    public bool HasNameError => NameError.Length != 0;
+    public bool HasNumberError => NumberError.Length != 0;
+    public bool HasDateError => DateError.Length != 0;
     public bool HasInvalidStoredDate => Card is { } card && (card.StartedYear != 0 || card.StartedMonth != 0 || card.StartedDay != 0) && GetDate(card).Length == 0;
 
     private void LoadData()
@@ -65,9 +69,9 @@ public partial class TrainerCard8EditorViewModel : ViewModelBase, ICloseableDial
         [
             Field("PokedexOwned", 0x20, 2, card.PokeDexOwned, ushort.MaxValue, v => card.PokeDexOwned = (ushort)v, sentinel: ushort.MaxValue, validMax: ushort.MaxValue - 1),
             Field("ShinyFound", 0x22, 2, card.ShinyPokemonFound, ushort.MaxValue, v => card.ShinyPokemonFound = (ushort)v, sentinel: ushort.MaxValue, validMax: ushort.MaxValue - 1),
-            Field("Caught", 0x2C, 4, card.CaughtPokemon, int.MaxValue, v => card.CaughtPokemon = (int)v, int.MinValue, -1, TrainerCard8.MaxPokemonCaught),
-            Field("Curry", 0x26, 2, card.CurryTypesOwned, ushort.MaxValue, v => card.CurryTypesOwned = (ushort)v, sentinel: ushort.MaxValue, validMax: ushort.MaxValue - 1),
-            Field("Rally", 0x28, 4, card.RotoRallyScore, int.MaxValue, v => card.RotoRallyScore = (int)v, int.MinValue, -1, TrainerCard8.RotoRallyScoreMax),
+            Field("Caught", 0x2C, 4, card.CaughtPokemon, int.MaxValue, v => card.CaughtPokemon = (int)v, int.MinValue, -1, TrainerCard8.MaxPokemonCaught, 0),
+            Field("Curry", 0x26, 2, card.CurryTypesOwned, ushort.MaxValue, v => card.CurryTypesOwned = (ushort)v, sentinel: ushort.MaxValue, validMax: 151),
+            Field("Rally", 0x28, 4, card.RotoRallyScore, int.MaxValue, v => card.RotoRallyScore = (int)v, int.MinValue, null, TrainerCard8.RotoRallyScoreMax, 0),
         ];
         Metadata =
         [
@@ -103,8 +107,8 @@ public partial class TrainerCard8EditorViewModel : ViewModelBase, ICloseableDial
     }
 
     private Card8NumberField Field(string id, int offset, int length, decimal initial, decimal max,
-        Action<decimal> set, decimal min = 0, decimal? sentinel = null, decimal? validMax = null) =>
-        new(id, initial, min, max, sentinel, validMax, value =>
+        Action<decimal> set, decimal min = 0, decimal? sentinel = null, decimal? validMax = null, decimal? validMin = null) =>
+        new(id, initial, min, max, sentinel, validMax, validMin, value =>
         {
             if (_closed || _loading || Card is null) return;
             if (value == initial) _original.AsSpan(offset, length).CopyTo(Card.Data.Slice(offset, length));
@@ -184,13 +188,18 @@ public partial class TrainerCard8EditorViewModel : ViewModelBase, ICloseableDial
     [RelayCommand(CanExecute = nameof(CanSave))] private async Task SaveAsync()
     {
         if (!CanSave || _session is null) return;
-        try { _session.Commit(); _closed = true; ValidationChanged(); CloseRequested?.Invoke(); Dispose(); }
-        catch (InvalidOperationException) { if (_dialogs is not null) await _dialogs.ShowErrorAsync(LocalizedStrings.Instance["TrainerCard8EditorView_Title"], LocalizedStrings.Instance["Card8Flow_CommitError"]); }
+        try { _session.Commit(); }
+        catch (InvalidOperationException)
+        {
+            if (_dialogs is not null) await _dialogs.ShowErrorAsync(LocalizedStrings.Instance["TrainerCard8EditorView_Title"], LocalizedStrings.Instance["Card8Flow_CommitError"]);
+            return;
+        }
+        _closed = true; ValidationChanged(); CloseRequested?.Invoke(); Dispose();
     }
     [RelayCommand] private void Cancel() { if (_closed) return; _closed = true; ValidationChanged(); CloseRequested?.Invoke(); Dispose(); }
     public void Dispose() { _closed = true; WeakReferenceMessenger.Default.UnregisterAll(this); }
     private void ValidationChanged()
-    { OnPropertyChanged(nameof(CanSave)); OnPropertyChanged(nameof(NameError)); OnPropertyChanged(nameof(NumberError)); SaveCommand.NotifyCanExecuteChanged(); }
+    { OnPropertyChanged(nameof(CanSave)); OnPropertyChanged(nameof(NameError)); OnPropertyChanged(nameof(NumberError)); OnPropertyChanged(nameof(HasNameError)); OnPropertyChanged(nameof(HasNumberError)); OnPropertyChanged(nameof(HasDateError)); SaveCommand.NotifyCanExecuteChanged(); }
     private void RefreshStarterOptions()
     {
         var names = GameInfo.Strings.Species;

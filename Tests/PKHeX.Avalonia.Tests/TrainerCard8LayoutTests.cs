@@ -28,8 +28,8 @@ public class TrainerCard8LayoutTests
             var save = TrainerCard8WorkflowTests.CreateSave(); Seed(save, false);
             var before = TrainerCard8WorkflowTests.Snapshot(save);
             using var vm = new TrainerCard8EditorViewModel(save, app.Services.GetRequiredService<ISpriteRenderer>());
-            vm.TrainerName = "Changed";
-            var view = new TrainerCard8EditorView { DataContext = vm }; window = new Window { Content = view, Width = 700, Height = 460 };
+            vm.TrainerName = "Changed"; vm.CardTeam[1].Species = 133;
+            var view = new TrainerCard8EditorView { DataContext = vm }; window = new Window { Content = view, Width = 600, Height = 420 };
             window.Show(); view.FindControl<TabControl>("Card8Tabs")!.SelectedIndex = 1; Pump(window);
             foreach (var language in new[] { "de", "ja", "en" })
             {
@@ -37,6 +37,7 @@ public class TrainerCard8LayoutTests
                 Assert.Equal(language, LocalizedStrings.Instance.CurrentLanguage);
                 Assert.Equal(255, vm.Starter); Assert.Equal(ushort.MaxValue, vm.CardTeam[0].Species);
                 Assert.Equal(253, vm.CardTeam[0].Gender); Assert.Equal("Changed", vm.TrainerName);
+                Assert.Contains(GameInfo.Strings.Species[133], vm.CardTeam[1].Summary);
                 Assert.True(vm.CanSave); TrainerCard8WorkflowTests.AssertUnchanged(save, before);
             }
         }
@@ -97,7 +98,7 @@ public class TrainerCard8LayoutTests
             var sprites = app.Services.GetRequiredService<ISpriteRenderer>(); sprites.Initialize(save);
             using var vm = new TrainerCard8EditorViewModel(save, sprites);
             var view = new TrainerCard8EditorView { DataContext = vm };
-            window = new Window { Content = view, Width = 700, Height = 460 }; window.Show(); Pump(window);
+            window = new Window { Content = view, Width = 600, Height = 420 }; window.Show(); Pump(window);
             Assert.Equal(language, LocalizedStrings.Instance.CurrentLanguage);
             Assert.Equal(255, vm.Starter);
             Assert.Equal(255, view.FindControl<ComboBox>("Card8StarterChoice")!.SelectedValue);

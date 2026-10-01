@@ -34,6 +34,7 @@ public partial class Card8TeamPokemon : ViewModelBase
     public byte[]? Sprite { get; private set; }
     public string Summary { get; private set; } = string.Empty;
     public string FormName { get; private set; } = string.Empty;
+    public bool HasFormName => !string.IsNullOrWhiteSpace(FormName);
 
     public Card8TeamPokemon(SAV8SWSH save, int index, bool title, ISpriteRenderer? sprites, Func<bool> canEdit, Action changed)
     {
@@ -77,7 +78,7 @@ public partial class Card8TeamPokemon : ViewModelBase
     public void RefreshLanguage()
     {
         var names = GameInfo.Strings.Species;
-        var options = names.Take(_save.MaxSpeciesID + 1).Select((name, id) => new ComboItem(name, id)).ToList();
+        var options = names.Take(_save.MaxSpeciesID + 1).Select((name, id) => new ComboItem(id == 0 ? LocalizedStrings.Instance["Card8Flow_EmptySlot"] : name, id)).ToList();
         if (Species > _save.MaxSpeciesID) options.Add(new(LocalizedStrings.Instance.Format("Card8Flow_UnknownSpecies", Species), Species));
         SpeciesOptions = options;
         var genders = new List<ComboItem>
@@ -105,6 +106,6 @@ public partial class Card8TeamPokemon : ViewModelBase
             catch (ArgumentOutOfRangeException) { }
             catch (IndexOutOfRangeException) { }
         }
-        OnPropertyChanged(nameof(Summary)); OnPropertyChanged(nameof(Sprite)); OnPropertyChanged(nameof(FormName)); OnPropertyChanged(nameof(Error)); OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(Summary)); OnPropertyChanged(nameof(Sprite)); OnPropertyChanged(nameof(FormName)); OnPropertyChanged(nameof(HasFormName)); OnPropertyChanged(nameof(Error)); OnPropertyChanged(nameof(HasError));
     }
 }

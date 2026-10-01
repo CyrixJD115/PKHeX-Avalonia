@@ -8,6 +8,7 @@ public sealed class TrainerCard8DataSession
     private readonly SAV8SWSH _source;
     private byte[] _originalCard = [];
     private byte[] _originalTitle = [];
+    private bool _copiedCard, _copiedTitle;
     public SAV8SWSH Staged { get; private set; }
 
     public TrainerCard8DataSession(SAV8SWSH source)
@@ -27,14 +28,16 @@ public sealed class TrainerCard8DataSession
     {
         _originalCard = Staged.TrainerCard.Data.ToArray();
         _originalTitle = Staged.TitleScreen.Data.ToArray();
+        _copiedCard = false; _copiedTitle = false;
     }
 
     public void CopyFromParty(bool titleScreen)
     {
         var data = titleScreen ? Staged.TitleScreen.Data : Staged.TrainerCard.Data;
         var before = data.ToArray();
-        if (titleScreen) Staged.TitleScreen.SetPartyData();
-        else Staged.TrainerCard.SetPartyData();
+        var party = _source.PartyData;
+        if (titleScreen) { Staged.TitleScreen.LoadTeamData(party); _copiedTitle = true; }
+        else { Staged.TrainerCard.LoadTeamData(party); _copiedCard = true; }
         // Core clears empty slots and its narrow-ID setters also normalize padding words.
         // Copy From Party owns only the documented Pokémon fields, never unknown words.
         for (int i = 0; i < 6; i++)
@@ -62,21 +65,21 @@ public sealed class TrainerCard8DataSession
             _source.SetValue(SaveBlockAccessor8SWSH.KRotoRally, (uint)Staged.TrainerCard.RotoRallyScore);
             _source.State.Edited = true;
         }
-        changed |= CommitFields(card, _source.TrainerCard.Data, _originalCard, CardFields());
-        changed |= CommitFields(Staged.TitleScreen.Data, _source.TitleScreen.Data, _originalTitle, TitleFields());
+        changed |= CommitFields(card, _source.TrainerCard.Data, _originalCard, CardFields(), offset => _copiedCard && offset is >= 0xC8 and < 0x170);
+        changed |= CommitFields(Staged.TitleScreen.Data, _source.TitleScreen.Data, _originalTitle, TitleFields(), _ => _copiedTitle);
         Reset();
         return changed;
     }
 
     private bool CommitFields(ReadOnlySpan<byte> staged, Span<byte> source, byte[] original,
-        IEnumerable<(int Offset, int Length)> fields)
+        IEnumerable<(int Offset, int Length)> fields, Func<int, bool> force)
     {
         bool changed = false;
         foreach (var (offset, length) in fields)
         {
             if (offset + length > staged.Length || offset + length > source.Length) continue;
             var desired = staged.Slice(offset, length);
-            if (desired.SequenceEqual(original.AsSpan(offset, length)) || desired.SequenceEqual(source.Slice(offset, length))) continue;
+            if ((!force(offset) && desired.SequenceEqual(original.AsSpan(offset, length))) || desired.SequenceEqual(source.Slice(offset, length))) continue;
             _source.SetData(source.Slice(offset, length), desired);
             changed = true;
         }
@@ -99,7 +102,7 @@ public sealed class TrainerCard8DataSession
     {
         (int, int)[] metadata = [(0, 0x1A), (0x1B, 1), (0x1C, 4), (0x20, 2), (0x22, 2),
             (0x24, 1), (0x25, 1), (0x26, 2), (0x28, 4), (0x2C, 4), (0x30, 1), (0x38, 1),
-            (0x39, 3), (0xC0, 8), (0x170, 2), (0x172, 1), (0x173, 1), (0x1A8, 4), (0x1B4, 1), (0x1B5, 1)];
+            (0x39, 3), (0xC0, 8), (0x170, 4), (0x1A8, 4), (0x1B4, 1), (0x1B5, 1)];
         foreach (var field in metadata) yield return field;
         for (int offset = 0x40; offset <= 0xB0; offset += 8) yield return (offset, 8);
         for (int i = 0; i < 6; i++)
