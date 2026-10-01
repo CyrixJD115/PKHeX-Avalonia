@@ -126,10 +126,11 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
     [RelayCommand] private async Task GenerateAsync()
     {
         if (_closed || !IsSupported) return;
+        int start = GenerateStart, end = GenerateEnd;
         var hashes = FlavorOptions.Where(option => option.IsSelected).Select(option => option.Hash).ToArray();
-        if (GenerateStart < 0 || GenerateEnd > DonutPocket9a.MaxCount || GenerateStart >= GenerateEnd || hashes.Length == 0)
+        if (start < 0 || end > DonutPocket9a.MaxCount || start >= end || hashes.Length == 0)
         { Error = LocalizedStrings.Instance["DonutFlow_RangeError"]; return; }
-        await BulkAsync("DonutEditor_Generate", pocket => pocket.SetRandomShinyTemplateRange(hashes, GenerateStart, GenerateEnd));
+        await BulkAsync("DonutEditor_Generate", pocket => pocket.SetRandomShinyTemplateRange(hashes, start, end));
     }
     [RelayCommand(CanExecute = nameof(CanSave))] private void Save()
     {
@@ -150,7 +151,10 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
         int index = SelectedDonut.Index;
         try
         {
-            var data = await System.IO.File.ReadAllBytesAsync(path);
+            await using var stream = System.IO.File.OpenRead(path);
+            if (stream.Length != Donut9a.Size) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
+            var data = new byte[Donut9a.Size];
+            await stream.ReadExactlyAsync(data);
             if (_closed) return;
             if (!_session.ImportRecord(index, data)) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
             LoadDonuts(); Error = string.Empty;

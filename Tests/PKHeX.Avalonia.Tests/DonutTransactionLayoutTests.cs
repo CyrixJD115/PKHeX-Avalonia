@@ -4,6 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Platform.Storage;
+using Moq;
 using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
 using PKHeX.Core;
@@ -14,6 +18,33 @@ namespace PKHeX.Avalonia.Tests;
 
 public class DonutTransactionLayoutTests
 {
+    [AvaloniaFact]
+    public async Task LocalFileDropStagesSelectedRecordWithoutChangingSource()
+    {
+        using var app = new HeadlessAppFixture();
+        var path = Path.GetTempFileName(); Window? window = null;
+        try
+        {
+            var data = new byte[Donut9a.Size]; data[0] = 1; data[^1] = 0xA5;
+            await File.WriteAllBytesAsync(path, data);
+            var save = DonutFixtureWorkflowTests.CreateSave(); var before = save.Donuts.Data.ToArray();
+            using var vm = new DonutEditorViewModel(save);
+            var view = new DonutEditor { DataContext = vm };
+            window = new Window { Content = view, Width = 720, Height = 460 };
+            window.Show(); Pump(window);
+            var file = new Mock<IStorageFile>(); file.SetupGet(f => f.Path).Returns(new Uri(path));
+            var transfer = new DataTransfer(); transfer.Add(DataTransferItem.CreateFile(file.Object));
+            window.DragDrop(new Point(400, 200), RawDragEventType.DragEnter, transfer, DragDropEffects.Copy, RawInputModifiers.None);
+            window.DragDrop(new Point(400, 200), RawDragEventType.Drop, transfer, DragDropEffects.Copy, RawInputModifiers.None);
+            for (int i = 0; i < 50 && !vm.SelectedDonut!.IsOccupied; i++) { await Task.Delay(10); Pump(window); }
+            Assert.True(vm.SelectedDonut!.IsOccupied);
+            Assert.Equal(before, save.Donuts.Data.ToArray()); Assert.False(save.State.Edited);
+            vm.SaveCommand.Execute(null);
+            Assert.Equal(data, save.Donuts.GetDonut(0).Data.ToArray());
+        }
+        finally { window?.Close(); File.Delete(path); }
+    }
+
     [AvaloniaFact]
     public void LiveLanguageChangeAndRawUnknownIdKeepStagedRecord()
     {

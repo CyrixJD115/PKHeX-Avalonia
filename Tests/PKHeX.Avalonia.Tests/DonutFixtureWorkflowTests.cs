@@ -23,6 +23,40 @@ public class DonutFixtureWorkflowTests
         var blocks = source.AllBlocks.Where(existing => existing.Key != key).Append(block).OrderBy(existing => existing.Key).ToArray();
         return new SAV9ZA(SwishCrypto.Encrypt(blocks));
     }
+    [Fact]
+    public async Task FixtureDirectEditsInvalidHexImportCancelAndSavePreserveOtherBlocks()
+    {
+        var save = CreateSave(); var record = save.Donuts.GetDonut(0);
+        record.MillisecondsSince1970 = 1; record.Flavor0 = ulong.MaxValue; record.Reserved = 12345;
+        save.State.Edited = false;
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        using (var cancelled = new DonutEditorViewModel(save))
+        {
+            cancelled.SelectedDonut!.Stars = 5; cancelled.CancelCommand.Execute(null);
+        }
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+        var path = Path.GetTempFileName();
+        try
+        {
+            using var vm = new DonutEditorViewModel(save);
+            var row = vm.SelectedDonut!; row.Berry1 = 65000; row.DonutType = 65001;
+            row.Flavor0Text = "invalid"; Assert.False(vm.CanSave);
+            Assert.Equal(ulong.MaxValue, row.Flavor0);
+            row.Flavor0Text = "FEDCBA9876543210"; Assert.True(vm.CanSave);
+            await File.WriteAllBytesAsync(path, new byte[Donut9a.Size + 1]);
+            await vm.ImportPathAsync(path); Assert.NotEmpty(vm.Error);
+            foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+            vm.SaveCommand.Execute(null);
+            var roundtrip = new SAV9ZA(save.Write());
+            Assert.Equal(65000, roundtrip.Donuts.GetDonut(0).Berry1);
+            Assert.Equal(65001, roundtrip.Donuts.GetDonut(0).Donut);
+            Assert.Equal(0xFEDCBA9876543210ul, roundtrip.Donuts.GetDonut(0).Flavor0);
+            Assert.Equal(12345ul, roundtrip.Donuts.GetDonut(0).Reserved);
+            foreach (var block in roundtrip.AllBlocks.Where(block => block.Key != 0xBE007476)) Assert.Equal(before[block.Key], block.Data.ToArray());
+        }
+        finally { File.Delete(path); }
+    }
+
     [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
     public async Task FixtureBackedBulkActionsStayStagedUndoAndCommitRoundtrip(int action)
     {

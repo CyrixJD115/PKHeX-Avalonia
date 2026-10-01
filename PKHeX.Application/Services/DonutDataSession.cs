@@ -36,7 +36,8 @@ public sealed class DonutDataSession
         var before = Pocket.Data.ToArray(); bool previousScope = _wholePocket;
         try { edit(Pocket); }
         catch { before.CopyTo(Pocket.Data); throw; }
-        if (!before.AsSpan().SequenceEqual(Pocket.Data)) _undo.Push((before, previousScope));
+        if (before.AsSpan().SequenceEqual(Pocket.Data)) return;
+        _undo.Push((before, previousScope));
         _wholePocket = true;
     }
     public void Undo()

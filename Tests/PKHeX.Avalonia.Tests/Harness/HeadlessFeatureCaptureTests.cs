@@ -37,11 +37,14 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
     {
         if (SkipWhenCaptureDisabled()) return;
         var previous = LocalizedStrings.Instance.CurrentLanguage;
+        var dataLanguage = GameInfo.CurrentLanguage; var strings = GameInfo.Strings; var filtered = GameInfo.FilteredSources;
+        var culture = System.Globalization.CultureInfo.CurrentCulture; var uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
         try
         {
             foreach (var language in new[] { "en", "de" })
             {
-                using var app = new HeadlessAppFixture(); LocalizedStrings.Instance.SetLanguage(language);
+                using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
                 var save = new SAV9ZA(); var donut = save.Donuts.GetDonut(0);
                 donut.MillisecondsSince1970 = 1; donut.Berry1 = 170; donut.Berry2 = 171;
                 donut.Flavor0 = DonutInfo.Flavors[0].Hash; donut.Flavor1 = ulong.MaxValue;
@@ -60,7 +63,13 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
                 finally { window.Close(); }
             }
         }
-        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous); GameInfo.CurrentLanguage = dataLanguage;
+            GameInfo.Strings = strings; GameInfo.FilteredSources = filtered;
+            System.Globalization.CultureInfo.CurrentCulture = culture; System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = defaultCulture; System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = defaultUiCulture;
+        }
     }
 
     [AvaloniaFact]

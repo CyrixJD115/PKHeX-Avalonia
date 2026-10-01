@@ -6,6 +6,18 @@ namespace PKHeX.Avalonia.Tests;
 public class DonutDataSessionTests
 {
     [Fact]
+    public void NoOpBulkDoesNotClaimOrOverwriteIndependentRecords()
+    {
+        var save = new SAV9ZA(); var session = new DonutDataSession(save);
+        session.ApplyBulk(_ => { });
+        Assert.False(session.CanUndo);
+        save.Donuts.GetDonut(10).Stars = 5;
+        Assert.True(session.TryCommit());
+        Assert.Equal(5, save.Donuts.GetDonut(10).Stars);
+        Assert.False(save.State.Edited);
+    }
+
+    [Fact]
     public void WholePocketOperationPreflightsUnchangedSlotsAndUndoRestoresScope()
     {
         var save = new SAV9ZA(); var session = new DonutDataSession(save);

@@ -69,6 +69,30 @@ public class DonutTransactionWorkflowTests
         finally { File.Delete(path); }
     }
     [Fact]
+    public async Task GeneratorUsesConfirmedRangeAndCloseDuringConfirmationDiscards()
+    {
+        var save = new SAV9ZA();
+        var confirmation = new TaskCompletionSource<bool>();
+        var dialog = Dialog();
+        dialog.Setup(d => d.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(() => confirmation.Task);
+        using var vm = new DonutEditorViewModel(save, dialog.Object);
+        vm.GenerateStart = 1; vm.GenerateEnd = 2;
+        var pending = vm.GenerateCommand.ExecuteAsync(null);
+        vm.GenerateStart = 10; vm.GenerateEnd = 11;
+        confirmation.SetResult(true); await pending;
+        Assert.True(vm.Donuts[1].IsOccupied);
+        Assert.False(vm.Donuts[10].IsOccupied);
+        vm.CancelCommand.Execute(null);
+        Assert.False(PKHeX.Application.Services.DonutDataSession.IsOccupied(save.Donuts.GetDonut(1)));
+
+        confirmation = new TaskCompletionSource<bool>();
+        using var closing = new DonutEditorViewModel(save, dialog.Object);
+        pending = closing.RandomizeAllCommand.ExecuteAsync(null);
+        closing.Dispose(); confirmation.SetResult(true); await pending;
+        Assert.False(save.State.Edited); Assert.False(closing.CanUndo);
+    }
+
+    [Fact]
     public void EmptyAndReversedGeneratorRangesShowFeedback()
     {
         using var vm = new DonutEditorViewModel(new SAV9ZA()); vm.GenerateStart = 10; vm.GenerateEnd = 10;
