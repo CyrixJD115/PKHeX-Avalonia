@@ -32,6 +32,9 @@ public class ExpanderVisualStateTests
                     var chevron = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Shapes.Path>().Single(element => element.Name == "ExpandCollapseChevron");
                     return chevron.RenderTransform is RotateTransform transform && Math.Abs(transform.Angle - (expanded ? 180 : 0)) < 0.0001;
                 });
+                var header = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Primitives.ToggleButton>().Single(element => element.Name == "ExpanderHeader");
+                Assert.Equal(expanded, header.IsChecked);
+                Assert.Equal(expanded ? "expanded" : "collapsed", header.Tag);
                 var path = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Shapes.Path>().Single(element => element.Name == "ExpandCollapseChevron");
                 var rotation = Assert.IsType<RotateTransform>(path.RenderTransform);
                 Assert.Equal(expanded ? 180 : 0, rotation.Angle, precision: 3);
@@ -45,6 +48,9 @@ public class ExpanderVisualStateTests
         int consecutive = 0;
         for (int i = 0; i < (settled is null ? 3 : 50); i++)
         {
+            // Request a UI animation frame explicitly: ForceRenderTimerTick can be a no-op
+            // when the headless render timer has no active subscription.
+            window.RequestAnimationFrame(_ => { });
             Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(3);
             await Task.Delay(100);
             if (settled is not null)

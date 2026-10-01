@@ -151,11 +151,17 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
         int index = SelectedDonut.Index;
         try
         {
-            await using var stream = System.IO.File.OpenRead(path);
-            if (stream.Length != Donut9a.Size) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
-            var data = new byte[Donut9a.Size];
-            await stream.ReadExactlyAsync(data);
+            byte[]? data = null;
+            await using (var stream = System.IO.File.OpenRead(path))
+            {
+                if (stream.Length == Donut9a.Size)
+                {
+                    data = new byte[Donut9a.Size];
+                    await stream.ReadExactlyAsync(data);
+                }
+            }
             if (_closed) return;
+            if (data is null) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
             if (!_session.ImportRecord(index, data)) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
             LoadDonuts(); Error = string.Empty;
         }

@@ -5,7 +5,6 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Platform.Storage;
 using Moq;
 using PKHeX.Avalonia.Tests.Harness;
@@ -37,14 +36,28 @@ public class DonutTransactionLayoutTests
             var point = view.FindControl<ListBox>("DonutList")!.TranslatePoint(new Point(20, 20), window)!.Value;
             bool routed = false;
             view.AddHandler(DragDrop.DropEvent, (_, _) => routed = true, handledEventsToo: true);
-            var imported = new TaskCompletionSource<bool>();
+            var imported = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             vm.PropertyChanged += (_, args) =>
             {
-                if (args.PropertyName == nameof(vm.SelectedDonut) && vm.SelectedDonut is { IsOccupied: true }) imported.TrySetResult(true);
+                if (args.PropertyName == nameof(vm.SelectedDonut) && vm.SelectedDonut is { IsOccupied: true })
+                {
+                    // A published import must already have released its local file handle.
+                    using var reopened = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    Assert.Equal(Donut9a.Size, reopened.Length);
+                    imported.TrySetResult(true);
+                }
                 if (args.PropertyName == nameof(vm.Error) && vm.HasError) imported.TrySetResult(false);
             };
-            window.DragDrop(point, RawDragEventType.DragEnter, transfer, DragDropEffects.Copy, RawInputModifiers.None);
-            window.DragDrop(point, RawDragEventType.Drop, transfer, DragDropEffects.Copy, RawInputModifiers.None);
+            Assert.True(DragDrop.GetAllowDrop(view));
+            Assert.True(point.X >= 0 && point.Y >= 0 && point.X < window.Bounds.Width && point.Y < window.Bounds.Height);
+            // As with the composed harness Click helper, exercise the production routed handler
+            // without depending on the asynchronous compositor's raw-input hit-test scene.
+            var over = new DragEventArgs(DragDrop.DragOverEvent, transfer, view, default, KeyModifiers.None);
+            view.RaiseEvent(over); Assert.True(over.Handled); Assert.Equal(DragDropEffects.Copy, over.DragEffects);
+            var multiple = new DataTransfer(); multiple.Add(DataTransferItem.CreateFile(file.Object)); multiple.Add(DataTransferItem.CreateFile(file.Object));
+            var rejected = new DragEventArgs(DragDrop.DragOverEvent, multiple, view, default, KeyModifiers.None);
+            view.RaiseEvent(rejected); Assert.Equal(DragDropEffects.None, rejected.DragEffects);
+            view.RaiseEvent(new DragEventArgs(DragDrop.DropEvent, transfer, view, default, KeyModifiers.None));
             Assert.True(routed, "The drop must reach the actual editor's routed handler.");
             await Task.WhenAny(imported.Task, Task.Delay(TimeSpan.FromSeconds(10)));
             Assert.True(imported.Task.IsCompletedSuccessfully && imported.Task.Result, $"Local import did not finish: {vm.Error}");
