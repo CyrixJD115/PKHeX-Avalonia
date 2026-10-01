@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -48,6 +49,50 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
                     var vm = new DLC5EditorViewModel(save, new RecordingDialogService(), new global::PKHeX.Avalonia.Services.PngImageCodec()) { SelectedTab = tab };
                     CaptureAuxiliaryView(new DLC5Editor { DataContext = vm }, $"dlc5-{language}-tab{tab}.png",
                         language == "en" ? 780 : 620, language == "en" ? 700 : 420, "Gen 5 DLC image workflow");
+                }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
+    public void CaptureJoinAvenueAdvanced_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                foreach (var tab in Enumerable.Range(0, 6))
+                {
+                    var save = LoadCaptureSave<SAV5B2W2>("gen5_white2.sav");
+                    save.JoinAvenue.Self.DateAdventureStart = new JoinAvenueDate5 { Date = new DateOnly(2020, 1, 2) };
+                    var vm = new JoinAvenueEditorViewModel(save);
+                    var view = new JoinAvenueEditor { DataContext = vm };
+                    var window = new Window { Content = view, Width = language == "en" ? 1020 : 820, Height = language == "en" ? 760 : 640 };
+                    window.Show();
+                    try
+                    {
+                        PumpToStableLayout(window);
+                        view.FindControl<TabControl>("AvenueTabs")!.SelectedIndex = tab;
+                        PumpToStableLayout(window);
+                        if (tab != 0)
+                        {
+                            JoinAvenueEntityViewModel entry = tab switch { 1 => vm.Self, 2 => vm.SelectedVisitor!, 3 => vm.SelectedFan!, 4 => vm.SelectedOccupant!, _ => vm.SelectedAssistant! };
+                            var expander = view.GetVisualDescendants().OfType<Expander>().Single(e => ReferenceEquals(e.DataContext, entry));
+                            expander.IsExpanded = true; PumpToStableLayout(window);
+                            var scroll = expander.GetVisualAncestors().OfType<ScrollViewer>().First();
+                            var top = expander.TranslatePoint(default, scroll)!.Value.Y + scroll.Offset.Y;
+                            scroll.Offset = new global::Avalonia.Vector(scroll.Offset.X, Math.Max(0, top));
+                            PumpToStableLayout(window);
+                        }
+                        var path = Path.Combine(CaptureDirectory(), $"join-avenue-{language}-tab{tab}.png");
+                        Assert.Equal(path, CaptureWindow(window, path));
+                        output.WriteLine($"Saved Join Avenue advanced frame to {path}");
+                    }
+                    finally { window.Close(); }
                 }
             }
         }

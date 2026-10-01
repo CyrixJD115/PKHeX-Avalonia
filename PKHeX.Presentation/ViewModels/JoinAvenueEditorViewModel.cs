@@ -73,20 +73,20 @@ public partial class JoinAvenueEditorViewModel : ViewModelBase
             VisitingPlayers.Add(new JoinAvenueVisitingPlayerViewModel(this, i, settings.GetVisitingPlayerTrainerID(i)));
 
         // ---- Self (a Visitor entity that won't always be filled out) ----
-        Self = new JoinAvenueVisitorEntryViewModel(this, "Self", () => _block!.Self, _spriteRenderer);
+        Self = new JoinAvenueVisitorEntryViewModel(this, LocalizedStrings.Instance["JoinAvenueAdvanced_Self"], () => _block!.Self, _spriteRenderer);
 
         // ---- Visitors / Occupants (both Visitor entities) ----
         for (int i = 0; i < JoinAvenue5.VisitorCount; i++)
         {
             int slot = i;
-            Visitors.Add(new JoinAvenueVisitorEntryViewModel(this, $"Visitor {slot + 1}", () => _block!.GetVisitor(slot), _spriteRenderer));
+            Visitors.Add(new JoinAvenueVisitorEntryViewModel(this, LocalizedStrings.Instance.Format("JoinAvenueAdvanced_VisitorSlot", slot + 1), () => _block!.GetVisitor(slot), _spriteRenderer));
         }
         _selectedVisitor = Visitors[0];
 
         for (int i = 0; i < JoinAvenue5.OccupantCount; i++)
         {
             int slot = i;
-            Occupants.Add(new JoinAvenueVisitorEntryViewModel(this, $"Occupant {slot + 1}", () => _block!.GetOccupant(slot), _spriteRenderer));
+            Occupants.Add(new JoinAvenueVisitorEntryViewModel(this, LocalizedStrings.Instance.Format("JoinAvenueAdvanced_OccupantSlot", slot + 1), () => _block!.GetOccupant(slot), _spriteRenderer));
         }
         _selectedOccupant = Occupants[0];
 
@@ -94,7 +94,7 @@ public partial class JoinAvenueEditorViewModel : ViewModelBase
         for (int i = 0; i < JoinAvenue5.FanCount; i++)
         {
             int slot = i;
-            Fans.Add(new JoinAvenueFanEntryViewModel(this, $"Fan {slot + 1}", () => _block!.GetFan(slot), _spriteRenderer));
+            Fans.Add(new JoinAvenueFanEntryViewModel(this, LocalizedStrings.Instance.Format("JoinAvenueAdvanced_FanSlot", slot + 1), () => _block!.GetFan(slot), _spriteRenderer));
         }
         _selectedFan = Fans[0];
 
@@ -102,7 +102,7 @@ public partial class JoinAvenueEditorViewModel : ViewModelBase
         for (int i = 0; i < JoinAvenue5.AssistantCount; i++)
         {
             int slot = i;
-            Assistants.Add(new JoinAvenueAssistantEntryViewModel(this, $"Assistant {slot + 1}", () => _block!.GetAssistant(slot), _spriteRenderer));
+            Assistants.Add(new JoinAvenueAssistantEntryViewModel(this, LocalizedStrings.Instance.Format("JoinAvenueAdvanced_AssistantSlot", slot + 1), () => _block!.GetAssistant(slot), _spriteRenderer));
         }
         _selectedAssistant = Assistants[0];
 
@@ -124,21 +124,48 @@ public partial class JoinAvenueEditorViewModel : ViewModelBase
     [ObservableProperty] private int _promotionDaysElapsed;
     [ObservableProperty] private bool _isPromotionActive;
 
-    public int MaxRank => JoinAvenueSettings5.MaxAvenueRank;
-    public int MaxVisitingPlayers => JoinAvenueSettings5.CountVisitingPlayersRemembered;
-    public int MaxPromotionDays => JoinAvenueSettings5.PromotionDaysMax;
+    public int MaxRank => Math.Max(JoinAvenueSettings5.MaxAvenueRank, Rank);
+    public int MaxVisitingPlayers => Math.Max(JoinAvenueSettings5.CountVisitingPlayersRemembered, VisitingPlayerCount);
+    public int MaxVisitingPlayerIndex => Math.Max(JoinAvenueSettings5.CountVisitingPlayersRemembered - 1, VisitingPlayerInsertIndex);
+    public int MaxPromotionDays => Math.Max(JoinAvenueSettings5.PromotionDaysMax, PromotionDaysElapsed);
 
-    public IReadOnlyList<ComboItem> CeilingColorList { get; } = BuildEnumList<JoinAvenueCeilingColor5>();
+    public IReadOnlyList<ComboItem> CeilingColorList
+    {
+        get
+        {
+            var values = BuildEnumList<JoinAvenueCeilingColor5>().ToList();
+            if (!values.Any(i => i.Value == CeilingColorIndex)) values.Add(new(LocalizedStrings.Instance.Format("JoinAvenueAdvanced_UnknownValue", CeilingColorIndex), CeilingColorIndex));
+            return values;
+        }
+    }
 
     partial void OnAvenueNameChanged(string value) => Settings(s => s.Name = value ?? string.Empty);
     partial void OnPlayerTitleChanged(string value) => Settings(s => s.PlayerTitle = value ?? string.Empty);
     partial void OnExperienceChanged(long value) => Settings(s => s.Experience = (uint)value);
-    partial void OnRankChanged(int value) => Settings(s => s.Rank = (ushort)Math.Clamp(value, 0, JoinAvenueSettings5.MaxAvenueRank));
+    partial void OnRankChanged(int value)
+    {
+        Settings(settings => settings.Rank = (ushort)Math.Clamp(value, 0, ushort.MaxValue));
+        if (_loading || _block is null) return;
+        _rank = _block.Settings.Rank;
+        OnPropertyChanged(nameof(Rank)); OnPropertyChanged(nameof(MaxRank));
+    }
     partial void OnCeilingColorIndexChanged(int value) => Settings(s => s.CeilingColor = (JoinAvenueCeilingColor5)value);
     partial void OnFlagsChanged(long value) => Settings(s => s.Flags = (uint)value);
     partial void OnSeedChanged(long value) => Settings(s => s.Seed = (uint)value);
-    partial void OnVisitingPlayerCountChanged(int value) => Settings(s => s.VisitingPlayerDatabaseCount = (ushort)Math.Max(0, value));
-    partial void OnVisitingPlayerInsertIndexChanged(int value) => Settings(s => s.VistiingPlayerDatabaseInsertIndex = (ushort)Math.Max(0, value));
+    partial void OnVisitingPlayerCountChanged(int value)
+    {
+        Settings(settings => settings.VisitingPlayerDatabaseCount = (ushort)Math.Clamp(value, 0, ushort.MaxValue));
+        if (_loading || _block is null) return;
+        _visitingPlayerCount = _block.Settings.VisitingPlayerDatabaseCount;
+        OnPropertyChanged(nameof(VisitingPlayerCount)); OnPropertyChanged(nameof(MaxVisitingPlayers));
+    }
+    partial void OnVisitingPlayerInsertIndexChanged(int value)
+    {
+        Settings(settings => settings.VistiingPlayerDatabaseInsertIndex = (ushort)Math.Clamp(value, 0, ushort.MaxValue));
+        if (_loading || _block is null) return;
+        _visitingPlayerInsertIndex = _block.Settings.VistiingPlayerDatabaseInsertIndex;
+        OnPropertyChanged(nameof(VisitingPlayerInsertIndex)); OnPropertyChanged(nameof(MaxVisitingPlayerIndex));
+    }
     partial void OnPromotionDaysElapsedChanged(int value) => Settings(s => s.PromotionDaysElapsed = (ushort)Math.Max(0, value));
     partial void OnIsPromotionActiveChanged(bool value) => Settings(s => s.IsPromotionActive = value);
 
@@ -201,8 +228,24 @@ public partial class JoinAvenueEditorViewModel : ViewModelBase
     [ObservableProperty] private JoinAvenueFanEntryViewModel? _selectedFan;
     [ObservableProperty] private JoinAvenueAssistantEntryViewModel? _selectedAssistant;
 
-    public uint CountVisitor => _block?.CountVisitor ?? 0;
-    public uint CountFan => _block?.CountFan ?? 0;
+    public long CountVisitor
+    {
+        get => _block?.CountVisitor ?? 0;
+        set
+        {
+            if (_loading || _block is null || value is < 0 or > uint.MaxValue || value == _block.CountVisitor) return;
+            _block.CountVisitor = (uint)value; MarkEdited(); OnPropertyChanged();
+        }
+    }
+    public long CountFan
+    {
+        get => _block?.CountFan ?? 0;
+        set
+        {
+            if (_loading || _block is null || value is < 0 or > uint.MaxValue || value == _block.CountFan) return;
+            _block.CountFan = (uint)value; MarkEdited(); OnPropertyChanged();
+        }
+    }
 
     // ---------------- Import / export plumbing ----------------
 
@@ -315,7 +358,15 @@ public partial class JoinAvenueSpeciesViewModel : ViewModelBase
 
     public const int MaxSpeciesGen5 = 649; // Legal.MaxSpeciesID_5 (Genesect); the Core constant is internal.
 
-    public static IReadOnlyList<ComboItem> SpeciesSource { get; } = BuildSpeciesSource();
+    public IReadOnlyList<ComboItem> SpeciesSource
+    {
+        get
+        {
+            var list = BuildSpeciesSource().ToList();
+            if (!list.Any(i => i.Value == Species)) list.Add(new ComboItem(LocalizedStrings.Instance.Format("JoinAvenueAdvanced_UnknownValue", Species), Species));
+            return list;
+        }
+    }
 
     public JoinAvenueSpeciesViewModel(ushort species, ISpriteRenderer? spriteRenderer, Action<ushort>? onChanged)
     {
@@ -325,7 +376,7 @@ public partial class JoinAvenueSpeciesViewModel : ViewModelBase
     }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Sprite))]
+    [NotifyPropertyChangedFor(nameof(Sprite), nameof(SpeciesSource))]
     private int _species;
 
     public byte[]? Sprite => _spriteRenderer?.GetSprite((ushort)Species, 0, 0, 0, false, EntityContext.Gen5);
@@ -371,12 +422,20 @@ public abstract partial class JoinAvenueEntityViewModel : ViewModelBase
 
     public string Label { get; }
 
-    public IReadOnlyList<ComboItem> GenderList { get; } =
-    [
-        new ComboItem("Male", 0),
-        new ComboItem("Female", 1),
-        new ComboItem("Genderless", 2),
-    ];
+    public IReadOnlyList<ComboItem> GenderList
+    {
+        get
+        {
+            var values = new List<ComboItem>
+            {
+                new(LocalizedStrings.Instance["JoinAvenueAdvanced_Male"], 0),
+                new(LocalizedStrings.Instance["JoinAvenueAdvanced_Female"], 1),
+                new(LocalizedStrings.Instance["JoinAvenueAdvanced_Genderless"], 2),
+            };
+            if (!values.Any(i => i.Value == Gender)) values.Add(new(LocalizedStrings.Instance.Format("JoinAvenueAdvanced_UnknownValue", Gender), Gender));
+            return values;
+        }
+    }
 
     public abstract IJoinAvenueEntity5 Entity { get; }
 
@@ -423,6 +482,7 @@ public abstract partial class JoinAvenueEntityViewModel : ViewModelBase
         MetDay = e.MetDay;
         IsInteractedToday = e.IsInteractedToday;
         Seed = e.Seed;
+        RefreshAdvanced();
     }
 
     partial void OnNameChanged(string value) => Write(e => e.Name = value ?? string.Empty);
@@ -441,7 +501,16 @@ public abstract partial class JoinAvenueEntityViewModel : ViewModelBase
     partial void OnMetYearChanged(int value) => Write(e => e.MetYear = (byte)value);
     partial void OnMetMonthChanged(int value) => Write(e => e.MetMonth = (byte)value);
     partial void OnMetDayChanged(int value) => Write(e => e.MetDay = (byte)value);
-    partial void OnIsInteractedTodayChanged(bool value) => Write(e => e.IsInteractedToday = value);
+    partial void OnIsInteractedTodayChanged(bool value) => Write(e =>
+    {
+        if (e is JoinAvenueAssistant5 assistant)
+        {
+            var raw = assistant.Write().ToArray();
+            raw[0x33] = (byte)((raw[0x33] & ~1) | (value ? 1 : 0));
+            assistant.CopyFrom(new JoinAvenueAssistant5(raw));
+        }
+        else e.IsInteractedToday = value;
+    });
     partial void OnSeedChanged(long value) => Write(e => e.Seed = (uint)value);
 
     protected bool Suppress;
@@ -451,6 +520,7 @@ public abstract partial class JoinAvenueEntityViewModel : ViewModelBase
         if (Suppress || Parent.IsLoading) return;
         apply(Entity);
         Parent.MarkEdited();
+        RefreshAdvancedValues();
     }
 
     /// <summary>Re-read every surfaced field from the live entity without writing back (used after import).</summary>
@@ -509,7 +579,7 @@ public partial class JoinAvenueVisitorEntryViewModel : JoinAvenueEntityViewModel
     [ObservableProperty] private int _joinAvenueRank;
     [ObservableProperty] private int _origin;
 
-    public int ShopMaxLevel => JoinAvenueVisitor5.ShopMaxRank;
+    public int ShopMaxLevel => Math.Max(JoinAvenueVisitor5.ShopMaxRank, ShopLevel);
     public int ShopTypeMaxLevel => JoinAvenueVisitor5.ShopMaxRank - 1;
     public int ShopTypeMaxVersion => JoinAvenueVisitor5.ShopVersionCount - 1;
 
@@ -553,7 +623,13 @@ public partial class JoinAvenueVisitorEntryViewModel : JoinAvenueEntityViewModel
     partial void OnMedalRankChanged(int value) => WriteVisitor(v => v.MedalRank = (byte)value);
     partial void OnMedalHintChanged(int value) => WriteVisitor(v => v.MedalHint = (byte)value);
     partial void OnMedalCountChanged(int value) => WriteVisitor(v => v.MedalCount = (byte)value);
-    partial void OnShopLevelChanged(int value) => WriteVisitor(v => v.ShopRank = (byte)value);
+    partial void OnShopLevelChanged(int value)
+    {
+        WriteVisitor(v => v.ShopRank = (byte)value);
+        if (Suppress || Parent.IsLoading) return;
+        _shopLevel = Visitor.ShopRank;
+        OnPropertyChanged(nameof(ShopLevel)); OnPropertyChanged(nameof(ShopMaxLevel));
+    }
     partial void OnShopExperienceChanged(int value) => WriteVisitor(v => v.ShopExperience = (ushort)value);
     partial void OnJoinAvenueRankChanged(int value) => WriteVisitor(v => v.JoinAvenueRank = (byte)value);
     partial void OnOriginChanged(int value) => WriteVisitor(v => v.Origin = (ushort)value);
@@ -593,6 +669,7 @@ public partial class JoinAvenueVisitorEntryViewModel : JoinAvenueEntityViewModel
         if (Suppress || Parent.IsLoading) return;
         apply(_accessor());
         Parent.MarkEdited();
+        RefreshAdvancedValues();
     }
 
     [RelayCommand]
@@ -658,6 +735,7 @@ public partial class JoinAvenueFanEntryViewModel : JoinAvenueEntityViewModel
         if (Suppress || Parent.IsLoading) return;
         apply(_accessor());
         Parent.MarkEdited();
+        RefreshAdvancedValues();
     }
 
     [RelayCommand]
@@ -719,6 +797,7 @@ public partial class JoinAvenueAssistantEntryViewModel : JoinAvenueEntityViewMod
         if (Suppress || Parent.IsLoading) return;
         apply(_accessor());
         Parent.MarkEdited();
+        RefreshAdvancedValues();
     }
 
     [RelayCommand]
