@@ -307,7 +307,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     : sav is SAV7 or SAV7b or SAV8BS
                         ? new CategorizedEventEditorViewModel(sav, _dialogService)
                         : new EventFlagsEditorViewModel(sav);
-                MysteryGiftEditor = new MysteryGiftEditorViewModel(sav, _dialogService, _giftRecordProvider);
+                MysteryGiftEditor = new MysteryGiftEditorViewModel(sav, _dialogService, _giftRecordProvider, _spriteRenderer);
                 BatchEditor = new BatchEditorViewModel(sav, _dialogService, _undoRedo, _uiDispatcher);
                 BatchEditor.BatchEditCompleted += OnBatchEditCompleted;
             }
