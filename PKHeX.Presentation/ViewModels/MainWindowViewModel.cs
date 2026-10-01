@@ -19,6 +19,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly ISlotService _slotService;
     private readonly IClipboardService _clipboardService;
     private readonly IQrCodeService _qrCodeService;
+    private readonly IImageCodec? _imageCodec;
     private readonly ISaveBackupService _saveBackupService;
     private readonly AppSettings _settings;
     private readonly ISettingsStore _settingsStore;
@@ -153,7 +154,8 @@ public partial class MainWindowViewModel : ViewModelBase
         ILivingDexService livingDexService,
         IGiftRecordProvider giftRecordProvider,
         IUiDispatcher? uiDispatcher = null,
-        IAudioPlaybackService? audioPlaybackService = null)
+        IAudioPlaybackService? audioPlaybackService = null,
+        IImageCodec? imageCodec = null)
     {
         _saveFileService = saveFileService;
         _dialogService = dialogService;
@@ -162,6 +164,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _slotService = slotService;
         _clipboardService = clipboardService;
         _qrCodeService = qrCodeService;
+        _imageCodec = imageCodec;
         _updateCoordinator = updateCoordinator;
         _saveBackupService = saveBackupService;
         _settings = settings;

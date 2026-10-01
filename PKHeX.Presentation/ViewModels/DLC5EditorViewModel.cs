@@ -12,19 +12,22 @@ public partial class DLC5EditorViewModel : ViewModelBase
 {
     private readonly SAV5 _sav;
     private readonly IDialogService _dialogService;
+    private readonly IImageCodec? _imageCodec;
 
     public bool IsB2W2 { get; }
     public bool IsBW { get; }
 
-    public DLC5EditorViewModel(SAV5 sav, IDialogService dialogService)
+    public DLC5EditorViewModel(SAV5 sav, IDialogService dialogService, IImageCodec? imageCodec = null)
     {
         _sav = sav;
         _dialogService = dialogService;
+        _imageCodec = imageCodec;
         
         IsB2W2 = sav is SAV5B2W2;
         IsBW = sav is SAV5BW;
 
         RefreshLists();
+        RefreshImages();
     }
 
     // PWT (B2W2 Only)
@@ -40,7 +43,7 @@ public partial class DLC5EditorViewModel : ViewModelBase
     // Battle Video
     public string[] BattleVideoItems { get; private set; } = [];
     private int _battleVideoIndex;
-    public int BattleVideoIndex { get => _battleVideoIndex; set => SetProperty(ref _battleVideoIndex, value); }
+    public int BattleVideoIndex { get => _battleVideoIndex; set { if (SetProperty(ref _battleVideoIndex, value)) ExportBattleVideoDecryptedCommand.NotifyCanExecuteChanged(); } }
 
     private void RefreshLists()
     {
@@ -115,7 +118,7 @@ public partial class DLC5EditorViewModel : ViewModelBase
     [RelayCommand]
     private async Task ImportCGearAsync()
     {
-        var result = await _dialogService.OpenFileAsync(LocalizedStrings.Instance["DLC5Editor_ImportCGearTitle"], ["cgb", "png"]);
+        var result = await _dialogService.OpenFileAsync(LocalizedStrings.Instance["DLC5Editor_ImportCGearTitle"], ["cgb", "psk"]);
         if (result is null) return;
 
         var data = await TryReadAllBytesAsync(result);
@@ -145,6 +148,7 @@ public partial class DLC5EditorViewModel : ViewModelBase
         }
 
         _sav.SetCGearSkin(temp.Data);
+        RefreshImages();
         await _dialogService.ShowInformationAsync(LocalizedStrings.Instance["DLC5Editor_SuccessTitle"], LocalizedStrings.Instance["DLC5Editor_CGearImportSuccess"]);
     }
 
@@ -197,6 +201,7 @@ public partial class DLC5EditorViewModel : ViewModelBase
 
         var data = await TryReadAllBytesAsync(result);
         if (data is null) return;
+        if (data.Length == PokeDexSkin5.SIZE - 4) Array.Resize(ref data, PokeDexSkin5.SIZE);
         if (data.Length != _sav.PokedexSkinData.Length)
         {
              await _dialogService.ShowErrorAsync(LocalizedStrings.Instance["Common_Error"], LocalizedStrings.Instance.Format("DLC5Editor_InvalidFileSizeBytes", _sav.PokedexSkinData.Length));
@@ -204,6 +209,7 @@ public partial class DLC5EditorViewModel : ViewModelBase
         }
 
         _sav.SetPokeDexSkin(data);
+        RefreshImages();
         await _dialogService.ShowInformationAsync(LocalizedStrings.Instance["DLC5Editor_SuccessTitle"], LocalizedStrings.Instance["DLC5Editor_PokedexImported"]);
     }
 
@@ -304,6 +310,8 @@ public partial class DLC5EditorViewModel : ViewModelBase
             bvid.RefreshChecksums();
 
         _sav.SetBattleVideo(BattleVideoIndex, data);
+        RefreshLists();
+        ExportBattleVideoDecryptedCommand.NotifyCanExecuteChanged();
         RefreshLists();
     }
 

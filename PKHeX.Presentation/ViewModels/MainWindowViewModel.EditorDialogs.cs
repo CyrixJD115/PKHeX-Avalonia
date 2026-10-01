@@ -353,7 +353,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV5 sav) return;
         await _windowService.ShowDialogAsync(
-            new DLC5EditorViewModel(sav, _dialogService),
+            new DLC5EditorViewModel(sav, _dialogService, _imageCodec),
             T("Dialog_DLCEditorGen5"));
     }
 
