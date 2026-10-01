@@ -22,8 +22,8 @@ public class MysteryGiftPreviewLayoutTests
     public void AlbumPreviewRendersWithoutMutatingSave(GameVersion version, string language)
     {
         var previous = LocalizedStrings.Instance.CurrentLanguage;
-        LocalizedStrings.Instance.SetLanguage(language);
         using var app = new HeadlessAppFixture();
+        LocalizedStrings.Instance.SetLanguage(language);
         var save = BlankSaveFile.Get(version);
         var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
         var gift = storage.GetMysteryGift(0);
@@ -34,6 +34,7 @@ public class MysteryGiftPreviewLayoutTests
         save.State.Edited = false;
         var before = save.Data.ToArray();
         app.LoadSaveInstance(save);
+        Assert.Equal(language, LocalizedStrings.Instance.CurrentLanguage);
         var vm = Assert.IsType<MysteryGiftEditorViewModel>(app.ViewModel.MysteryGiftEditor);
         var view = new MysteryGiftEditor { DataContext = vm };
         var window = new Window { Content = view, Width = 700, Height = 420 };

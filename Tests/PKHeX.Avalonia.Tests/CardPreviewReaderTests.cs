@@ -6,6 +6,38 @@ namespace PKHeX.Avalonia.Tests;
 public class CardPreviewReaderTests
 {
     [Fact]
+    public void UnknownGiftKindUsesReadableFallbackWithoutChangingBytes()
+    {
+        var gift = new WC8 { CardType = (WC8.GiftType)255, ItemID = 23 };
+        var before = gift.Data.ToArray();
+        var preview = new ReadCardPreviewUseCase().Execute(gift);
+        Assert.Equal("Other", preview.Kind);
+        Assert.Equal(before, gift.Data.ToArray());
+    }
+
+    [Fact]
+    public void NonPokemonGiftKindsExposeStoredPayloadWithoutMutation()
+    {
+        DataMysteryGift[] gifts =
+        [
+            new WC7 { IsBP = true }, new WC7 { IsBean = true }, new PGF { IsPower = true },
+            new WC8 { CardType = WC8.GiftType.Clothing }, new WB8 { CardType = WB8.GiftType.Money },
+            new WB8 { CardType = WB8.GiftType.UnderGroundItem },
+        ];
+        foreach (var gift in gifts)
+        {
+            gift.ItemID = 23;
+            gift.Quantity = 11;
+            var before = gift.Data.ToArray();
+            var preview = new ReadCardPreviewUseCase().Execute(gift);
+            Assert.NotEqual("Other", preview.Kind);
+            Assert.Contains(preview.Fields, field => field.Key == "PayloadId" && field.Value == "23");
+            Assert.Contains(preview.Fields, field => field.Key == "Quantity");
+            Assert.Equal(before, gift.Data.ToArray());
+        }
+    }
+
+    [Fact]
     public void LgpeRecordShowsStoredItemQuantitiesWithoutInventedMetadata()
     {
         var gift = new WR7 { IsItem = true, ItemCount = 2, ItemID = 100, ItemIDCount = 5,

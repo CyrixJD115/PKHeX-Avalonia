@@ -107,8 +107,8 @@ public sealed class ReadCardPreviewUseCase
             {
                 WC7 { IsBP: true } => "BattlePoints", WC7 { IsBean: true } => "Beans",
                 PGF { IsPower: true } => "Power",
-                WC8 x => x.CardType.ToString(), WB8 x => x.CardType.ToString(),
-                WA8 x => x.CardType.ToString(), WC9 x => x.CardType.ToString(), WA9 x => x.CardType.ToString(),
+                WC8 x => Kind(x.CardType), WB8 x => Kind(x.CardType),
+                WA8 x => Kind(x.CardType), WC9 x => Kind(x.CardType), WA9 x => Kind(x.CardType),
                 _ => "Other",
             };
             Add("PayloadId", gift.ItemID);
@@ -144,4 +144,6 @@ public sealed class ReadCardPreviewUseCase
         bool? daily = gift switch { WC7 x => x.GiftOncePerDay, WB7 x => x.GiftOncePerDay, WB8 x => x.GiftOncePerDay, _ => null };
         return new(gift.CardID, gift.CardTitle, gift.Type, kind, collected, repeatable, daily, items, fields);
     }
+    private static string Kind<T>(T value) where T : struct, Enum => Enum.IsDefined(value) ? value.ToString() : "Other";
+
 }
