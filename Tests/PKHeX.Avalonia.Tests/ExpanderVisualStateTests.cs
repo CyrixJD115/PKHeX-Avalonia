@@ -27,7 +27,11 @@ public class ExpanderVisualStateTests
             foreach (bool expanded in new[] { false, true, false })
             {
                 expander.IsExpanded = expanded;
-                await Settle(window);
+                await Settle(window, () =>
+                {
+                    var chevron = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Shapes.Path>().Single(element => element.Name == "ExpandCollapseChevron");
+                    return chevron.RenderTransform is RotateTransform transform && Math.Abs(transform.Angle - (expanded ? 180 : 0)) < 0.0001;
+                });
                 var path = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Shapes.Path>().Single(element => element.Name == "ExpandCollapseChevron");
                 var rotation = Assert.IsType<RotateTransform>(path.RenderTransform);
                 Assert.Equal(expanded ? 180 : 0, rotation.Angle, precision: 3);
@@ -36,12 +40,18 @@ public class ExpanderVisualStateTests
         finally { window.Close(); }
     }
 
-    internal static async Task Settle(Window window)
+    internal static async Task Settle(Window window, Func<bool>? settled = null)
     {
-        for (int i = 0; i < 3; i++)
+        int consecutive = 0;
+        for (int i = 0; i < (settled is null ? 3 : 50); i++)
         {
-            Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(3);
             await Task.Delay(100);
+            if (settled is not null)
+            {
+                consecutive = settled() ? consecutive + 1 : 0;
+                if (consecutive == 2) break;
+            }
         }
         Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs();
     }

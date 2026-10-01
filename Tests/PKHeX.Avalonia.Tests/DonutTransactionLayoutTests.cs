@@ -34,9 +34,20 @@ public class DonutTransactionLayoutTests
             window.Show(); Pump(window);
             var file = new Mock<IStorageFile>(); file.SetupGet(f => f.Path).Returns(new Uri(path));
             var transfer = new DataTransfer(); transfer.Add(DataTransferItem.CreateFile(file.Object));
-            window.DragDrop(new Point(400, 200), RawDragEventType.DragEnter, transfer, DragDropEffects.Copy, RawInputModifiers.None);
-            window.DragDrop(new Point(400, 200), RawDragEventType.Drop, transfer, DragDropEffects.Copy, RawInputModifiers.None);
-            for (int i = 0; i < 50 && !vm.SelectedDonut!.IsOccupied; i++) { await Task.Delay(10); Pump(window); }
+            var point = view.FindControl<ListBox>("DonutList")!.TranslatePoint(new Point(20, 20), window)!.Value;
+            bool routed = false;
+            view.AddHandler(DragDrop.DropEvent, (_, _) => routed = true, handledEventsToo: true);
+            var imported = new TaskCompletionSource<bool>();
+            vm.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(vm.SelectedDonut) && vm.SelectedDonut is { IsOccupied: true }) imported.TrySetResult(true);
+                if (args.PropertyName == nameof(vm.Error) && vm.HasError) imported.TrySetResult(false);
+            };
+            window.DragDrop(point, RawDragEventType.DragEnter, transfer, DragDropEffects.Copy, RawInputModifiers.None);
+            window.DragDrop(point, RawDragEventType.Drop, transfer, DragDropEffects.Copy, RawInputModifiers.None);
+            Assert.True(routed, "The drop must reach the actual editor's routed handler.");
+            await Task.WhenAny(imported.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+            Assert.True(imported.Task.IsCompletedSuccessfully && imported.Task.Result, $"Local import did not finish: {vm.Error}");
             Assert.True(vm.SelectedDonut!.IsOccupied);
             Assert.Equal(before, save.Donuts.Data.ToArray()); Assert.False(save.State.Edited);
             vm.SaveCommand.Execute(null);

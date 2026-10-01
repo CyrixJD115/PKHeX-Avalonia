@@ -28,7 +28,7 @@ an overrides callback that registers the two test doubles last (DI last-registra
 — save-file gateway, slot service, sprite renderer, undo/redo, every editor ViewModel — is the exact
 production wiring.
 
-Visual captures of animated controls need an additional settling step: layout pumps do not advance elapsed animation time. `ExpanderVisualStateTests.Settle` uses bounded asynchronous delays and renders to let Fluent chevrons reach their final angle. Verify both collapsed and expanded states before reviewing icons; ordinary non-animated layout tests continue to use deterministic pumps.
+Visual captures of animated controls need an additional settling step: layout pumps do not advance elapsed animation time. `ExpanderVisualStateTests.Settle` uses bounded asynchronous delays and render ticks to let Fluent chevrons reach their final angle. Its state regression waits for two consecutive observed endpoint angles within a five-second bound, rather than assuming a fixed delay is sufficient on every runner. Verify both collapsed and expanded states before reviewing icons; ordinary non-animated layout tests continue to use deterministic pumps.
 
 Tests must be written with `[AvaloniaFact]`/`[AvaloniaTheory]` so the body runs on the Avalonia UI
 thread (the headless xUnit harness marshals it there). Determinism comes from **pumping the
