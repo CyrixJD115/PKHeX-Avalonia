@@ -29,9 +29,9 @@
     <Expander Name="DonutGenerator" Header="{loc:Loc DonutEditor_Generator}"><StackPanel Spacing="8">
      <TextBlock Text="{loc:Loc DonutFlow_RangeHelp}" TextWrapping="Wrap" />
      <WrapPanel><TextBlock Text="{loc:Loc DonutEditor_Start}" VerticalAlignment="Center" Margin="0,0,8,4" />
-      <NumericUpDown Value="{Binding GenerateStart}" Minimum="0" Maximum="998" Width="110" Margin="0,0,12,4" AutomationProperties.Name="{loc:Loc DonutEditor_Start}" />
+      <NumericUpDown Value="{Binding GenerateStart}" Minimum="0" Maximum="998" Width="150" Margin="0,0,12,4" AutomationProperties.Name="{loc:Loc DonutEditor_Start}" />
       <TextBlock Text="{loc:Loc DonutEditor_End}" VerticalAlignment="Center" Margin="0,0,8,4" />
-      <NumericUpDown Value="{Binding GenerateEnd}" Minimum="0" Maximum="999" Width="110" Margin="0,0,0,4" AutomationProperties.Name="{loc:Loc DonutEditor_End}" /></WrapPanel>
+      <NumericUpDown Value="{Binding GenerateEnd}" Minimum="0" Maximum="999" Width="150" Margin="0,0,0,4" AutomationProperties.Name="{loc:Loc DonutEditor_End}" /></WrapPanel>
      <ScrollViewer MaxHeight="180"><ItemsControl ItemsSource="{Binding FlavorOptions}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:DonutFlavorOptionViewModel"><CheckBox IsChecked="{Binding IsSelected}"><TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" /></CheckBox></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
      <Button Content="{loc:Loc DonutEditor_Generate}" Command="{Binding GenerateCommand}" HorizontalAlignment="Left" />
     </StackPanel></Expander>
@@ -50,7 +50,7 @@
 
       <TextBlock Text="{loc:Loc DonutEditor_Type}" />
       <ComboBox ItemsSource="{Binding DonutOptions}" SelectedValue="{Binding DonutType}" SelectedValueBinding="{Binding Value}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc DonutEditor_Type}"><ComboBox.ItemTemplate><DataTemplate DataType="core:ComboItem"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ComboBox.ItemTemplate></ComboBox>
-      <TextBlock Text="{Binding NumberError}" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding NumberError}" IsVisible="{Binding HasNumberError}" TextWrapping="Wrap" />
       <Button Content="{loc:Loc DonutEditor_RecalculateStats}" Command="{Binding RecalculateCommand}" />
      </StackPanel></Border>
      <Border Classes="editor-section-padded"><StackPanel Spacing="8"><TextBlock Text="{loc:Loc DonutEditor_Berries}" FontWeight="SemiBold" />
@@ -66,9 +66,9 @@
 
      </StackPanel></Border>
      <Border Classes="editor-section-padded"><StackPanel Spacing="8"><TextBlock Text="{loc:Loc DonutEditor_Flavors}" FontWeight="SemiBold" />
-<TextBox Text="{Binding Flavor0Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor0Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor0Error}" TextWrapping="Wrap" />
-<TextBox Text="{Binding Flavor1Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor1Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor1Error}" TextWrapping="Wrap" />
-<TextBox Text="{Binding Flavor2Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor2Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor2Error}" TextWrapping="Wrap" />
+<TextBox Text="{Binding Flavor0Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor0Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor0Error}" IsVisible="{Binding HasFlavor0Error}" TextWrapping="Wrap" />
+<TextBox Text="{Binding Flavor1Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor1Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor1Error}" IsVisible="{Binding HasFlavor1Error}" TextWrapping="Wrap" />
+<TextBox Text="{Binding Flavor2Text}" AutomationProperties.Name="{loc:Loc DonutEditor_Flavors}" /><TextBlock Text="{Binding Flavor2Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding Flavor2Error}" IsVisible="{Binding HasFlavor2Error}" TextWrapping="Wrap" />
 
      </StackPanel></Border>
      <Border Classes="editor-section-padded"><StackPanel Spacing="8"><TextBlock Text="{loc:Loc DonutFlow_Profile}" FontWeight="SemiBold" />

@@ -102,6 +102,7 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
         if (_closed || !IsSupported) return;
         var loc = LocalizedStrings.Instance;
         if (_dialogs is not null && !await _dialogs.ShowConfirmationAsync(loc[actionKey], loc["DonutFlow_BulkConfirm"], loc[actionKey], loc["Common_Cancel"])) return;
+        if (_closed) return;
         _session.ApplyBulk(edit); LoadDonuts(); Error = string.Empty;
     }
     [RelayCommand] private Task RandomizeAllAsync() => BulkAsync("DonutEditor_RandomizeAll", pocket => pocket.SetAllRandomLv3());
@@ -116,6 +117,7 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
         if (_closed || !IsSupported) return;
         var loc = LocalizedStrings.Instance;
         if (_dialogs is not null && !await _dialogs.ShowConfirmationAsync(loc["DonutEditor_Compress"], loc["DonutFlow_BulkConfirm"], loc["DonutEditor_Compress"], loc["Common_Cancel"])) return;
+        if (_closed) return;
         _session.Compress(); LoadDonuts(); Error = string.Empty;
     }
     [RelayCommand] private void Refresh() { if (_closed || !IsSupported) return; _session.Reset(); LoadDonuts(); Error = string.Empty; }
@@ -145,10 +147,12 @@ public partial class DonutEditorViewModel : ViewModelBase, ICloseableDialog, IDi
     public async Task ImportPathAsync(string path)
     {
         if (_closed || SelectedDonut is null) return;
+        int index = SelectedDonut.Index;
         try
         {
             var data = await System.IO.File.ReadAllBytesAsync(path);
-            if (!_session.ImportRecord(SelectedDonut.Index, data)) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
+            if (_closed) return;
+            if (!_session.ImportRecord(index, data)) { Error = LocalizedStrings.Instance["DonutFlow_ImportSize"]; return; }
             LoadDonuts(); Error = string.Empty;
         }
         catch (System.IO.IOException) { Error = LocalizedStrings.Instance["DonutFlow_FileError"]; }
@@ -189,4 +193,3 @@ public partial class DonutFlavorOptionViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSelected;
 }
-

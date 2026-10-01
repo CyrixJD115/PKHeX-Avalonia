@@ -33,6 +33,37 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public async Task CaptureDonutTransactions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                using var app = new HeadlessAppFixture(); LocalizedStrings.Instance.SetLanguage(language);
+                var save = new SAV9ZA(); var donut = save.Donuts.GetDonut(0);
+                donut.MillisecondsSince1970 = 1; donut.Berry1 = 170; donut.Berry2 = 171;
+                donut.Flavor0 = DonutInfo.Flavors[0].Hash; donut.Flavor1 = ulong.MaxValue;
+                using var vm = new DonutEditorViewModel(save, new RecordingDialogService());
+                var view = new DonutEditor { DataContext = vm }; var window = new Window { Content = view, Width = language == "en" ? 1000 : 720, Height = language == "en" ? 760 : 460 };
+                window.Show();
+                try
+                {
+                    PumpToStableLayout(window); await ExpanderVisualStateTests.Settle(window); CaptureOrSkip(window, $"donut-{language}-detail.png", "Staged donut detail");
+                    view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToEnd(); PumpToStableLayout(window);
+                    await ExpanderVisualStateTests.Settle(window);
+                    CaptureOrSkip(window, $"donut-{language}-profile.png", "Donut flavor profile");
+                    view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToHome(); view.FindControl<Expander>("DonutGenerator")!.IsExpanded = true;
+                    PumpToStableLayout(window); await ExpanderVisualStateTests.Settle(window); CaptureOrSkip(window, $"donut-{language}-generator.png", "Inline donut generator");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
+    }
+
+    [AvaloniaFact]
     public void CaptureSwshCardTeams_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;
