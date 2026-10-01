@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Application.Abstractions.GiftRecords;
 using PKHeX.Core;
+using PKHeX.Application.UseCases;
+using PKHeX.Application.Abstractions;
 using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Presentation.ViewModels;
@@ -12,10 +14,14 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
     private readonly SaveFile _sav;
     private readonly IMysteryGiftStorage? _storage;
     private readonly IDialogService _dialogService;
+    private readonly ISpriteRenderer? _sprites;
+    private byte[][] _originalGifts = [];
+    private bool[] _originalFlags = [];
 
-    public MysteryGiftEditorViewModel(SaveFile sav, IDialogService dialogService, IGiftRecordProvider? giftRecordProvider = null)
+    public MysteryGiftEditorViewModel(SaveFile sav, IDialogService dialogService, IGiftRecordProvider? giftRecordProvider = null, ISpriteRenderer? sprites = null)
     {
         _sav = sav;
+        _sprites = sprites;
         _dialogService = dialogService;
         _storage = GetStorage(sav);
 
@@ -65,10 +71,12 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
 
         int selected = SelectedGift?.Index ?? 0;
         Gifts.Clear();
+        _originalGifts = new byte[GiftCount][];
         for (int i = 0; i < GiftCount; i++)
         {
-            var gift = _storage.GetMysteryGift(i);
-            Gifts.Add(new MysteryGiftSlotViewModel(i, gift));
+            var gift = _storage.GetMysteryGift(i).Clone();
+            _originalGifts[i] = gift.Data.ToArray();
+            Gifts.Add(new MysteryGiftSlotViewModel(i, gift, _sprites));
         }
 
         SelectedGift = Gifts.Count == 0 ? null : Gifts[Math.Min(selected, Gifts.Count - 1)];
@@ -86,27 +94,30 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
     {
         if (_storage is null) return;
 
+        if (!ReceivedGiftIdText.TryParse(string.Join("\n", ReceivedFlags), _originalFlags.Length, out var ids))
+            return;
+
         foreach (var slot in Gifts)
         {
-            if (slot.Gift is not null)
+            if (slot.Gift is not null && !slot.Gift.Data.SequenceEqual(_originalGifts[slot.Index]))
                 _storage.SetMysteryGift(slot.Index, slot.Gift);
         }
-
-        if (_flags != null)
+        if (_flags is not null)
         {
-            _flags.ClearReceivedFlags();
-            foreach (var s in ReceivedFlags)
-            {
-               if (int.TryParse(s, out int id))
-                   _flags.SetMysteryGiftReceivedFlag(id, true);
-            }
+            var desired = ids.ToHashSet();
+            for (int i = 0; i < _originalFlags.Length; i++)
+                if (desired.Contains(i) != _originalFlags[i])
+                    _flags.SetMysteryGiftReceivedFlag(i, desired.Contains(i));
         }
+        LoadGifts();
+        LoadReceivedFlags();
     }
 
     [RelayCommand]
     private void Reset()
     {
         LoadGifts();
+        LoadReceivedFlags();
     }
 
     [RelayCommand]
@@ -116,7 +127,7 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
 
         var path = await _dialogService.OpenFileAsync(
             LocalizedStrings.Instance["MysteryGiftEditor_ImportGiftTitle"],
-            ["*.wc9", "*.wa9", "*.wc8", "*.wa8", "*.wb8", "*.wc7", "*.wc6", "*.pgf", "*.pgt", "*.pcd", "*"]);
+            ["*.wc9", "*.wa9", "*.wc8", "*.wa8", "*.wb8", "*.wb7", "*.wc7", "*.wc6", "*.pgf", "*.pgt", "*.pcd", "*"]);
 
         if (string.IsNullOrEmpty(path)) return;
 
@@ -137,6 +148,13 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
             {
                 await _dialogService.ShowErrorAsync(LocalizedStrings.Instance["MysteryGiftEditor_ImportErrorTitle"],
                     LocalizedStrings.Instance.Format("MysteryGiftEditor_GenerationMismatch", gift.Generation, _sav.Generation));
+                return;
+            }
+
+            if (SelectedGift.Gift is { } current && current.GetType() != gift.GetType())
+            {
+                await _dialogService.ShowErrorAsync(LocalizedStrings.Instance["MysteryGiftEditor_ImportErrorTitle"],
+                    LocalizedStrings.Instance["MysteryGiftEditor_RecordWrongGame"]);
                 return;
             }
 
@@ -197,9 +215,11 @@ public partial class MysteryGiftEditorViewModel : ViewModelBase
         if (_flags is not { } f) return;
 
         int count = f.MysteryGiftReceivedFlagMax;
-        for (int i = 1; i < count; i++)
+        _originalFlags = new bool[count];
+        for (int i = 0; i < count; i++)
         {
-            if (f.GetMysteryGiftReceivedFlag(i))
+            _originalFlags[i] = f.GetMysteryGiftReceivedFlag(i);
+            if (_originalFlags[i])
                 ReceivedFlags.Add(i.ToString("0000"));
         }
     }
@@ -483,9 +503,10 @@ public partial class GiftRecordEntryViewModel : ViewModelBase
 
 public partial class MysteryGiftSlotViewModel : ViewModelBase
 {
-    public MysteryGiftSlotViewModel(int index, DataMysteryGift? gift)
+    public MysteryGiftSlotViewModel(int index, DataMysteryGift? gift, ISpriteRenderer? sprites = null)
     {
         Index = index;
+        _sprites = sprites;
         Gift = gift;
         UpdateFromGift();
     }
@@ -507,6 +528,7 @@ public partial class MysteryGiftSlotViewModel : ViewModelBase
 
     public void UpdateFromGift()
     {
+        RebuildPreview();
         if (Gift is null || Gift.IsEmpty)
         {
             IsEmpty = true;
