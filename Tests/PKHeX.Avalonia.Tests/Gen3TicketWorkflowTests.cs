@@ -7,6 +7,23 @@ namespace PKHeX.Avalonia.Tests;
 
 public class Gen3TicketWorkflowTests
 {
+    [Theory] [MemberData(nameof(Games))]
+    public async Task EveryAvailableTicketAndReceiptFlagCommitsWithCorrectGameMap(GameVersion version)
+    {
+        var save = CreateSave(version);
+        using var vm = new Gen3TicketEditorViewModel(save, Dialog().Object);
+        foreach (var row in vm.Tickets)
+        { row.StageTicketAndRouteCommand.Execute(null); if (row.HasShownFlag) row.Shown = true; if (row.HasReceivedFlag) row.Received = true; }
+        await vm.ApplyCommand.ExecuteAsync(null);
+        foreach (var definition in Gen3TicketDefinitions.For(save))
+        {
+            Assert.True(save.GetEventFlag(definition.TravelFlag));
+            Assert.Contains(save.Inventory.GetPouch(InventoryType.KeyItems).Items, item => item.Index == definition.ItemId && item.Count == 1);
+            if (definition.ShownFlag is { } shown) Assert.True(save.GetEventFlag(shown));
+            if (definition.ReceivedFlag is { } received) Assert.True(save.GetEventFlag(received));
+        }
+    }
+
     [Fact]
     public async Task CurrentCountKeyAndMalformedUntouchedSlotArePreserved()
     {
