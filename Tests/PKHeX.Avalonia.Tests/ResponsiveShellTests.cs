@@ -585,7 +585,8 @@ public sealed class ResponsiveShellTests
         foreach (var view in new[] { "PokeathlonEditor.axaml", "JoinAvenueEditor.axaml", "GlobalLink5Editor.axaml", "MedalEditorView.axaml" })
         {
             var source = ReadSourceFile("Views", view);
-            Assert.Contains("Classes=\"editor-tabs\"", source);
+            var tabClass = view == "JoinAvenueEditor.axaml" ? "compact-editor-tabs" : "editor-tabs";
+            Assert.Contains($"Classes=\"{tabClass}\"", source);
             Assert.Contains("Classes=\"editor-tab\"", source);
             Assert.Contains("Classes=\"save-grid\"", source);
             Assert.Contains("Classes=\"tool-header-stack\"", source);
