@@ -41,20 +41,35 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         {
             foreach (var language in new[] { "en", "de" })
             foreach (var version in new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP })
+            foreach (var itemCard in new[] { false, true })
             {
                 using var app = new HeadlessAppFixture();
                 LocalizedStrings.Instance.SetLanguage(language);
                 var save = BlankSaveFile.Get(version);
                 var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
                 var gift = storage.GetMysteryGift(0);
-                gift.IsEntity = true;
-                gift.Species = 25;
                 gift.CardID = 123;
-                gift.HeldItem = 100;
+                if (itemCard)
+                {
+                    gift.IsItem = true;
+                    gift.ItemID = 100;
+                    gift.Quantity = 2;
+                    if (gift is WC7 wc7) { wc7.CardTitle = "Mega Stone Gift"; wc7.SetItem(1, 101); wc7.SetQuantity(1, 3); }
+                    if (gift is WR7 wr7) { wr7.ItemCount = 2; wr7.ItemIDCount = 2; wr7.ItemSet2Item = 101; wr7.ItemSet2Count = 3; }
+                }
+                else
+                {
+                    gift.IsEntity = true;
+                    gift.Species = 25;
+                    gift.HeldItem = 100;
+                    gift.OriginalTrainerName = "Trainer";
+                    if (gift is PGF pgf) pgf.Data[0x5B] = 50; // Core's setter targets the egg flag.
+                    else gift.Level = 50;
+                }
                 storage.SetMysteryGift(0, gift);
                 app.LoadSaveInstance(save);
                 CaptureAuxiliaryView(new MysteryGiftEditor { DataContext = app.ViewModel.MysteryGiftEditor },
-                    $"wonder-card-{language}-{version}.png", language == "en" ? 900 : 700, language == "en" ? 650 : 420,
+                    $"wonder-card-{language}-{version}-{(itemCard ? "item" : "pokemon")}.png", language == "en" ? 900 : 700, language == "en" ? 650 : 420,
                     "Wonder Card preview");
             }
         }

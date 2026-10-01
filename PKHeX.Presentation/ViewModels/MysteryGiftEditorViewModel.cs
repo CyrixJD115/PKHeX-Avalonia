@@ -539,14 +539,18 @@ public partial class MysteryGiftSlotViewModel : ViewModelBase
         else
         {
             IsEmpty = false;
-            Title = LocalizedStrings.Instance.Format("MysteryGiftEditor_SlotTitle", Index + 1, Gift.CardTitle);
+            string cardTitle;
+            try { cardTitle = Gift.CardTitle; }
+            catch (ArgumentOutOfRangeException) { cardTitle = LocalizedStrings.Instance["GiftPreview_InvalidCard"]; }
+            catch (IndexOutOfRangeException) { cardTitle = LocalizedStrings.Instance["GiftPreview_InvalidCard"]; }
+            Title = LocalizedStrings.Instance.Format("MysteryGiftEditor_SlotTitle", Index + 1, cardTitle);
 
             if (Gift.IsEntity)
             {
                 var speciesId = Gift.Species;
                 var speciesNames = GameInfo.Strings.Species;
-                Species = speciesId < speciesNames.Count ? speciesNames[speciesId] : $"Species #{speciesId}";
-                Summary = $"Lv. {Gift.Level} | {Gift.OriginalTrainerName}";
+                Species = speciesId < speciesNames.Count ? speciesNames[speciesId] : LocalizedStrings.Instance.Format("MysteryGiftEditor_UnknownSpecies", speciesId);
+                Summary = LocalizedStrings.Instance.Format("GiftPreview_PokemonSummary", Gift.Level, Gift.OriginalTrainerName);
             }
             else
             {

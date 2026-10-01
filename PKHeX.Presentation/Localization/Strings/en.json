@@ -3095,5 +3095,6 @@
   "GiftPreview_Nickname": "Nickname",
   "GiftPreview_LanguageVariant": "Redeem language → stored language: OT / nickname",
   "GiftPreview_ReceivedEpoch": "Received time (Unix seconds)",
-  "GiftPreview_LevelRaw": "Stored level field"
+  "GiftPreview_LevelRaw": "Stored level field",
+  "GiftPreview_PokemonSummary": "Level {0} | {1}"
 }

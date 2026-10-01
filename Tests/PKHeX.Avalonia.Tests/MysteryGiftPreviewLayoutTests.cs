@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -6,18 +7,22 @@ using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
 using PKHeX.Core;
 using PKHeX.Presentation.ViewModels;
+using PKHeX.Presentation.Localization;
+using Avalonia.VisualTree;
 
 namespace PKHeX.Avalonia.Tests;
 
 public class MysteryGiftPreviewLayoutTests
 {
+    public static IEnumerable<object[]> Cases => LocalizedStrings.SupportedLanguages.SelectMany(language =>
+        new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP }.Select(version => new object[] { version, language }));
+
     [AvaloniaTheory]
-    [InlineData(GameVersion.W2)]
-    [InlineData(GameVersion.X)]
-    [InlineData(GameVersion.SN)]
-    [InlineData(GameVersion.GP)]
-    public void AlbumPreviewRendersWithoutMutatingSave(GameVersion version)
+    [MemberData(nameof(Cases))]
+    public void AlbumPreviewRendersWithoutMutatingSave(GameVersion version, string language)
     {
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        LocalizedStrings.Instance.SetLanguage(language);
         using var app = new HeadlessAppFixture();
         var save = BlankSaveFile.Get(version);
         var storage = ((IMysteryGiftStorageProvider)save).MysteryGiftStorage;
@@ -31,7 +36,7 @@ public class MysteryGiftPreviewLayoutTests
         app.LoadSaveInstance(save);
         var vm = Assert.IsType<MysteryGiftEditorViewModel>(app.ViewModel.MysteryGiftEditor);
         var view = new MysteryGiftEditor { DataContext = vm };
-        var window = new Window { Content = view, Width = 700, Height = 600 };
+        var window = new Window { Content = view, Width = 700, Height = 420 };
         window.Show();
         try
         {
@@ -41,10 +46,14 @@ public class MysteryGiftPreviewLayoutTests
             Dispatcher.UIThread.RunJobs();
             Assert.NotEmpty(vm.SelectedGift!.PreviewRows);
             Assert.NotNull(vm.SelectedGift.Sprite);
-            Assert.True(view.FindControl<ScrollViewer>("CardPreviewScroll")!.Bounds.Height > 100);
+            Assert.True(view.FindControl<ScrollViewer>("CardPreviewScroll")!.Bounds.Height > 70);
+            var import = view.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, vm.ImportGiftCommand));
+            var point = import.TranslatePoint(default, view)!.Value;
+            Assert.True(point.Y >= 0 && point.Y + import.Bounds.Height <= view.Bounds.Height);
+            Assert.True(point.X >= 0 && point.X + import.Bounds.Width <= view.Bounds.Width);
             Assert.Equal(before, save.Data.ToArray());
             Assert.False(save.State.Edited);
         }
-        finally { window.Close(); }
+        finally { window.Close(); LocalizedStrings.Instance.SetLanguage(previous); }
     }
 }

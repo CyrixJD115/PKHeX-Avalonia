@@ -37,7 +37,7 @@
                 </DockPanel>
 
                 <!-- Content -->
-                <Grid ColumnDefinitions="*,8,300">
+                <Grid ColumnDefinitions="*,8,*">
                     <!-- Gift List -->
                     <Border Grid.Column="0"
                             Classes="editor-section"
@@ -61,7 +61,7 @@
                                                 <Image Grid.Column="1" Source="{Binding Sprite, Converter={StaticResource PngBytesToBitmap}}" Width="32" Height="32" />
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="{Binding Title}"
-                                                               FontWeight="SemiBold" />
+                                                               FontWeight="SemiBold" TextWrapping="Wrap" />
                                                     <TextBlock Text="{Binding Species}"
                                                                Opacity="0.7"
                                                                FontSize="12"
@@ -81,6 +81,25 @@
                         <Border Grid.Row="0"
                                 Classes="editor-section"
                                 Padding="8">
+                            <DockPanel>
+
+                                <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                                    <Button Content="{loc:Loc MysteryGiftEditor_Import}"
+                                            Command="{Binding ImportGiftCommand}"
+                                            Margin="0,0,4,4"
+                                            HorizontalContentAlignment="Center" />
+                                    <Button Content="{loc:Loc MysteryGiftEditor_Export}"
+                                            Command="{Binding ExportGiftCommand}"
+                                            IsEnabled="{Binding !SelectedGift.IsEmpty}"
+                                            Margin="0,0,4,4"
+                                            HorizontalContentAlignment="Center" />
+                                    <Button Content="{loc:Loc Common_Delete}"
+                                            Command="{Binding DeleteGiftCommand}"
+                                            IsEnabled="{Binding !SelectedGift.IsEmpty}"
+                                            Margin="0,0,4,4"
+                                            HorizontalContentAlignment="Center" />
+                                </WrapPanel>
+
                             <ScrollViewer Name="CardPreviewScroll">
                             <StackPanel Spacing="8" DataContext="{Binding SelectedGift}">
                                 <TextBlock Text="{loc:Loc MysteryGiftEditor_SelectedGift}"
@@ -89,17 +108,17 @@
 
                                 <!-- Gift Info -->
                                 <StackPanel Spacing="8" IsVisible="{Binding !IsEmpty}">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding Species}" />
-                                    <TextBlock Text="{Binding CardIdentity}" TextWrapping="Wrap" />
-                                    <Image Source="{Binding Sprite, Converter={StaticResource PngBytesToBitmap}}" Width="64" Height="64" HorizontalAlignment="Left" />
+                                    <Grid ColumnDefinitions="40,*">
+                                        <Image Source="{Binding Sprite, Converter={StaticResource PngBytesToBitmap}}" Width="32" Height="32" VerticalAlignment="Top" />
+                                        <TextBlock Grid.Column="1" Text="{Binding CardIdentity}" TextWrapping="Wrap" />
+                                    </Grid>
                                     <ItemsControl ItemsSource="{Binding PreviewRows}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="vm:GiftPreviewRow">
-                                                <StackPanel Margin="0,0,0,6">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                                    <TextBlock Text="{Binding Value}" TextWrapping="Wrap" />
-                                                </StackPanel>
+                                                <Grid ColumnDefinitions="*,2*" Margin="0,0,0,6">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,8,0" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+                                                </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
@@ -109,25 +128,9 @@
                                            Opacity="0.5"
                                            IsVisible="{Binding IsEmpty}" />
 
-                                <!-- Actions -->
-                                <StackPanel Spacing="8" Margin="0,8,0,0">
-                                    <Button Content="{loc:Loc MysteryGiftEditor_Import}"
-                                            Command="{Binding $parent[Border].((vm:MysteryGiftEditorViewModel)DataContext).ImportGiftCommand}"
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Center" />
-                                    <Button Content="{loc:Loc MysteryGiftEditor_Export}"
-                                            Command="{Binding $parent[Border].((vm:MysteryGiftEditorViewModel)DataContext).ExportGiftCommand}"
-                                            IsEnabled="{Binding !IsEmpty}"
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Center" />
-                                    <Button Content="{loc:Loc Common_Delete}"
-                                            Command="{Binding $parent[Border].((vm:MysteryGiftEditorViewModel)DataContext).DeleteGiftCommand}"
-                                            IsEnabled="{Binding !IsEmpty}"
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Center" />
-                                </StackPanel>
                             </StackPanel>
                             </ScrollViewer>
+                            </DockPanel>
                         </Border>
 
                         <!-- Received Flags -->

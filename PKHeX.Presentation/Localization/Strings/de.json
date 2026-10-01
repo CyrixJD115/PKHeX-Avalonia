@@ -3050,7 +3050,7 @@
   "GiftPreview_Level": "Level",
   "GiftPreview_Gender": "Geschlecht",
   "GiftPreview_Ball": "Ball",
-  "GiftPreview_HeldItem": "Held item",
+  "GiftPreview_HeldItem": "Getragenes Item",
   "GiftPreview_OriginalTrainer": "Originaltrainer",
   "GiftPreview_TrainerId": "Trainer-ID",
   "GiftPreview_SecretId": "Geheime ID",
@@ -3095,5 +3095,6 @@
   "GiftPreview_Nickname": "Spitzname",
   "GiftPreview_LanguageVariant": "Einlösesprache → gespeicherte Sprache: OT / Spitzname",
   "GiftPreview_ReceivedEpoch": "Empfangszeit (Unix-Sekunden)",
-  "GiftPreview_LevelRaw": "Gespeichertes Level-Feld"
+  "GiftPreview_LevelRaw": "Gespeichertes Level-Feld",
+  "GiftPreview_PokemonSummary": "Level {0} | {1}"
 }
