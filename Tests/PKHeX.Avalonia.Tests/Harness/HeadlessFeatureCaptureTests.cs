@@ -122,7 +122,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             foreach (var tab in new[] { 0, 1, 2, 3 })
             {
                 using var app = new HeadlessAppFixture();
@@ -176,7 +176,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             foreach (var version in new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP })
             foreach (var itemCard in new[] { false, true })
             {
@@ -222,7 +222,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 2, 5 })
@@ -245,7 +245,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in Enumerable.Range(0, 6))
@@ -289,7 +289,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 1, 2 })
@@ -311,7 +311,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 1 })
@@ -341,7 +341,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 var save = new SAV6XY();
@@ -361,7 +361,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 var vm = new RaidEditorViewModel(global::PKHeX.Avalonia.Tests.Raid8TransactionTests.CreateSave());
@@ -394,7 +394,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var (width, height) in new[] { (620, 350), (420, 300) })
