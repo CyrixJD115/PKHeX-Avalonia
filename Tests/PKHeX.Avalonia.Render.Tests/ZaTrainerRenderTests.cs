@@ -82,7 +82,7 @@ public class ZaTrainerRenderTests
         }
     }
 
-    private static SCBlock Parse(uint key, SCTypeCode type, byte[] data)
+    internal static SCBlock Parse(uint key, SCTypeCode type, byte[] data)
     {
         var xor = new SCXorShift32(key); bool objectType = type == SCTypeCode.Object;
         int start = objectType ? 5 : 1;

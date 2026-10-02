@@ -64,6 +64,15 @@ public class SaveNavigationRenderTests
                 using var frame = new RenderTargetBitmap(new PixelSize(900, 600)); frame.Render(window);
                 if (Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE") == "1" && Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE_DIR") is { } path)
                 { Directory.CreateDirectory(path); frame.Save(Path.Combine(path, $"save-navigation-{index}-{(dark ? "dark" : "light")}.png")); }
+                if (index == MainWindowViewModel.InventoryWorkspaceTabIndex)
+                {
+                    var grid = window.GetVisualDescendants().OfType<DataGrid>().Single(g => g.IsEffectivelyVisible);
+                    grid.ScrollIntoView(vm.InventoryEditor!.SelectedPouch!.Items.First(item => item.ItemId == 2592), null);
+                    await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    using var cards = new RenderTargetBitmap(new PixelSize(900, 600)); cards.Render(window);
+                    if (Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE") == "1" && Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE_DIR") is { } cardPath)
+                        cards.Save(Path.Combine(cardPath, $"za-key-cards-{(dark ? "dark" : "light")}.png"));
+                }
             }
         }
         finally

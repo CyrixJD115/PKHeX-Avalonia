@@ -7,7 +7,7 @@
    <TextBlock Text="{loc:Loc TrainerZA_Staging}" TextWrapping="Wrap" />
   </StackPanel>
   <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
-   <TextBlock Text="{Binding ZaError}" IsVisible="{Binding HasZaError}" TextWrapping="Wrap" />
+   <TextBlock Text="{Binding ZaError}" IsVisible="{Binding HasZaError}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
    <WrapPanel HorizontalAlignment="Right">
     <Button Content="{loc:Loc TrainerEditor_Reset}" Command="{Binding ResetCommand}" Margin="0,0,8,0" />
     <Button Name="TrainerZaApply" Content="{loc:Loc TrainerEditor_ApplyChanges}" Command="{Binding SaveCommand}" Classes="accent" />
@@ -50,8 +50,13 @@
     <TextBlock Text="{loc:Loc TrainerZA_ImagesHelp}" TextWrapping="Wrap" />
     <ItemsControl ItemsSource="{Binding ZaImages}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:ZaTrainerImageViewModel"><StackPanel Spacing="6" Margin="0,0,0,16">
      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+     <TextBlock Text="{Binding ImportHelp}" TextWrapping="Wrap" />
+     <WrapPanel>
+      <Button Content="{loc:Loc TrainerZA_ImportImage}" Command="{Binding $parent[UserControl].DataContext.ImportZaImageCommand}" CommandParameter="{Binding}" IsEnabled="{Binding CanImport}" Margin="0,0,8,0" />
+      <Button Content="{loc:Loc TrainerZA_ExportImage}" Command="{Binding $parent[UserControl].DataContext.ExportZaImageCommand}" CommandParameter="{Binding}" IsEnabled="{Binding HasImage}" Margin="0,0,8,0" />
+      <Button Content="{loc:Loc Menu_Options_Undo}" Command="{Binding $parent[UserControl].DataContext.UndoZaCollectionCommand}" IsEnabled="{Binding $parent[UserControl].DataContext.CanUndoZaCollection}" />
+     </WrapPanel>
      <Image Source="{Binding Png, Converter={StaticResource PngBytesToBitmap}}" MaxWidth="564" MaxHeight="340" Stretch="Uniform" AutomationProperties.Name="{Binding Name}" />
-     <Button Content="{loc:Loc TrainerZA_ExportImage}" Command="{Binding $parent[UserControl].DataContext.ExportZaImageCommand}" CommandParameter="{Binding}" IsEnabled="{Binding HasImage}" />
     </StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
    </StackPanel></ScrollViewer></TabItem>
    <TabItem Header="{loc:Loc TrainerZA_DLC}"><ScrollViewer><StackPanel Spacing="8" Margin="8">

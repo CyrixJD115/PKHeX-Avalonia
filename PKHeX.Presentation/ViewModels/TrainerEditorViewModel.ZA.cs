@@ -143,7 +143,52 @@ public partial class TrainerEditorViewModel
     {
         if (_zaClosed || _zaSession is null) return;
         _zaSession.Undo(); _sav = _zaSession.Staged;
+        LoadZaImages((SAV9ZA)_sav);
+        _zaEpoch++;
         OnPropertyChanged(nameof(CanUndoZaCollection));
+    }
+
+    [RelayCommand]
+    private async Task ImportZaImageAsync(ZaTrainerImageViewModel? image)
+    {
+        if (_zaClosed || _zaSession is null || _zaDialogs is null || _zaImageCodec is null || image?.CanImport is not true) return;
+        int epoch = _zaEpoch;
+        try
+        {
+            var path = await _zaDialogs.OpenFileAsync(LocalizedStrings.Instance["TrainerZA_ImportImage"], ["png"]);
+            if (path is null || _zaClosed || epoch != _zaEpoch) return;
+            // Bound the read; the codec additionally checks actual decoded dimensions.
+            await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            long length = input.Length;
+            if (length > 32 * 1024 * 1024) throw new ArgumentException();
+            var bytes = new byte[checked((int)length)];
+            await input.ReadExactlyAsync(bytes);
+            if (_zaClosed || epoch != _zaEpoch) return;
+            var prepared = await Task.Run(() => PrepareZaImage(bytes, image));
+            if (_zaClosed || epoch != _zaEpoch) return;
+            if (!prepared.Valid)
+            { ZaError = LocalizedStrings.Instance.Format("TrainerZA_ImageImportFailed", image.Width, image.Height); return; }
+            if (prepared.Encoded is null) { ZaError = string.Empty; return; }
+            _zaSession.ImportCompressedImage(image.DataKey, image.WidthKey, image.HeightKey, image.Width, image.Height, prepared.Encoded);
+            _sav = _zaSession.Staged; _zaEpoch++;
+            int index = ZaImages.ToList().FindIndex(item => item.DataKey == image.DataKey);
+            if (index >= 0) ZaImages[index] = ZaImages[index] with { Png = prepared.Png };
+            ZaError = string.Empty;
+            OnPropertyChanged(nameof(CanUndoZaCollection));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+        { if (!_zaClosed && epoch == _zaEpoch) ZaError = LocalizedStrings.Instance.Format("TrainerZA_ImageImportFailed", image.Width, image.Height); }
+    }
+
+    private (bool Valid, byte[]? Encoded, byte[]? Png) PrepareZaImage(byte[] bytes, ZaTrainerImageViewModel image)
+    {
+        var decoded = _zaImageCodec!.DecodePng(bytes, image.Width, image.Height);
+        if (decoded.Image is null || decoded.Error != ImageDecodeError.None) return (false, null, null);
+        if (image.Png is { } original && _zaImageCodec.DecodePng(original, image.Width, image.Height).Image is { } pixels &&
+            pixels.Bgra.AsSpan().SequenceEqual(decoded.Image.Bgra)) return (true, null, null);
+        var encoded = Dxt1ImageEncoder.Encode(decoded.Image);
+        var preview = _zaImageCodec.EncodePng(new PixelImage(image.Width, image.Height, DXT1.Decompress(encoded, image.Width, image.Height)));
+        return (true, encoded, preview);
     }
 
     public void Dispose()
@@ -177,6 +222,7 @@ public partial class TrainerEditorViewModel
         })
         {
             byte[]? png = null;
+            int imageWidth = 0, imageHeight = 0;
             try
             {
                 if (_zaImageCodec is not null &&
@@ -186,19 +232,24 @@ public partial class TrainerEditorViewModel
                 {
                     uint w = (uint)widthBlock.GetValue(), h = (uint)heightBlock.GetValue();
                     var bytes = imageBlock.Data;
-                    if (w is > 0 and <= 2048 && h is > 0 and <= 2048 && w % 4 == 0 && h % 4 == 0 &&
+                    if (imageBlock.Type == SCTypeCode.Object && w is > 0 and <= 2048 && h is > 0 and <= 2048 && w % 4 == 0 && h % 4 == 0 &&
                         bytes.Length >= (w / 4) * (h / 4) * 8)
+                    {
+                        imageWidth = (int)w; imageHeight = (int)h;
                         png = _zaImageCodec.EncodePng(new PixelImage((int)w, (int)h, DXT1.Decompress(bytes, (int)w, (int)h)));
+                    }
                 }
             }
             catch (ArgumentException) { }
             catch (InvalidOperationException) { }
-            ZaImages.Add(new(LocalizedStrings.Instance[name], png));
+            ZaImages.Add(new(LocalizedStrings.Instance[name], png, data, width, height, imageWidth, imageHeight));
         }
     }
 }
 
-public sealed record ZaTrainerImageViewModel(string Name, byte[]? Png)
+public sealed record ZaTrainerImageViewModel(string Name, byte[]? Png, uint DataKey = 0, uint WidthKey = 0, uint HeightKey = 0, int Width = 0, int Height = 0)
 {
     public bool HasImage => Png is not null;
+    public bool CanImport => Width > 0 && Height > 0;
+    public string ImportHelp => CanImport ? LocalizedStrings.Instance.Format("TrainerZA_ImageDimensions", Width, Height) : LocalizedStrings.Instance["TrainerZA_ImageUnavailable"];
 }
