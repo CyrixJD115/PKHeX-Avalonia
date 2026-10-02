@@ -29,6 +29,7 @@
   <ItemGroup>
     <!-- Exposes internal helpers (e.g. SlotDragTransfer) for headless unit testing. -->
     <InternalsVisibleTo Include="PKHeX.Avalonia.Tests" />
+    <InternalsVisibleTo Include="PKHeX.Avalonia.Render.Tests" />
   </ItemGroup>
 
   <ItemGroup>
