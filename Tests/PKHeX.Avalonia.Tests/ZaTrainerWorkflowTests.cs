@@ -1,6 +1,7 @@
 using Moq;
 using System.Buffers.Binary;
 using PKHeX.Avalonia.Tests.Fixtures;
+using PKHeX.Avalonia.Services;
 using PKHeX.Core;
 using PKHeX.Presentation.ViewModels;
 
@@ -43,13 +44,14 @@ public class ZaTrainerWorkflowTests
         vm.ZaMap = "test_map"; vm.X = 11.5; vm.Y = -3.25; vm.Z = 50; vm.ZaRotation = 135;
         vm.ZaLastSavedDate = new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero);
         vm.ZaLastSavedTime = new TimeSpan(13, 25, 0);
+        vm.ZaLastSavedSecond = 15;
         vm.HyperspacePoints = 12345; vm.StreetName = "Test Street";
         foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
         expected.Coordinates.Map = "test_map"; expected.Coordinates.X = 11.5f; expected.Coordinates.Y = -3.25f;
         expected.Coordinates.Z = 50f;
         double angle = 135 * Math.PI / 360;
         expected.Coordinates.SetPlayerRotation(0, 0, (float)Math.Sin(angle), (float)Math.Cos(angle));
-        expected.LastSaved.Timestamp = new DateTime(2026, 10, 2, 13, 25, 0);
+        expected.LastSaved.Timestamp = new DateTime(2026, 10, 2, 13, 25, 15);
         expected.SetValue(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints, 12345u);
         expected.SetString(expected.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName).Data, "Test Street", 18, StringConverterOption.ClearZero);
         vm.SaveCommand.Execute(null);
@@ -57,7 +59,22 @@ public class ZaTrainerWorkflowTests
         var reopened = new TrainerEditorViewModel(new SAV9ZA(save.Write()));
         Assert.Equal(12345u, reopened.HyperspacePoints); Assert.Equal("Test Street", reopened.StreetName);
         Assert.Equal("test_map", reopened.ZaMap); Assert.Equal(135, reopened.ZaRotation, 4);
-        Assert.Equal(new TimeSpan(13, 25, 0), reopened.ZaLastSavedTime);
+        Assert.Equal(new TimeSpan(13, 25, 15), reopened.ZaLastSavedTime);
+        Assert.Equal(15, reopened.ZaLastSavedSecond);
+    }
+
+    [Fact]
+    public void RevertingFieldsAfterAConflictDoesNotApplyTheRejectedValues()
+    {
+        var save = CreateSave(); var vm = new TrainerEditorViewModel(save);
+        string originalName = vm.TrainerName, originalMap = vm.ZaMap;
+        vm.TrainerName = "Rejected"; vm.ZaMap = "rejected";
+        save.Coordinates.X += 10;
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        vm.SaveCommand.Execute(null); Assert.True(vm.HasZaError);
+        vm.TrainerName = originalName; vm.ZaMap = originalMap;
+        vm.SaveCommand.Execute(null); Assert.False(vm.HasZaError);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
     }
 
     [Fact]
@@ -75,6 +92,51 @@ public class ZaTrainerWorkflowTests
     }
 
     [Theory] [InlineData("Screws")] [InlineData("TMs")]
+    public async Task ResetOrCloseDiscardsALateCollectionConfirmation(string kind)
+    {
+        var save = CreateSave(); var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        var answer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dialogs = new Mock<IDialogService>();
+        dialogs.Setup(dialog => dialog.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(answer.Task);
+        var vm = new TrainerEditorViewModel(save, dialogs.Object);
+        var pending = vm.CollectZaCommand.ExecuteAsync(kind);
+        if (kind == "Screws") vm.ResetCommand.Execute(null); else vm.Dispose();
+        answer.SetResult(true); await pending;
+        Assert.False(vm.CanUndoZaCollection);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+    }
+
+    [Theory] [InlineData("Screws")] [InlineData("TMs")]
+    public async Task CollectionUpdatesTheOverworldFlagAndInventoryThenRoundtrips(string kind)
+    {
+        var save = CreateSave();
+        string name = kind == "Screws" ? "itb_a0101_25" : TechnicalMachine9a.TechnicalMachines[0].FieldItem;
+        ushort item = kind == "Screws" ? ColorfulScrew9a.ColorfulScrewItemIndex : TechnicalMachine9a.TechnicalMachines[0].ItemID;
+        if (kind == "Screws") ColorfulScrew9a.SetAllScrews(save, true);
+        else TechnicalMachine9a.SetAllTechnicalMachines(save, true);
+        var field = save.Blocks.FieldItems; ulong key = FnvHash.HashFnv1a_64(name);
+        int index = field.GetIndex(key);
+        if (index < 0) { Assert.True(field.HasSpace(out index)); field.SetKey(index, key); }
+        field.SetValue(index, false);
+        save.Items.SetItemQuantity(item, 10);
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        var dialogs = new Mock<IDialogService>();
+        dialogs.Setup(dialog => dialog.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+        var vm = new TrainerEditorViewModel(save, dialogs.Object);
+        await vm.CollectZaCommand.ExecuteAsync(kind);
+        Assert.True(vm.CanUndoZaCollection);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+        vm.SaveCommand.Execute(null);
+        var reopened = new SAV9ZA(save.Write());
+        Assert.True(reopened.Blocks.FieldItems.GetValue(reopened.Blocks.FieldItems.GetIndex(key)));
+        Assert.Equal(kind == "Screws" ? 11u : 1u, reopened.Items.GetItemQuantity(item));
+        uint inventory = save.AllBlocks.Single(block => block.Data.Overlaps(save.Items.Data)).Key;
+        uint flags = save.AllBlocks.Single(block => block.Data.Overlaps(field.Data)).Key;
+        foreach (var block in reopened.AllBlocks.Where(block => block.Key != inventory && block.Key != flags))
+            Assert.Equal(before[block.Key], block.Data.ToArray());
+    }
+
+    [Theory] [InlineData("Screws")] [InlineData("TMs")]
     public async Task ConfirmedCollectionCanBeUndoneWithoutLosingPendingFieldEdits(string kind)
     {
         var save = CreateSave(); var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
@@ -87,6 +149,39 @@ public class ZaTrainerWorkflowTests
         Assert.Equal("Pending", vm.StreetName);
         vm.ResetCommand.Execute(null); vm.SaveCommand.Execute(null);
         foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+    }
+
+    [Fact]
+    public async Task DxtPreviewAndPngExportPreserveOriginalCompressedBlocks()
+    {
+        var save = CreateSave();
+        var image = new byte[8]; BinaryPrimitives.WriteUInt16LittleEndian(image, 0xF800);
+        var dimension = new byte[4]; BinaryPrimitives.WriteUInt32LittleEndian(dimension, 4);
+        var extra = new[] {
+            ParseBlock(SaveBlockAccessor9ZA.KPictureCurrentData, SCTypeCode.Object, image),
+            ParseBlock(SaveBlockAccessor9ZA.KPictureCurrentWidth, SCTypeCode.UInt32, dimension),
+            ParseBlock(SaveBlockAccessor9ZA.KPictureCurrentHeight, SCTypeCode.UInt32, dimension),
+        };
+        var keys = extra.Select(block => block.Key).ToArray();
+        save = new SAV9ZA(SwishCrypto.Encrypt(save.AllBlocks.Where(block => !keys.Contains(block.Key)).Concat(extra).OrderBy(block => block.Key).ToArray()));
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        var path = Path.Combine(Path.GetTempPath(), $"pkhex-za-image-{Guid.NewGuid():N}.png");
+        var dialogs = new Mock<IDialogService>();
+        dialogs.Setup(dialog => dialog.SaveFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>())).ReturnsAsync(path);
+        var codec = new PngImageCodec(); var vm = new TrainerEditorViewModel(save, dialogs.Object, codec);
+        try
+        {
+            Assert.Equal(3, vm.ZaImages.Count);
+            var preview = vm.ZaImages[0]; Assert.True(preview.HasImage);
+            var decoded = codec.DecodePng(preview.Png!, 4, 4);
+            Assert.NotNull(decoded.Image);
+            Assert.Equal(new byte[] { 0, 0, 255, 255 }, decoded.Image.Bgra[..4]);
+            await vm.ExportZaImageCommand.ExecuteAsync(preview);
+            Assert.Equal(preview.Png, await File.ReadAllBytesAsync(path));
+            vm.SaveCommand.Execute(null);
+            foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+        }
+        finally { File.Delete(path); }
     }
 
     [Fact]

@@ -14,13 +14,18 @@ public partial class TrainerEditorViewModel
     private SAV9ZA? _zaBaseline;
     private bool _zaHasMoney;
     private uint _zaOriginalMoney;
+    private int _zaEpoch;
+    private bool _zaClosed;
+    private bool _zaHadValidLastSaved;
     public bool IsZA => _zaSession is not null;
-    public bool CanUndoZaCollection => _zaSession?.CanUndo == true;
+    public bool CanUndoZaCollection => !_zaClosed && _zaSession?.CanUndo == true;
     public ObservableCollection<ZaTrainerImageViewModel> ZaImages { get; } = [];
     [ObservableProperty] private string _zaMap = string.Empty;
     [ObservableProperty] private double _zaRotation;
     [ObservableProperty] private DateTimeOffset? _zaLastSavedDate;
     [ObservableProperty] private TimeSpan? _zaLastSavedTime;
+    [ObservableProperty] private int _zaLastSavedSecond;
+    public bool HasZaLastSavedSeconds => _sav is SAV9ZA za && za.LastSaved.HasSeconds;
     [ObservableProperty] private string _zaError = string.Empty;
     public bool HasZaError => ZaError.Length != 0;
     public bool IsZaInputValid =>
@@ -29,7 +34,9 @@ public partial class TrainerEditorViewModel
         ValidCoordinate(X, _zaBaseline?.Coordinates.X) && ValidCoordinate(Y, _zaBaseline?.Coordinates.Y) && ValidCoordinate(Z, _zaBaseline?.Coordinates.Z) &&
         (ZaRotation.Equals(_zaBaseline?.Coordinates.Rotation) || double.IsFinite(ZaRotation)) &&
         (ZaLastSavedDate is null || ZaLastSavedDate.Value.Year >= 1900) &&
-        (ZaLastSavedTime is null || ZaLastSavedTime.Value >= TimeSpan.Zero && ZaLastSavedTime.Value < TimeSpan.FromDays(1));
+        (ZaLastSavedDate.HasValue == ZaLastSavedTime.HasValue) && (!_zaHadValidLastSaved || ZaLastSavedDate.HasValue) &&
+        (ZaLastSavedTime is null || ZaLastSavedTime.Value >= TimeSpan.Zero && ZaLastSavedTime.Value < TimeSpan.FromDays(1)) &&
+        ZaLastSavedSecond is >= 0 and <= 59;
 
     private static bool ValidCoordinate(double value, float? original) =>
         (original is { } stored && value.Equals((double)stored)) || (double.IsFinite(value) && Math.Abs(value) <= float.MaxValue);
@@ -45,7 +52,9 @@ public partial class TrainerEditorViewModel
         HasCoordinates = true; X = za.Coordinates.X; Y = za.Coordinates.Y; Z = za.Coordinates.Z;
         ZaMap = za.Coordinates.Map; ZaRotation = za.Coordinates.Rotation;
         ZaLastSavedDate = null; ZaLastSavedTime = null;
-        try { var saved = za.LastSaved.Timestamp; ZaLastSavedDate = new DateTimeOffset(saved); ZaLastSavedTime = saved.TimeOfDay; }
+        ZaLastSavedSecond = 0;
+        _zaHadValidLastSaved = false;
+        try { var saved = za.LastSaved.Timestamp; ZaLastSavedDate = new DateTimeOffset(saved); ZaLastSavedTime = saved.TimeOfDay; ZaLastSavedSecond = saved.Second; _zaHadValidLastSaved = true; }
         catch (ArgumentOutOfRangeException) { }
         HasHyperspacePoints = false;
         try
@@ -66,6 +75,7 @@ public partial class TrainerEditorViewModel
     partial void OnZaRotationChanged(double value) => SaveCommand.NotifyCanExecuteChanged();
     partial void OnZaLastSavedDateChanged(DateTimeOffset? value) => SaveCommand.NotifyCanExecuteChanged();
     partial void OnZaLastSavedTimeChanged(TimeSpan? value) => SaveCommand.NotifyCanExecuteChanged();
+    partial void OnZaLastSavedSecondChanged(int value) => SaveCommand.NotifyCanExecuteChanged();
     partial void OnStreetNameChanged(string value) => SaveCommand.NotifyCanExecuteChanged();
     partial void OnXChanged(double value) => SaveCommand.NotifyCanExecuteChanged();
     partial void OnYChanged(double value) => SaveCommand.NotifyCanExecuteChanged();
@@ -73,59 +83,74 @@ public partial class TrainerEditorViewModel
 
     private void SaveZaFields()
     {
-        if (_sav is not SAV9ZA za || _zaBaseline is not { } baseline || _zaSession is null || !CanSave()) return;
-        if (TrainerName != baseline.OT) za.OT = TrainerName;
-        if (Gender != baseline.Gender) za.Gender = (byte)Gender;
-        if (DisplayTid != baseline.DisplayTID || DisplaySid != baseline.DisplaySID) za.SetDisplayID(DisplayTid, DisplaySid);
-        if (Language != baseline.Language) za.Language = Language;
-        if (PlayedHours != baseline.PlayedHours) za.PlayedHours = PlayedHours;
-        if (PlayedMinutes != baseline.PlayedMinutes) za.PlayedMinutes = PlayedMinutes;
-        if (PlayedSeconds != baseline.PlayedSeconds) za.PlayedSeconds = PlayedSeconds;
-        if (_zaHasMoney && Money != _zaOriginalMoney) za.Money = Money;
-        if (HasRoyalePoints && RoyalePoints != baseline.TicketPointsRoyale) za.TicketPointsRoyale = RoyalePoints;
-        if (HasRoyalePointsInfinite && RoyalePointsInfinite != baseline.TicketPointsRoyaleInfinite) za.TicketPointsRoyaleInfinite = RoyalePointsInfinite;
-        if (HasHyperspacePoints && HyperspacePoints != baseline.GetValue<uint>(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints))
-            za.SetValue(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints, HyperspacePoints);
-        if (HasStreetName && StreetName != baseline.GetString(baseline.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName).Data))
-            za.SetString(za.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName).Data, StreetName, 18, StringConverterOption.ClearZero);
-        if (ZaMap != baseline.Coordinates.Map) za.Coordinates.Map = ZaMap;
-        if (!X.Equals((double)baseline.Coordinates.X)) za.Coordinates.X = (float)X;
-        if (!Y.Equals((double)baseline.Coordinates.Y)) za.Coordinates.Y = (float)Y;
-        if (!Z.Equals((double)baseline.Coordinates.Z)) za.Coordinates.Z = (float)Z;
-        if (Math.Abs(ZaRotation - baseline.Coordinates.Rotation) > 0.00000001)
+        if (_sav is not SAV9ZA || _zaBaseline is not { } baseline || _zaSession is null || !CanSave()) return;
+        bool committed = _zaSession.TryCommit(za =>
         {
-            // Core's double overload puts sine in RY, but Rotation reads RZ.
-            // Use the public quaternion overload with the documented yaw axis.
-            double angle = ZaRotation * Math.PI / 360;
-            za.Coordinates.SetPlayerRotation(0, 0, (float)Math.Sin(angle), (float)Math.Cos(angle));
-        }
-        if (ZaLastSavedDate is { } date && ZaLastSavedTime is { } time)
-        {
-            var desired = date.Date + time;
-            DateTime? original = null;
-            try { original = baseline.LastSaved.Timestamp; } catch (ArgumentOutOfRangeException) { }
-            if (desired != original) za.LastSaved.Timestamp = desired;
-        }
-        if (!_zaSession.TryCommit()) { ZaError = LocalizedStrings.Instance["TrainerZA_Conflict"]; return; }
+            if (TrainerName != baseline.OT) za.OT = TrainerName;
+            if (Gender != baseline.Gender) za.Gender = (byte)Gender;
+            if (DisplayTid != baseline.DisplayTID || DisplaySid != baseline.DisplaySID) za.SetDisplayID(DisplayTid, DisplaySid);
+            if (Language != baseline.Language) za.Language = Language;
+            if (PlayedHours != baseline.PlayedHours) za.PlayedHours = PlayedHours;
+            if (PlayedMinutes != baseline.PlayedMinutes) za.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != baseline.PlayedSeconds) za.PlayedSeconds = PlayedSeconds;
+            if (_zaHasMoney && Money != _zaOriginalMoney) za.Money = Money;
+            if (HasRoyalePoints && RoyalePoints != baseline.TicketPointsRoyale) za.TicketPointsRoyale = RoyalePoints;
+            if (HasRoyalePointsInfinite && RoyalePointsInfinite != baseline.TicketPointsRoyaleInfinite) za.TicketPointsRoyaleInfinite = RoyalePointsInfinite;
+            if (HasHyperspacePoints && HyperspacePoints != baseline.GetValue<uint>(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints))
+                za.SetValue(SaveBlockAccessor9ZA.KHyperspaceSurveyPoints, HyperspacePoints);
+            if (HasStreetName && StreetName != baseline.GetString(baseline.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName).Data))
+                za.SetString(za.Blocks.GetBlock(SaveBlockAccessor9ZA.KStreetName).Data, StreetName, 18, StringConverterOption.ClearZero);
+            if (ZaMap != baseline.Coordinates.Map) za.Coordinates.Map = ZaMap;
+            if (!X.Equals((double)baseline.Coordinates.X)) za.Coordinates.X = (float)X;
+            if (!Y.Equals((double)baseline.Coordinates.Y)) za.Coordinates.Y = (float)Y;
+            if (!Z.Equals((double)baseline.Coordinates.Z)) za.Coordinates.Z = (float)Z;
+            if (Math.Abs(ZaRotation - baseline.Coordinates.Rotation) > 0.00000001)
+            {
+                // Core's double overload puts sine in RY, but Rotation reads RZ.
+                // Use the public quaternion overload with the documented yaw axis.
+                double angle = ZaRotation * Math.PI / 360;
+                za.Coordinates.SetPlayerRotation(0, 0, (float)Math.Sin(angle), (float)Math.Cos(angle));
+            }
+            if (ZaLastSavedDate is { } date && ZaLastSavedTime is { } time)
+            {
+                var desired = date.Date + new TimeSpan(time.Hours, time.Minutes, HasZaLastSavedSeconds ? ZaLastSavedSecond : 0);
+                DateTime? original = null;
+                try { original = baseline.LastSaved.Timestamp; } catch (ArgumentOutOfRangeException) { }
+                if (desired != original) za.LastSaved.Timestamp = desired;
+            }
+        });
+        if (!committed) { _sav = _zaSession.Staged; ZaError = LocalizedStrings.Instance["TrainerZA_Conflict"]; return; }
         _sav = _zaSession.Staged; LoadFromSave();
     }
 
     [RelayCommand]
     private async Task CollectZaAsync(string kind)
     {
-        if (_zaSession is null || _zaDialogs is null || kind is not ("Screws" or "TMs")) return;
+        if (_zaClosed || _zaSession is null || _zaDialogs is null || kind is not ("Screws" or "TMs")) return;
+        int epoch = _zaEpoch;
         if (!await _zaDialogs.ShowConfirmationAsync(LocalizedStrings.Instance["TrainerZA_Collect" + kind],
                 LocalizedStrings.Instance["TrainerZA_Confirm" + kind], LocalizedStrings.Instance["TrainerZA_Collect"], LocalizedStrings.Instance["Common_Cancel"])) return;
-        _zaSession.ApplyCollection(kind == "TMs");
+        if (_zaClosed || epoch != _zaEpoch) return;
+        try { _zaSession.ApplyCollection(kind == "TMs"); ZaError = string.Empty; }
+        catch (ArgumentException) { ZaError = LocalizedStrings.Instance["TrainerZA_CollectionFailed"]; }
+        catch (InvalidOperationException) { ZaError = LocalizedStrings.Instance["TrainerZA_CollectionFailed"]; }
+        _sav = _zaSession.Staged;
         OnPropertyChanged(nameof(CanUndoZaCollection));
     }
 
     [RelayCommand]
     private void UndoZaCollection()
     {
-        if (_zaSession is null) return;
+        if (_zaClosed || _zaSession is null) return;
         _zaSession.Undo(); _sav = _zaSession.Staged;
         OnPropertyChanged(nameof(CanUndoZaCollection));
+    }
+
+    public void Dispose()
+    {
+        _zaClosed = true; _zaEpoch++;
+        OnPropertyChanged(nameof(CanUndoZaCollection));
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]

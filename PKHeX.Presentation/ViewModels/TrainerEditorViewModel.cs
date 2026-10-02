@@ -7,7 +7,7 @@ using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class TrainerEditorViewModel : ViewModelBase
+public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 {
     private SaveFile _sav;
 
@@ -96,7 +96,7 @@ public partial class TrainerEditorViewModel : ViewModelBase
 
     public bool IsDisplayIdValid => !UsesSixDigitTrainerIds || _sav.IsValidTrainerID7(DisplaySid, DisplayTid);
 
-    private bool CanSave() => IsDisplayIdValid && (!IsZA || IsZaInputValid);
+    private bool CanSave() => IsDisplayIdValid && (!IsZA || (!_zaClosed && IsZaInputValid));
 
     partial void OnDisplayTidChanged(uint value)
     {
@@ -600,7 +600,8 @@ public partial class TrainerEditorViewModel : ViewModelBase
     [RelayCommand]
     private void Reset()
     {
-        if (_zaSession is not null) { _zaSession.Reset(); _sav = _zaSession.Staged; }
+        if (_zaClosed) return;
+        if (_zaSession is not null) { _zaEpoch++; _zaSession.Reset(); _sav = _zaSession.Staged; }
         LoadFromSave();
     }
 

@@ -66,4 +66,17 @@ public sealed class ZaTrainerDataSession
         Reset();
         return true;
     }
+
+    public bool TryCommit(Action<SAV9ZA> applyFields)
+    {
+        var before = (SAV9ZA)Staged.Clone();
+        try
+        {
+            applyFields(Staged);
+            if (TryCommit()) return true;
+        }
+        catch { Staged = before; throw; }
+        Staged = before;
+        return false;
+    }
 }

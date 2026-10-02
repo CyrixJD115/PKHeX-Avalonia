@@ -3240,5 +3240,6 @@
   "TrainerZA_ImageInitial": "Initial trainer photo",
   "TrainerZA_ExportImage": "Export PNG",
   "TrainerZA_ImageExportFailed": "The image could not be saved.",
-  "TrainerZA_Conflict": "The live save changed while editing. No staged changes were applied. Reset to reload the current trainer data."
+  "TrainerZA_Conflict": "The live save changed while editing. No staged changes were applied. Reset to reload the current trainer data.",
+  "TrainerZA_CollectionFailed": "The collection action could not be applied. No changes were committed."
 }

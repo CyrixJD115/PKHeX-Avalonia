@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using PKHeX.Avalonia.Tests.Fixtures;
 using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
@@ -20,11 +21,12 @@ public class ZaTrainerBindingTests
         var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
         app.LoadSaveInstance(save);
         var vm = app.ViewModel.TrainerEditor!;
-        var view = new TrainerZaWorkspace { DataContext = vm };
-        var window = new Window { Content = view, Width = 620, Height = 420 }; window.Show();
+        var host = new TrainerEditor { DataContext = vm };
+        var window = new Window { Content = host, Width = 620, Height = 420 }; window.Show();
         try
         {
             Pump(window);
+            var view = Assert.Single(host.GetVisualDescendants().OfType<TrainerZaWorkspace>());
             var tabs = view.FindControl<TabControl>("TrainerZaSections")!;
             Assert.Equal(4, tabs.Items.Count);
             for (int index = 0; index < 4; index++)
