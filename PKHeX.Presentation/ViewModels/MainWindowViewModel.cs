@@ -299,7 +299,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 partyViewer.SaveFileDropRequested += OnSaveFileDropRequested;
                 PartyViewer = partyViewer;
 
-                TrainerEditor = new TrainerEditorViewModel(sav);
+                TrainerEditor = new TrainerEditorViewModel(sav, _dialogService, _imageCodec);
                 InventoryEditor = new InventoryEditorViewModel(sav, _spriteRenderer, IsHaXMode);
                 (EventFlagsEditor as IDisposable)?.Dispose();
                 EventFlagsEditor = sav is SAV9ZA za
