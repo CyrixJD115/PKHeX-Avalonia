@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "Ramasser",
   "TrainerZA_ConfirmScrews": "Marquer toutes les vis colorées disponibles comme ramassées et ajouter les nouvelles vis à l’inventaire, jusqu’à 100. Les modifications restent en attente jusqu’à leur application.",
   "TrainerZA_ConfirmTMs": "Marquer toutes les Capsules Techniques disponibles dans le monde comme ramassées et fixer leur quantité dans l’inventaire à une, même si elle était supérieure. Les modifications restent en attente jusqu’à leur application.",
-  "TrainerZA_UndoCollection": "Annuler la collecte",
-  "TrainerZA_ImagesHelp": "Les images enregistrées sont en lecture seule. L’export PNG décode une copie ; les blocs compressés d’origine restent inchangés. Les images vides ou invalides n’ont pas d’aperçu.",
+  "TrainerZA_UndoCollection": "Annuler l’action",
+  "TrainerZA_ImagesHelp": "L’importation remplace l’image sélectionnée et reste en attente jusqu’à Appliquer. La compression perd des détails ; les pixels partiellement transparents deviennent opaques ou transparents. L’aperçu montre le résultat compressé. L’exportation décode une copie.",
   "TrainerZA_ImageCurrent": "Photo actuelle du Dresseur",
   "TrainerZA_ImagePortrait": "Portrait du Dresseur",
   "TrainerZA_ImageInitial": "Photo initiale du Dresseur",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "Niveau",
   "LgpeTrainer_CP": "PC",
   "LgpeTrainer_MoreActions": "Autres actions",
-  "InventoryEditor_ArtworkHelp": "Illustration de l’objet. Une icône commune est utilisée lorsqu’aucune illustration individuelle n’est disponible."
+  "InventoryEditor_ArtworkHelp": "Illustration de l’objet. Une icône commune est utilisée lorsqu’aucune illustration individuelle n’est disponible.",
+  "TrainerZA_ImportImage": "Importer un PNG",
+  "TrainerZA_ImageDimensions": "PNG : {0} × {1} pixels. Les images ne sont pas redimensionnées.",
+  "TrainerZA_ImageUnavailable": "Importation indisponible : dimensions ou données enregistrées absentes ou non prises en charge.",
+  "TrainerZA_ImageImportFailed": "Importation impossible. Utilisez un PNG valide de {0} × {1} pixels (32 Mo maximum)."
 }

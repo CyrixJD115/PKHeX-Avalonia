@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "收集",
   "TrainerZA_ConfirmScrews": "將所有可用的彩色螺絲標記為已收集，並將新收集的螺絲加入背包，上限為100個。套用前不會修改存檔。",
   "TrainerZA_ConfirmTMs": "將場景中所有可用的招式學習器標記為已收集，並將背包數量設為一個，即使現有數量更多也會設為一個。套用前不會修改存檔。",
-  "TrainerZA_UndoCollection": "復原收集操作",
-  "TrainerZA_ImagesHelp": "已儲存的影像為唯讀。匯出PNG時只解碼副本，原始壓縮影像區塊不會被重新壓縮或修改。空影像或無效影像沒有預覽。",
+  "TrainerZA_UndoCollection": "復原操作",
+  "TrainerZA_ImagesHelp": "匯入會取代所選圖片，並在套用前保持暫存。壓縮會損失部分細節，半透明像素會變為不透明或透明。預覽顯示壓縮後的結果。匯出只解碼副本。",
   "TrainerZA_ImageCurrent": "目前訓練家照片",
   "TrainerZA_ImagePortrait": "訓練家肖像",
   "TrainerZA_ImageInitial": "初始訓練家照片",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "等級",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "更多操作",
-  "InventoryEditor_ArtworkHelp": "沒有個別的道具圖片時，會使用共用圖示。"
+  "InventoryEditor_ArtworkHelp": "沒有個別的道具圖片時，會使用共用圖示。",
+  "TrainerZA_ImportImage": "匯入 PNG",
+  "TrainerZA_ImageDimensions": "PNG：{0} × {1} 像素。不會調整圖片尺寸。",
+  "TrainerZA_ImageUnavailable": "無法匯入：已儲存的尺寸或圖片資料缺失或不受支援。",
+  "TrainerZA_ImageImportFailed": "匯入失敗。請使用 {0} × {1} 像素的有效 PNG（最大 32 MB）。"
 }

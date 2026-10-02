@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "集める",
   "TrainerZA_ConfirmScrews": "利用可能なカラフルなネジをすべて収集済みにし、新たに集めた分を所持品に追加します（上限100個）。適用するまで保存データには反映されません。",
   "TrainerZA_ConfirmTMs": "フィールド上の利用可能なわざマシンをすべて収集済みにし、所持数を1個にします。現在の所持数が多い場合も1個になります。適用するまで保存データには反映されません。",
-  "TrainerZA_UndoCollection": "収集操作を元に戻す",
-  "TrainerZA_ImagesHelp": "保存された画像は読み取り専用です。PNG出力はコピーを展開し、元の圧縮画像ブロックは再圧縮も変更もしません。空または無効な画像にはプレビューがありません。",
+  "TrainerZA_UndoCollection": "操作を元に戻す",
+  "TrainerZA_ImagesHelp": "インポートは選択した画像を置き換え、適用するまで保留されます。圧縮で一部の細部が失われ、半透明のピクセルは不透明または透明になります。プレビューには圧縮後の画像が表示されます。エクスポートはコピーを展開します。",
   "TrainerZA_ImageCurrent": "現在のトレーナー写真",
   "TrainerZA_ImagePortrait": "トレーナーのポートレート",
   "TrainerZA_ImageInitial": "最初のトレーナー写真",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "レベル",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "その他の操作",
-  "InventoryEditor_ArtworkHelp": "個別の道具画像がない場合は共通のアイコンが表示されます。"
+  "InventoryEditor_ArtworkHelp": "個別の道具画像がない場合は共通のアイコンが表示されます。",
+  "TrainerZA_ImportImage": "PNGをインポート",
+  "TrainerZA_ImageDimensions": "PNG: {0} × {1} ピクセル。画像のサイズは変更されません。",
+  "TrainerZA_ImageUnavailable": "保存された寸法や画像データがない、または未対応のためインポートできません。",
+  "TrainerZA_ImageImportFailed": "インポートできませんでした。{0} × {1} ピクセルの有効なPNG（32 MB以下）を使用してください。"
 }

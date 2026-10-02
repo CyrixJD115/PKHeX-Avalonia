@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "Collect",
   "TrainerZA_ConfirmScrews": "Mark every available Colorful Screw as collected and add newly collected screws to inventory, up to 100. Changes remain staged until Apply.",
   "TrainerZA_ConfirmTMs": "Mark every available overworld Technical Machine as collected and set its inventory quantity to one, including items with a higher existing count. Changes remain staged until Apply.",
-  "TrainerZA_UndoCollection": "Undo collection action",
-  "TrainerZA_ImagesHelp": "Saved images are read-only. PNG export decodes a copy; the original compressed image blocks are never recompressed or changed. Empty or invalid images have no preview.",
+  "TrainerZA_UndoCollection": "Undo action",
+  "TrainerZA_ImagesHelp": "Import replaces the selected image and stays staged until Apply. Compression loses some detail; partly transparent pixels become opaque or transparent. The preview shows the compressed result. Export decodes a copy.",
   "TrainerZA_ImageCurrent": "Current trainer photo",
   "TrainerZA_ImagePortrait": "Trainer portrait",
   "TrainerZA_ImageInitial": "Initial trainer photo",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "More actions",
-  "InventoryEditor_ArtworkHelp": "Item artwork. A shared icon is used when individual artwork is unavailable."
+  "InventoryEditor_ArtworkHelp": "Item artwork. A shared icon is used when individual artwork is unavailable.",
+  "TrainerZA_ImportImage": "Import PNG",
+  "TrainerZA_ImageDimensions": "PNG: {0} × {1} pixels. Images are not resized.",
+  "TrainerZA_ImageUnavailable": "Image import is unavailable: saved dimensions or storage are missing or unsupported.",
+  "TrainerZA_ImageImportFailed": "Could not import this image. Use a valid PNG of {0} × {1} pixels (up to 32 MB)."
 }

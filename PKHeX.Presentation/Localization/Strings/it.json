@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "Raccogli",
   "TrainerZA_ConfirmScrews": "Segna tutte le viti colorate disponibili come raccolte e aggiungi quelle nuove all’inventario, fino a 100. Le modifiche restano in attesa fino all’applicazione.",
   "TrainerZA_ConfirmTMs": "Segna tutte le Macchine Tecniche disponibili nel mondo come raccolte e imposta la loro quantità nell’inventario a una, anche se era maggiore. Le modifiche restano in attesa fino all’applicazione.",
-  "TrainerZA_UndoCollection": "Annulla raccolta",
-  "TrainerZA_ImagesHelp": "Le immagini salvate sono di sola lettura. L’esportazione PNG decodifica una copia; i blocchi compressi originali restano invariati. Le immagini vuote o non valide non hanno anteprima.",
+  "TrainerZA_UndoCollection": "Annulla azione",
+  "TrainerZA_ImagesHelp": "L’importazione sostituisce l’immagine selezionata e resta in sospeso fino ad Applica. La compressione perde dettagli; i pixel parzialmente trasparenti diventano opachi o trasparenti. L’anteprima mostra il risultato compresso. L’esportazione decodifica una copia.",
   "TrainerZA_ImageCurrent": "Foto attuale dell’Allenatore",
   "TrainerZA_ImagePortrait": "Ritratto dell’Allenatore",
   "TrainerZA_ImageInitial": "Foto iniziale dell’Allenatore",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "Livello",
   "LgpeTrainer_CP": "PL",
   "LgpeTrainer_MoreActions": "Altre azioni",
-  "InventoryEditor_ArtworkHelp": "Grafica dello strumento. Se manca una grafica specifica, viene usata un’icona condivisa."
+  "InventoryEditor_ArtworkHelp": "Grafica dello strumento. Se manca una grafica specifica, viene usata un’icona condivisa.",
+  "TrainerZA_ImportImage": "Importa PNG",
+  "TrainerZA_ImageDimensions": "PNG: {0} × {1} pixel. Le immagini non vengono ridimensionate.",
+  "TrainerZA_ImageUnavailable": "Importazione non disponibile: dimensioni o dati salvati mancanti o non supportati.",
+  "TrainerZA_ImageImportFailed": "Impossibile importare. Usa un PNG valido di {0} × {1} pixel (fino a 32 MB)."
 }

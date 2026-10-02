@@ -3233,8 +3233,8 @@
   "TrainerZA_Collect": "Sammeln",
   "TrainerZA_ConfirmScrews": "Alle verfügbaren bunten Schrauben als gesammelt markieren und neu gesammelte Schrauben dem Inventar hinzufügen, bis zu 100. Änderungen bleiben bis zum Anwenden vorgemerkt.",
   "TrainerZA_ConfirmTMs": "Alle verfügbaren Technischen Maschinen in der Spielwelt als gesammelt markieren und ihre Inventarmenge auf eins setzen, auch bei höheren vorhandenen Mengen. Änderungen bleiben bis zum Anwenden vorgemerkt.",
-  "TrainerZA_UndoCollection": "Sammelaktion rückgängig machen",
-  "TrainerZA_ImagesHelp": "Gespeicherte Bilder sind schreibgeschützt. PNG-Export dekodiert eine Kopie; die ursprünglichen komprimierten Bildblöcke bleiben unverändert. Leere oder ungültige Bilder haben keine Vorschau.",
+  "TrainerZA_UndoCollection": "Aktion rückgängig",
+  "TrainerZA_ImagesHelp": "Der Import ersetzt das ausgewählte Bild und bleibt bis zum Anwenden vorgemerkt. Die Komprimierung verliert Details; teilweise transparente Pixel werden deckend oder transparent. Die Vorschau zeigt das komprimierte Ergebnis. Der Export dekodiert eine Kopie.",
   "TrainerZA_ImageCurrent": "Aktuelles Trainerfoto",
   "TrainerZA_ImagePortrait": "Trainerporträt",
   "TrainerZA_ImageInitial": "Ursprüngliches Trainerfoto",
@@ -3334,5 +3334,9 @@
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "WP",
   "LgpeTrainer_MoreActions": "Weitere Aktionen",
-  "InventoryEditor_ArtworkHelp": "Gegenstandsgrafik. Ist keine individuelle Grafik vorhanden, wird ein gemeinsames Symbol verwendet."
+  "InventoryEditor_ArtworkHelp": "Gegenstandsgrafik. Ist keine individuelle Grafik vorhanden, wird ein gemeinsames Symbol verwendet.",
+  "TrainerZA_ImportImage": "PNG importieren",
+  "TrainerZA_ImageDimensions": "PNG: {0} × {1} Pixel. Bilder werden nicht skaliert.",
+  "TrainerZA_ImageUnavailable": "Bildimport nicht verfügbar: gespeicherte Abmessungen oder Bilddaten fehlen oder werden nicht unterstützt.",
+  "TrainerZA_ImageImportFailed": "Bildimport fehlgeschlagen. Verwende eine gültige PNG mit {0} × {1} Pixeln (bis 32 MB)."
 }
