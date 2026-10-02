@@ -61,6 +61,7 @@ public class FilterableComboBoxTests
     {
         var control = new FilterableComboBox { ItemsSource = Items() };
         var window = new Window { Content = control, Width = 200, Height = 60 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();
@@ -77,6 +78,7 @@ public class FilterableComboBoxTests
     {
         var control = new ComboBox { ItemsSource = Items(), SelectedIndex = 0, Width = 200 };
         var window = new Window { Content = control, Width = 220, Height = 60 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();
@@ -211,6 +213,7 @@ public class FilterableComboBoxTests
         control.Populated += (_, e) => populatedCount = e.Data.Cast<object>().Count();
         control.SelectedValue = 2;
         var window = new Window { Content = control, Width = 200, Height = 60 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();

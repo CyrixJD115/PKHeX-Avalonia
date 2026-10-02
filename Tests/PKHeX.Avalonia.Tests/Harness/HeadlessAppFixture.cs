@@ -416,8 +416,10 @@ public sealed class HeadlessAppFixture : IDisposable
         try
         {
             // Teardown is not a user close gesture; bypass the unsaved-changes prompt.
+            Gateway.CloseSave();
             Window.DataContext = null;
             Window.Close();
+            Window.Content = null;
             Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Dispatcher.UIThread.RunJobs();

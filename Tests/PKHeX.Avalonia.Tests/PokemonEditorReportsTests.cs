@@ -290,6 +290,7 @@ public class PokemonEditorReportsTests
         var (vm, _, _) = TestHelpers.CreateTestViewModel(pkm, sav);
         var view = new PokemonEditor { DataContext = vm };
         var window = new Window { Content = view, Width = 700, Height = 600 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();
@@ -314,6 +315,7 @@ public class PokemonEditorReportsTests
         }, sav);
         var view = new PokemonEditor { DataContext = vm };
         var window = new Window { Content = view, Width = 700, Height = 600 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();
@@ -345,6 +347,7 @@ public class PokemonEditorReportsTests
         var (vm, _, _) = TestHelpers.CreateTestViewModel(new PK9 { Species = 906 }, sav);
         var view = new PokemonEditor { DataContext = vm };
         var window = new Window { Content = view, Width = 760, Height = 800 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         Dispatcher.UIThread.RunJobs();
