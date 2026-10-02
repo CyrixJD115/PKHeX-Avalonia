@@ -705,7 +705,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV7 sav) return;
         await _windowService.ShowDialogAsync(
-            new Misc7EditorViewModel(sav),
+            new Misc7EditorViewModel(sav, _dialogService),
             T("Dialog_MiscEditorGen7"));
     }
 

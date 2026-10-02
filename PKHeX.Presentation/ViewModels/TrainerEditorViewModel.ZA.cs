@@ -194,6 +194,7 @@ public partial class TrainerEditorViewModel
     public void Dispose()
     {
         LgpeEditor?.Dispose();
+        Gen7Editor?.Dispose();
         _zaClosed = true; _zaEpoch++;
         OnPropertyChanged(nameof(CanUndoZaCollection));
         SaveCommand.NotifyCanExecuteChanged();

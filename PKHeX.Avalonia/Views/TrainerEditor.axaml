@@ -7,6 +7,7 @@
              x:DataType="vm:TrainerEditorViewModel">
 
     <Grid>
+    <Grid IsVisible="{Binding IsGen7}"><views:Misc7Editor DataContext="{Binding Gen7Editor}" /></Grid>
     <views:TrainerZaWorkspace IsVisible="{Binding IsZA}" />
     <Grid IsVisible="{Binding IsLGPE}"><views:Misc7bEditor DataContext="{Binding LgpeEditor}" /></Grid>
     <Border Classes="view-container" IsVisible="{Binding !HasDedicatedTrainerWorkspace}">

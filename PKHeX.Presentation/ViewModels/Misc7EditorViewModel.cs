@@ -2,6 +2,8 @@ using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using PKHeX.Presentation.Models;
 using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
@@ -9,19 +11,32 @@ namespace PKHeX.Presentation.ViewModels;
 /// <summary>
 /// Misc editor for Gen 7 saves covering Battle Tree, Poké Finder, Stamps, and Fly destinations.
 /// </summary>
-public partial class Misc7EditorViewModel : ViewModelBase
+public partial class Misc7EditorViewModel : ViewModelBase, IDisposable
 {
-    private readonly SAV7 _sav;
+    private SAV7 _sav;
+    private SAV7 _baseline;
+    private readonly TrainerBlockDataSession<SAV7> _session;
+    private bool _closed;
+    private int _epoch;
+    private readonly IDialogService? _dialogs;
+    public bool CanUndoFashion => !_closed && _session.CanUndo;
+    public bool HasError => Error.Length != 0;
+    [ObservableProperty] private string _error = string.Empty;
 
-    public Misc7EditorViewModel(SAV7 sav)
+    public Misc7EditorViewModel(SAV7 sav, IDialogService? dialogs = null)
     {
-        _sav = sav;
+        _session = new(sav);
+        _dialogs = dialogs;
+        _sav = _session.Staged;
+        _baseline = (SAV7)_sav.Clone();
+        LoadTrainerFields();
         LoadBattleTree();
         LoadPokeFinder();
         LoadStamps();
         LoadFlyDestinations();
         if (sav is SAV7USUM)
             LoadUltraData();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) => ((Misc7EditorViewModel)recipient).RefreshLanguage());
     }
 
     public bool IsUSUM => _sav is SAV7USUM;
@@ -81,25 +96,25 @@ public partial class Misc7EditorViewModel : ViewModelBase
         var bt = _sav.BattleTree;
 
         // Regular
-        bt.SetTreeStreak(SingleCurrentStreak, 0, super: false, max: false);
-        bt.SetTreeStreak(SingleMaxStreak, 0, super: false, max: true);
-        bt.SetTreeStreak(DoubleCurrentStreak, 1, super: false, max: false);
-        bt.SetTreeStreak(DoubleMaxStreak, 1, super: false, max: true);
-        bt.SetTreeStreak(MultiCurrentStreak, 2, super: false, max: false);
-        bt.SetTreeStreak(MultiMaxStreak, 2, super: false, max: true);
+        if (SingleCurrentStreak != _baseline.BattleTree.GetTreeStreak(0, super: false, max: false)) bt.SetTreeStreak(SingleCurrentStreak, 0, super: false, max: false);
+        if (SingleMaxStreak != _baseline.BattleTree.GetTreeStreak(0, super: false, max: true)) bt.SetTreeStreak(SingleMaxStreak, 0, super: false, max: true);
+        if (DoubleCurrentStreak != _baseline.BattleTree.GetTreeStreak(1, super: false, max: false)) bt.SetTreeStreak(DoubleCurrentStreak, 1, super: false, max: false);
+        if (DoubleMaxStreak != _baseline.BattleTree.GetTreeStreak(1, super: false, max: true)) bt.SetTreeStreak(DoubleMaxStreak, 1, super: false, max: true);
+        if (MultiCurrentStreak != _baseline.BattleTree.GetTreeStreak(2, super: false, max: false)) bt.SetTreeStreak(MultiCurrentStreak, 2, super: false, max: false);
+        if (MultiMaxStreak != _baseline.BattleTree.GetTreeStreak(2, super: false, max: true)) bt.SetTreeStreak(MultiMaxStreak, 2, super: false, max: true);
 
         // Super
-        bt.SetTreeStreak(SuperSingleCurrentStreak, 0, super: true, max: false);
-        bt.SetTreeStreak(SuperSingleMaxStreak, 0, super: true, max: true);
-        bt.SetTreeStreak(SuperDoubleCurrentStreak, 1, super: true, max: false);
-        bt.SetTreeStreak(SuperDoubleMaxStreak, 1, super: true, max: true);
-        bt.SetTreeStreak(SuperMultiCurrentStreak, 2, super: true, max: false);
-        bt.SetTreeStreak(SuperMultiMaxStreak, 2, super: true, max: true);
+        if (SuperSingleCurrentStreak != _baseline.BattleTree.GetTreeStreak(0, super: true, max: false)) bt.SetTreeStreak(SuperSingleCurrentStreak, 0, super: true, max: false);
+        if (SuperSingleMaxStreak != _baseline.BattleTree.GetTreeStreak(0, super: true, max: true)) bt.SetTreeStreak(SuperSingleMaxStreak, 0, super: true, max: true);
+        if (SuperDoubleCurrentStreak != _baseline.BattleTree.GetTreeStreak(1, super: true, max: false)) bt.SetTreeStreak(SuperDoubleCurrentStreak, 1, super: true, max: false);
+        if (SuperDoubleMaxStreak != _baseline.BattleTree.GetTreeStreak(1, super: true, max: true)) bt.SetTreeStreak(SuperDoubleMaxStreak, 1, super: true, max: true);
+        if (SuperMultiCurrentStreak != _baseline.BattleTree.GetTreeStreak(2, super: true, max: false)) bt.SetTreeStreak(SuperMultiCurrentStreak, 2, super: true, max: false);
+        if (SuperMultiMaxStreak != _baseline.BattleTree.GetTreeStreak(2, super: true, max: true)) bt.SetTreeStreak(SuperMultiMaxStreak, 2, super: true, max: true);
 
         // Unlock flags
-        _sav.EventWork.SetEventFlag(333, SuperSingleUnlocked);
-        _sav.EventWork.SetEventFlag(334, SuperDoubleUnlocked);
-        _sav.EventWork.SetEventFlag(335, SuperMultiUnlocked);
+        if (SuperSingleUnlocked != _baseline.EventWork.GetEventFlag(333)) _sav.EventWork.SetEventFlag(333, SuperSingleUnlocked);
+        if (SuperDoubleUnlocked != _baseline.EventWork.GetEventFlag(334)) _sav.EventWork.SetEventFlag(334, SuperDoubleUnlocked);
+        if (SuperMultiUnlocked != _baseline.EventWork.GetEventFlag(335)) _sav.EventWork.SetEventFlag(335, SuperMultiUnlocked);
     }
 
     [RelayCommand]
@@ -120,24 +135,33 @@ public partial class Misc7EditorViewModel : ViewModelBase
     [ObservableProperty] private int _cameraVersion;
     [ObservableProperty] private bool _gyroEnabled;
 
-    public string[] CameraVersions { get; } = ["Pokemon Finder", "Pokemon Finder 2.0", "Pokemon Finder 2.1 (Max)"];
+    public IReadOnlyList<ComboItem> CameraVersions
+    {
+        get
+        {
+            string name = Localization.LocalizedStrings.Instance["Misc7Editor_PokeFinder"];
+            var values = new List<ComboItem> { new(name, 0), new(name + " 2.0", 1), new(name + " 2.1", 2) };
+            if (CameraVersion > 2) values.Add(new(Localization.LocalizedStrings.Instance.Format("RaidSession_UnknownType", CameraVersion), CameraVersion));
+            return values;
+        }
+    }
 
     private void LoadPokeFinder()
     {
         SnapCount = _sav.PokeFinder.SnapCount;
         ThumbsTotal = _sav.PokeFinder.ThumbsTotalValue;
         ThumbsRecord = _sav.PokeFinder.ThumbsHighValue;
-        CameraVersion = Math.Min((int)_sav.PokeFinder.CameraVersion, 2);
+        CameraVersion = _sav.PokeFinder.CameraVersion;
         GyroEnabled = _sav.PokeFinder.GyroFlag;
     }
 
     private void SavePokeFinder()
     {
-        _sav.PokeFinder.SnapCount = SnapCount;
-        _sav.PokeFinder.ThumbsTotalValue = ThumbsTotal;
-        _sav.PokeFinder.ThumbsHighValue = ThumbsRecord;
-        _sav.PokeFinder.CameraVersion = (ushort)CameraVersion;
-        _sav.PokeFinder.GyroFlag = GyroEnabled;
+        if (SnapCount != _baseline.PokeFinder.SnapCount) _sav.PokeFinder.SnapCount = SnapCount;
+        if (ThumbsTotal != _baseline.PokeFinder.ThumbsTotalValue) _sav.PokeFinder.ThumbsTotalValue = ThumbsTotal;
+        if (ThumbsRecord != _baseline.PokeFinder.ThumbsHighValue) _sav.PokeFinder.ThumbsHighValue = ThumbsRecord;
+        if (CameraVersion != _baseline.PokeFinder.CameraVersion) _sav.PokeFinder.CameraVersion = (ushort)CameraVersion;
+        if (GyroEnabled != _baseline.PokeFinder.GyroFlag) _sav.PokeFinder.GyroFlag = GyroEnabled;
     }
 
     [RelayCommand]
@@ -165,7 +189,7 @@ public partial class Misc7EditorViewModel : ViewModelBase
         for (int i = 0; i < stampNames.Length; i++)
         {
             bool obtained = (stampBits & (1u << i)) != 0;
-            Stamps.Add(new StampViewModel(i, stampNames[i], obtained));
+            Stamps.Add(new StampViewModel(i, Localization.LocalizedStrings.Instance["Trainer7_Stamp_" + i], obtained));
         }
     }
 
@@ -177,7 +201,7 @@ public partial class Misc7EditorViewModel : ViewModelBase
             if (Stamps[i].IsObtained)
                 bits |= 1u << i;
         }
-        _sav.Misc.Stamps = bits;
+        if (bits != _baseline.Misc.Stamps) _sav.Misc.Stamps = bits;
     }
 
     [RelayCommand]
@@ -194,52 +218,30 @@ public partial class Misc7EditorViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<FlyDestination7ViewModel> _flyDestinations = [];
 
-    private int _skipFlag;
-    private int[] _flyDestFlagOfs = [];
+    public ObservableCollection<FlyDestination7ViewModel> MapUnmask { get; } = [];
 
     private void LoadFlyDestinations()
     {
-        _skipFlag = _sav is SAV7USUM ? 4160 : 3200;
+        FlyDestinations.Clear(); MapUnmask.Clear();
+        foreach (var item in Gen7TrainerMapFlags.GetFlyDestinations(_sav))
+            FlyDestinations.Add(new(item.FlagIndex, GetMapFlagName(item), _sav.EventWork.GetEventFlag(item.FlagIndex)));
+        foreach (var item in Gen7TrainerMapFlags.GetMapUnmask(_sav))
+            MapUnmask.Add(new(item.FlagIndex, GetMapFlagName(item), _sav.EventWork.GetEventFlag(item.FlagIndex)));
+    }
 
-        _flyDestFlagOfs = [
-            44, 43, 45, 40, 41, 49, 42, 47, 46, 48,
-            50, 54, 39, 57, 51, 55, 59, 52, 58, 53, 61, 60, 56,
-            62, 66, 67, 64, 65, 273, 270, 37, 38,
-            69, 74, 72, 71, 276, 73, 70,
-            75, 332, 334,
-            331, 333, 335, 336
-        ];
-
-        string[] flyDestNames = [
-            "My House", "Route 1", "Hau'oli Outskirts", "Iki Town", "Route 2",
-            "Hau'oli City", "Route 3", "Heahea City", "Route 4", "Paniola Town",
-            "Route 5", "Royal Avenue", "Hauoli Cemetery", "Route 6", "Konikoni City",
-            "Diglett's Tunnel", "Memorial Hill", "Route 7", "Wela Volcano Park", "Route 8",
-            "Lush Jungle", "Route 9", "Aether Base",
-            "Malie City", "Route 10", "Mount Hokulani", "Route 11", "Route 12",
-            "Secluded Shore (USUM)", "Tapu Village", "Route 13", "Route 14",
-            "Seafolk Village", "Exeggutor Island", "Vast Poni Canyon", "Altar of the Sunne/Moone",
-            "Poni Grove (USUM)", "Ancient Poni Path", "Poni Wilds",
-            "Battle Tree", "Photo Club (Hauoli)", "Photo Club (Konikoni)",
-            "Battle Agency (USUM)", "Big Wave Beach (USUM)", "Sandy Cave (USUM)", "Poni Beach (USUM)"
-        ];
-
-        int count = _sav is SAV7USUM ? flyDestNames.Length : flyDestNames.Length - 6;
-
-        FlyDestinations.Clear();
-        for (int i = 0; i < count; i++)
-        {
-            bool unlocked = _sav.EventWork.GetEventFlag(_skipFlag + _flyDestFlagOfs[i]);
-            FlyDestinations.Add(new FlyDestination7ViewModel(i, flyDestNames[i], unlocked));
-        }
+    private static string GetMapFlagName(Gen7TrainerMapFlag item)
+    {
+        if (item.AlternateName != Gen7MapAlternateName.None)
+            return Localization.LocalizedStrings.Instance["Trainer7_Map_" + item.AlternateName];
+        return GameInfo.GetLocationList(GameVersion.US, EntityContext.Gen7, false).FirstOrDefault(location => location.Value == item.LocationId)?.Text
+            ?? Localization.LocalizedStrings.Instance.Format("RaidSession_UnknownType", item.LocationId);
     }
 
     private void SaveFlyDestinations()
     {
-        for (int i = 0; i < FlyDestinations.Count && i < _flyDestFlagOfs.Length; i++)
-        {
-            _sav.EventWork.SetEventFlag(_skipFlag + _flyDestFlagOfs[i], FlyDestinations[i].IsUnlocked);
-        }
+        foreach (var row in FlyDestinations.Concat(MapUnmask))
+            if (row.IsUnlocked != _baseline.EventWork.GetEventFlag(row.Index))
+                _sav.EventWork.SetEventFlag(row.Index, row.IsUnlocked);
     }
 
     [RelayCommand]
@@ -270,10 +272,10 @@ public partial class Misc7EditorViewModel : ViewModelBase
     {
         if (_sav is not SAV7USUM) return;
 
-        _sav.Misc.SetSurfScore(0, MantineSurf0);
-        _sav.Misc.SetSurfScore(1, MantineSurf1);
-        _sav.Misc.SetSurfScore(2, MantineSurf2);
-        _sav.Misc.SetSurfScore(3, MantineSurf3);
+        if (MantineSurf0 != _baseline.Misc.GetSurfScore(0)) _sav.Misc.SetSurfScore(0, MantineSurf0);
+        if (MantineSurf1 != _baseline.Misc.GetSurfScore(1)) _sav.Misc.SetSurfScore(1, MantineSurf1);
+        if (MantineSurf2 != _baseline.Misc.GetSurfScore(2)) _sav.Misc.SetSurfScore(2, MantineSurf2);
+        if (MantineSurf3 != _baseline.Misc.GetSurfScore(3)) _sav.Misc.SetSurfScore(3, MantineSurf3);
     }
 
     #endregion
@@ -283,13 +285,72 @@ public partial class Misc7EditorViewModel : ViewModelBase
     [RelayCommand]
     private void Save()
     {
-        SaveBattleTree();
-        SavePokeFinder();
-        SaveStamps();
-        SaveFlyDestinations();
-        SaveUltraData();
+        if (_closed) return;
+        if (!CanSave) { Error = Localization.LocalizedStrings.Instance["Trainer7_InvalidValues"]; return; }
+        _epoch++;
+        if (!_session.TryCommit(staged =>
+        {
+            _sav = staged;
+            SaveTrainerFields(); SaveBattleTree(); SavePokeFinder(); SaveStamps(); SaveFlyDestinations(); SaveUltraData();
+        }))
+        { _sav = _session.Staged; Error = Localization.LocalizedStrings.Instance["LgpeTrainer_Conflict"]; return; }
+        _sav = _session.Staged; _baseline = (SAV7)_sav.Clone();
+        LoadTrainerFields(); LoadBattleTree(); LoadPokeFinder(); LoadStamps(); LoadFlyDestinations(); if (IsUSUM) LoadUltraData();
+        Error = string.Empty;
+        OnPropertyChanged(nameof(CanUndoFashion));
     }
 
+    [RelayCommand]
+    private void Reset()
+    {
+        if (_closed) return;
+        _epoch++;
+        _session.Reset(); _sav = _session.Staged; _baseline = (SAV7)_sav.Clone();
+        LoadTrainerFields(); LoadBattleTree(); LoadPokeFinder(); LoadStamps(); LoadFlyDestinations();
+        if (IsUSUM) LoadUltraData(); Error = string.Empty;
+        OnPropertyChanged(nameof(CanUndoFashion));
+    }
+    [RelayCommand]
+    private async Task FashionAsync(Gen7FashionMode mode)
+    {
+        if (_closed || _dialogs is null || Gender is not (0 or 1)) return;
+        int epoch = _epoch, gender = Gender;
+        var strings = Localization.LocalizedStrings.Instance;
+        if (!await _dialogs.ShowConfirmationAsync(strings["Trainer7_Fashion"], strings["Trainer7_FashionConfirm"], strings["TrainerEditor_ApplyChanges"], strings["Common_Cancel"])) return;
+        if (_closed || epoch != _epoch || gender != Gender) return;
+        _session.ApplyAction(save => Gen7TrainerFashion.Apply(save, gender, mode));
+        _sav = _session.Staged; _epoch++; Error = string.Empty;
+        OnPropertyChanged(nameof(CanUndoFashion));
+    }
+    [RelayCommand]
+    private void UndoFashion()
+    {
+        if (_closed) return;
+        _session.Undo(); _sav = _session.Staged; _epoch++;
+        OnPropertyChanged(nameof(CanUndoFashion));
+    }
+    public void Dispose() { _closed = true; _epoch++; WeakReferenceMessenger.Default.UnregisterAll(this); }
+    public void RefreshLanguage()
+    {
+        int country = Country, region = SubRegion, language = Language, gender = Gender, console = ConsoleRegion, skin = SkinColor, style = BattleStyle, camera = CameraVersion;
+        ulong time = AlolaOffset;
+        Countries = ReadGeo("countries", country); Regions = ReadGeo($"sr_{country:000}", region);
+        foreach (var property in new[] { nameof(Genders), nameof(Languages), nameof(ConsoleRegions), nameof(SkinColors), nameof(BattleStyles), nameof(TimeOffsets), nameof(CameraVersions) }) OnPropertyChanged(property);
+        Country = country; SubRegion = region; Language = language; Gender = gender; ConsoleRegion = console; SkinColor = skin; BattleStyle = style; CameraVersion = camera; AlolaOffset = time;
+        foreach (var row in StyleFlags) row.Name = Localization.LocalizedStrings.Instance["Trainer7_Style_" + row.Id];
+        foreach (var row in Stamps) row.Name = Localization.LocalizedStrings.Instance["Trainer7_Stamp_" + row.Index];
+        foreach (var definition in Gen7TrainerMapFlags.GetFlyDestinations(_sav).Concat(Gen7TrainerMapFlags.GetMapUnmask(_sav)))
+        {
+            var row = FlyDestinations.Concat(MapUnmask).First(item => item.Index == definition.FlagIndex);
+            row.Name = GetMapFlagName(definition);
+        }
+    }
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        base.OnPropertyChanged(args);
+        if (args.PropertyName != nameof(CanSave)) base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(CanSave)));
+    }
+    partial void OnErrorChanged(string value) => OnPropertyChanged(nameof(HasError));
     #endregion
 }
 
@@ -303,7 +364,7 @@ public partial class StampViewModel : ObservableObject
     }
 
     public int Index { get; }
-    public string Name { get; }
+    [ObservableProperty] private string _name = string.Empty;
 
     [ObservableProperty]
     private bool _isObtained;
@@ -319,7 +380,7 @@ public partial class FlyDestination7ViewModel : ObservableObject
     }
 
     public int Index { get; }
-    public string Name { get; }
+    [ObservableProperty] private string _name = string.Empty;
 
     [ObservableProperty]
     private bool _isUnlocked;
