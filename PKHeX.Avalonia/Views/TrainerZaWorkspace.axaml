@@ -13,7 +13,7 @@
     <Button Name="TrainerZaApply" Content="{loc:Loc TrainerEditor_ApplyChanges}" Command="{Binding SaveCommand}" Classes="accent" />
    </WrapPanel>
   </StackPanel>
-  <TabControl Name="TrainerZaSections">
+  <TabControl Name="TrainerZaSections" Classes="compact-editor-tabs">
    <TabItem Header="{loc:Loc TrainerZA_Overview}"><ScrollViewer><StackPanel Spacing="8" Margin="8">
     <TextBlock Text="{loc:Loc TrainerEditor_TrainerName}" /><TextBox Text="{Binding TrainerName}" MaxLength="12" AutomationProperties.Name="{loc:Loc TrainerEditor_TrainerName}" />
     <TextBlock Text="{loc:Loc TrainerEditor_Gender}" /><ComboBox ItemsSource="{Binding GenderList}" SelectedValueBinding="{Binding Value}" SelectedValue="{Binding Gender}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Gender}" />

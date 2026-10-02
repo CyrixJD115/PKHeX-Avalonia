@@ -69,10 +69,6 @@
                 <MenuItem Header="{loc:Loc Menu_Options_Undo}" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" />
                 <MenuItem Header="{loc:Loc Menu_Options_Redo}" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" />
             </MenuItem>
-            <MenuItem Header="{loc:Loc Menu_Save}">
-                <MenuItem Header="{loc:Loc Tab_Trainer}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.TrainerWorkspaceTabIndex}" />
-                <MenuItem Header="{loc:Loc Tab_Inventory}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.InventoryWorkspaceTabIndex}" />
-            </MenuItem>
             <MenuItem Header="{loc:Loc Menu_Tools}" ItemsSource="{Binding AvailableToolMenuGroups}">
                 <MenuItem.ItemContainerTheme>
                     <ControlTheme x:CompileBindings="False" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">

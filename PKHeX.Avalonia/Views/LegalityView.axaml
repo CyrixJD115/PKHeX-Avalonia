@@ -3,8 +3,7 @@
              xmlns:vm="clr-namespace:PKHeX.Presentation.ViewModels;assembly=PKHeX.Presentation"
              xmlns:loc="using:PKHeX.Avalonia.Localization"
              x:Class="PKHeX.Avalonia.Views.LegalityView"
-             x:DataType="vm:LegalityViewModel"
-             Width="600" Height="400">
+             x:DataType="vm:LegalityViewModel">
     <Border Classes="view-container">
     <DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
