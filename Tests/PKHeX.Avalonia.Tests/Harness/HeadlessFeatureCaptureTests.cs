@@ -53,12 +53,12 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
                 window.Show();
                 try
                 {
-                    PumpToStableLayout(window); await ExpanderVisualStateTests.Settle(window); CaptureOrSkip(window, $"donut-{language}-detail.png", "Staged donut detail");
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window); CaptureOrSkip(window, $"donut-{language}-detail.png", "Staged donut detail");
                     view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToEnd(); PumpToStableLayout(window);
-                    await ExpanderVisualStateTests.Settle(window);
+                    await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
                     CaptureOrSkip(window, $"donut-{language}-profile.png", "Donut flavor profile");
                     view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToHome(); view.FindControl<Expander>("DonutGenerator")!.IsExpanded = true;
-                    PumpToStableLayout(window); await ExpanderVisualStateTests.Settle(window); CaptureOrSkip(window, $"donut-{language}-generator.png", "Inline donut generator");
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window); CaptureOrSkip(window, $"donut-{language}-generator.png", "Inline donut generator");
                 }
                 finally { window.Close(); }
             }
