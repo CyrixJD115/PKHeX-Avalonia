@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "Idole",
   "Trainer7_Style_8": "Nihiliste",
   "Trainer7_StyleUnlocked": "Débloqué",
-  "Trainer7_StyleLearned": "Appris"
+  "Trainer7_StyleLearned": "Appris",
+  "Trainer8_ActionFashion": "Débloquer les vêtements obtenables",
+  "Trainer8_ConfirmFashion": "Débloquer tous les vêtements obtenables pour ce jeu et ce personnage ? Les modifications restent en attente jusqu’à Appliquer et peuvent être annulées ou réinitialisées.",
+  "Trainer8_ActionDiglett": "Trouver tous les Taupiqueur",
+  "Trainer8_ConfirmDiglett": "Trouver tous les Taupiqueur d’Isolarmure ? Les modifications restent en attente jusqu’à Appliquer et peuvent être annulées ou réinitialisées.",
+  "Trainer8_ActionAppearance": "Réinitialiser l’apparence",
+  "Trainer8_ConfirmAppearance": "Restaurer l’apparence initiale avec la peau choisie ? Les modifications restent en attente jusqu’à Appliquer et peuvent être annulées ou réinitialisées."
 }

@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "Ídolo",
   "Trainer7_Style_8": "Nihilista",
   "Trainer7_StyleUnlocked": "Desbloqueado",
-  "Trainer7_StyleLearned": "Aprendido"
+  "Trainer7_StyleLearned": "Aprendido",
+  "Trainer8_ActionFashion": "Desbloquear ropa obtenible",
+  "Trainer8_ConfirmFashion": "¿Desbloquear toda la ropa obtenible para este juego y personaje? Queda pendiente hasta Aplicar y se puede deshacer o restablecer.",
+  "Trainer8_ActionDiglett": "Recoger todos los Diglett",
+  "Trainer8_ConfirmDiglett": "¿Recoger todos los Diglett de la Isla de la Armadura? Queda pendiente hasta Aplicar y se puede deshacer o restablecer.",
+  "Trainer8_ActionAppearance": "Restablecer apariencia",
+  "Trainer8_ConfirmAppearance": "¿Restaurar la apariencia inicial con la piel seleccionada? Queda pendiente hasta Aplicar y se puede deshacer o restablecer."
 }

@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "Idol",
   "Trainer7_Style_8": "Nihilistisch",
   "Trainer7_StyleUnlocked": "Freigeschaltet",
-  "Trainer7_StyleLearned": "Gelernt"
+  "Trainer7_StyleLearned": "Gelernt",
+  "Trainer8_ActionFashion": "Legale Kleidung freischalten",
+  "Trainer8_ConfirmFashion": "Alle legalen Kleidungsstücke für dieses Spiel und die Figur freischalten? Änderungen bleiben bis zum Anwenden vorgemerkt und können rückgängig gemacht oder zurückgesetzt werden.",
+  "Trainer8_ActionDiglett": "Alle Digda sammeln",
+  "Trainer8_ConfirmDiglett": "Alle Digda der Rüstungsinsel sammeln? Änderungen bleiben bis zum Anwenden vorgemerkt und können rückgängig gemacht oder zurückgesetzt werden.",
+  "Trainer8_ActionAppearance": "Aussehen zurücksetzen",
+  "Trainer8_ConfirmAppearance": "Standardaussehen für den gewählten Hautton wiederherstellen? Änderungen bleiben bis zum Anwenden vorgemerkt und können rückgängig gemacht oder zurückgesetzt werden."
 }

@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "偶像",
   "Trainer7_Style_8": "虚无",
   "Trainer7_StyleUnlocked": "已解锁",
-  "Trainer7_StyleLearned": "已学会"
+  "Trainer7_StyleLearned": "已学会",
+  "Trainer8_ActionFashion": "解锁可获得服饰",
+  "Trainer8_ConfirmFashion": "解锁此游戏和角色的全部可获得服饰？应用前保持暂存，可撤销或重置。",
+  "Trainer8_ActionDiglett": "找到全部地鼠",
+  "Trainer8_ConfirmDiglett": "找到铠岛的全部地鼠？应用前保持暂存，可撤销或重置。",
+  "Trainer8_ActionAppearance": "重置外观",
+  "Trainer8_ConfirmAppearance": "恢复所选肤色的初始外观？应用前保持暂存，可撤销或重置。"
 }

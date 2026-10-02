@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "アイドル",
   "Trainer7_Style_8": "ニヒル",
   "Trainer7_StyleUnlocked": "解放済み",
-  "Trainer7_StyleLearned": "習得済み"
+  "Trainer7_StyleLearned": "習得済み",
+  "Trainer8_ActionFashion": "入手可能な服を解放",
+  "Trainer8_ConfirmFashion": "このゲームとキャラクターの入手可能な服をすべて解放しますか？適用まで保留され、元に戻すかリセットできます。",
+  "Trainer8_ActionDiglett": "ディグダをすべて発見",
+  "Trainer8_ConfirmDiglett": "ヨロイじまのディグダをすべて発見しますか？適用まで保留され、元に戻すかリセットできます。",
+  "Trainer8_ActionAppearance": "外見をリセット",
+  "Trainer8_ConfirmAppearance": "選択した肌の初期の外見に戻しますか？適用まで保留され、元に戻すかリセットできます。"
 }

@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "Idolo",
   "Trainer7_Style_8": "Nichilista",
   "Trainer7_StyleUnlocked": "Sbloccato",
-  "Trainer7_StyleLearned": "Appreso"
+  "Trainer7_StyleLearned": "Appreso",
+  "Trainer8_ActionFashion": "Sblocca abiti ottenibili",
+  "Trainer8_ConfirmFashion": "Sbloccare tutti gli abiti ottenibili per questo gioco e personaggio? Restano in sospeso fino ad Applica e possono essere annullati o ripristinati.",
+  "Trainer8_ActionDiglett": "Trova tutti i Diglett",
+  "Trainer8_ConfirmDiglett": "Trovare tutti i Diglett dell’Isola dell’Armatura? Restano in sospeso fino ad Applica e possono essere annullati o ripristinati.",
+  "Trainer8_ActionAppearance": "Ripristina aspetto",
+  "Trainer8_ConfirmAppearance": "Ripristinare l’aspetto iniziale con la pelle scelta? Resta in sospeso fino ad Applica e può essere annullato o ripristinato."
 }

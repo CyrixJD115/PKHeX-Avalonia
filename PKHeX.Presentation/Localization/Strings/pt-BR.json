@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "Idol",
   "Trainer7_Style_8": "Nihilist",
   "Trainer7_StyleUnlocked": "Unlocked",
-  "Trainer7_StyleLearned": "Learned"
+  "Trainer7_StyleLearned": "Learned",
+  "Trainer8_ActionFashion": "Unlock legal fashion",
+  "Trainer8_ConfirmFashion": "Unlock all legal fashion items for this game and selected character? This stays staged until Apply and supports Undo or Reset.",
+  "Trainer8_ActionDiglett": "Collect all Diglett",
+  "Trainer8_ConfirmDiglett": "Collect all Isle of Armor Diglett? Changes stay staged until Apply and support Undo or Reset.",
+  "Trainer8_ActionAppearance": "Reset appearance",
+  "Trainer8_ConfirmAppearance": "Restore the selected skin’s default appearance for the current character? This stays staged until Apply and supports Undo or Reset."
 }

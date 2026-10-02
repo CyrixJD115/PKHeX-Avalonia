@@ -3410,5 +3410,11 @@
   "Trainer7_Style_7": "아이돌",
   "Trainer7_Style_8": "니힐",
   "Trainer7_StyleUnlocked": "해금됨",
-  "Trainer7_StyleLearned": "배움"
+  "Trainer7_StyleLearned": "배움",
+  "Trainer8_ActionFashion": "얻을 수 있는 의상 해금",
+  "Trainer8_ConfirmFashion": "이 게임과 캐릭터의 얻을 수 있는 의상을 모두 해금할까요? 적용 전까지 보류되며 실행 취소나 리셋이 가능합니다.",
+  "Trainer8_ActionDiglett": "모든 디그다 찾기",
+  "Trainer8_ConfirmDiglett": "갑옷섬의 디그다를 모두 찾을까요? 적용 전까지 보류되며 실행 취소나 리셋이 가능합니다.",
+  "Trainer8_ActionAppearance": "외형 리셋",
+  "Trainer8_ConfirmAppearance": "선택한 피부의 기본 외형을 복원할까요? 적용 전까지 보류되며 실행 취소나 리셋이 가능합니다."
 }
