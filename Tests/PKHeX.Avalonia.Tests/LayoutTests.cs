@@ -48,6 +48,7 @@ public class LayoutTests
             Width = 700,
             Height = 600
         };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
 
         // 3. Force Layout for initial state
@@ -84,6 +85,7 @@ public class LayoutTests
         var (vm, _, _) = TestHelpers.CreateTestViewModel(pkm, save);
         var view = new PokemonEditor { DataContext = vm };
         var window = new Window { Content = view, Width = 360, Height = 620 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
@@ -209,6 +211,7 @@ public class LayoutTests
             Width = 800,
             Height = 600
         };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         view.Measure(new Size(800, 600)); 
@@ -239,6 +242,7 @@ public class LayoutTests
         var view = new PokemonEditor { DataContext = vm };
 
         var window = new Window { Content = view, Width = 400, Height = 600 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

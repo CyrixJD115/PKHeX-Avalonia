@@ -29,6 +29,7 @@ public class SlotModifierClickRoutingTests
 
         var view = new BoxViewer { DataContext = vm };
         var window = new Window { Content = view, Width = 720, Height = 640 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
@@ -58,6 +59,7 @@ public class SlotModifierClickRoutingTests
 
         var view = new PartyViewer { DataContext = vm };
         var window = new Window { Content = view, Width = 520, Height = 640 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
