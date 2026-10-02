@@ -68,6 +68,64 @@ public class LgpeTrainerWorkflowTests
         Assert.Equal(before, save.Data.ToArray()); Assert.False(save.State.Edited);
     }
     [Fact]
+    public async Task SlotImportKeepsItsDestinationWhenSelectionChangesDuringThePicker()
+    {
+        var save = CreateSave(); save.Park.DeleteAll(); var before = save.Data.ToArray();
+        var path = Path.Combine(Path.GetTempPath(), $"pkhex-go-picker-{Guid.NewGuid():N}.gp1");
+        var picked = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dialogs = Dialog(); dialogs.Setup(dialog => dialog.OpenFileAsync(It.IsAny<string>(), It.IsAny<string[]>())).Returns(picked.Task);
+        using var vm = new Misc7bEditorViewModel(save, dialogs.Object);
+        try
+        {
+            await File.WriteAllBytesAsync(path, Record()); vm.SelectedSlot = vm.ParkSlots.Single(row => row.Index == 1);
+            var pending = vm.ImportSlotCommand.ExecuteAsync(null);
+            vm.SelectedSlot = vm.ParkSlots.Single(row => row.Index == 2);
+            picked.SetResult(path); await pending;
+            Assert.True(vm.ParkSlots.Single(row => row.Index == 1).Occupied);
+            Assert.False(vm.ParkSlots.Single(row => row.Index == 2).Occupied);
+            Assert.Equal(2, vm.SelectedSlot!.Index); Assert.Equal(before, save.Data.ToArray());
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public async Task ResetDiscardsALateImportPickerResult()
+    {
+        var save = CreateSave(); save.Park.DeleteAll(); var before = save.Data.ToArray();
+        var path = Path.Combine(Path.GetTempPath(), $"pkhex-go-reset-{Guid.NewGuid():N}.gp1");
+        var picked = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dialogs = Dialog(); dialogs.Setup(dialog => dialog.OpenFileAsync(It.IsAny<string>(), It.IsAny<string[]>())).Returns(picked.Task);
+        using var vm = new Misc7bEditorViewModel(save, dialogs.Object);
+        try
+        {
+            await File.WriteAllBytesAsync(path, Record()); var pending = vm.ImportSlotCommand.ExecuteAsync(null);
+            vm.ResetCommand.Execute(null); picked.SetResult(path); await pending;
+            Assert.False(vm.CanUndo); Assert.False(vm.ParkSlots[0].Occupied); Assert.Equal(before, save.Data.ToArray());
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public async Task FolderCapacityIsCheckedBeforeAnyRecordIsImported()
+    {
+        var save = CreateSave(); save.Park.DeleteAll();
+        for (int index = 0; index < 49; index++) save.Park[index] = GP1.FromData(Record());
+        var before = save.Data.ToArray();
+        var folder = Path.Combine(Path.GetTempPath(), $"pkhex-go-capacity-{Guid.NewGuid():N}"); Directory.CreateDirectory(folder);
+        var first = Path.Combine(folder, "a.gp1"); var second = Path.Combine(folder, "b.gp1");
+        var dialogs = Dialog(); dialogs.Setup(dialog => dialog.OpenFolderAsync(It.IsAny<string>())).ReturnsAsync(folder);
+        using var vm = new Misc7bEditorViewModel(save, dialogs.Object);
+        try
+        {
+            await File.WriteAllBytesAsync(first, Record()); await File.WriteAllBytesAsync(second, Record());
+            await vm.ImportFolderCommand.ExecuteAsync(null);
+            Assert.True(vm.HasError); Assert.False(vm.CanUndo); Assert.False(vm.ParkSlots[49].Occupied);
+            Assert.Equal(before, save.Data.ToArray());
+        }
+        finally { File.Delete(first); File.Delete(second); Directory.Delete(folder); }
+    }
+
+    [Fact]
     public async Task FolderImportPreflightsEveryRecordAndPreservesOpaqueBytes()
     {
         var save = CreateSave(); save.Park.DeleteAll(); var before = save.Data.ToArray();
