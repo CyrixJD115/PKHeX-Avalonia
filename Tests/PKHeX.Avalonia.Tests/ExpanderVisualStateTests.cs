@@ -1,6 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
-using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -13,8 +13,20 @@ namespace PKHeX.Avalonia.Tests;
 
 public class ExpanderVisualStateTests
 {
-    [AvaloniaFact]
+    [Fact]
     public async Task GeneratorChevronSettlesToCollapsedAndExpandedAngles()
+    {
+        // This is a rendering/animation contract: use the same real Skia backend as
+        // our captured evidence, independently of the normal suite's fake drawing mode.
+        using var session = HeadlessUnitTestSession.StartNew(typeof(RenderedAnimationAppBuilder), AvaloniaTestIsolationLevel.PerTest);
+        await session.Dispatch(async () =>
+        {
+            await VerifyGeneratorChevronAsync();
+            return true;
+        }, CancellationToken.None);
+    }
+
+    private static async Task VerifyGeneratorChevronAsync()
     {
         using var app = new HeadlessAppFixture();
         using var vm = new DonutEditorViewModel(new SAV9ZA());
@@ -32,6 +44,8 @@ public class ExpanderVisualStateTests
                     var chevron = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Shapes.Path>().Single(element => element.Name == "ExpandCollapseChevron");
                     return chevron.RenderTransform is RotateTransform transform && Math.Abs(transform.Angle - (expanded ? 180 : 0)) < 0.0001;
                 });
+                using var frame = window.CaptureRenderedFrame();
+                Assert.NotNull(frame);
                 var header = expander.GetVisualDescendants().OfType<global::Avalonia.Controls.Primitives.ToggleButton>().Single(element => element.Name == "ExpanderHeader");
                 Assert.Equal(expanded, header.IsChecked);
                 Assert.Equal(expanded ? "expanded" : "collapsed", header.Tag);
@@ -61,4 +75,11 @@ public class ExpanderVisualStateTests
         }
         Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs();
     }
+}
+
+public static class RenderedAnimationAppBuilder
+{
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<global::PKHeX.Avalonia.App>()
+        .UseSkia().WithInterFont()
+        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

@@ -30,6 +30,8 @@ production wiring.
 
 Donut file-drop workflow coverage follows the same separation as the Click helper: verify the realized editor and AllowDrop, then raise DragOver/Drop through its actual production routed handlers. Check single-file acceptance, multi-file rejection, asynchronous import completion, byte-preserving staging and Save. Raw compositor hit-test delivery is not claimed by this workflow test; it was intermittent across Windows/Linux full CI runs.
 
+Renderer-specific angle assertions use an isolated `HeadlessUnitTestSession` with `RenderedAnimationAppBuilder`, which always enables real Skia drawing and requires a captured frame. This keeps the visual contract independent of the ordinary suite's fake drawing backend without enabling Skia for every test.
+
 Visual captures of animated controls need an additional settling step: layout pumps do not advance elapsed animation time. `ExpanderVisualStateTests.Settle` requests UI animation frames, then uses bounded asynchronous delays and render ticks to let Fluent chevrons reach their final angle. Requesting a frame matters because the headless timer tick callback can be inactive. Its state regression waits for two consecutive observed endpoint angles within a five-second bound, rather than assuming a fixed delay is sufficient on every runner. Verify both collapsed and expanded states before reviewing icons; ordinary non-animated layout tests continue to use deterministic pumps.
 
 Tests must be written with `[AvaloniaFact]`/`[AvaloniaTheory]` so the body runs on the Avalonia UI
