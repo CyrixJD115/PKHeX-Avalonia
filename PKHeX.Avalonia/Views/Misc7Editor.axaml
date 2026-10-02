@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:PKHeX.Presentation.ViewModels;assembly=PKHeX.Presentation"
              xmlns:loc="using:PKHeX.Avalonia.Localization"
+             xmlns:services="clr-namespace:PKHeX.Application.Services;assembly=PKHeX.Application"
              x:Class="PKHeX.Avalonia.Views.Misc7Editor"
              x:DataType="vm:Misc7EditorViewModel">
 
@@ -17,14 +18,69 @@
 
     <Border Classes="view-container">
         <Grid RowDefinitions="Auto,*,Auto">
-            <Grid Grid.Row="0" Classes="save-editor-header">
-                <Button Content="{loc:Loc Common_Save}" Command="{Binding SaveCommand}" Classes="accent" MinWidth="100" HorizontalAlignment="Right" HorizontalContentAlignment="Center" />
+            <Grid Grid.Row="0" Classes="save-editor-header" ColumnDefinitions="*,Auto">
+                <StackPanel><TextBlock Text="{loc:Loc TrainerEditor_TrainerInfo}" Classes="view-title" /><TextBlock Text="{loc:Loc LgpeTrainer_Staging}" TextWrapping="Wrap" /></StackPanel>
+                <Button Grid.Column="1" Content="{loc:Loc TrainerEditor_ApplyChanges}" Command="{Binding SaveCommand}" Classes="accent" MinWidth="100" HorizontalAlignment="Right" HorizontalContentAlignment="Center" />
             </Grid>
             <!-- Main Content with TabControl -->
             <TabControl Name="Trainer7Sections" Grid.Row="1" Classes="compact-editor-tabs">
                 <TabControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></TabControl.ItemsPanel>
                 <!-- Battle Tree Tab -->
-                <TabItem Name="Trainer7BattleTree" Classes="editor-tab" Header="{loc:Loc Misc7Editor_BattleTree}">
+                <TabItem Header="{loc:Loc TrainerZA_Overview}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc TrainerEditor_TrainerName}" />
+<TextBox Text="{Binding TrainerName}" MaxLength="12" AutomationProperties.Name="{loc:Loc TrainerEditor_TrainerName}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Gender}" />
+<ComboBox ItemsSource="{Binding Genders}" SelectedValue="{Binding Gender}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Gender}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Language}" />
+<ComboBox ItemsSource="{Binding Languages}" SelectedValue="{Binding Language}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Language}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Money}" />
+<NumericUpDown Value="{Binding Money}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Money}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Tid}" />
+<NumericUpDown Value="{Binding DisplayTid}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Tid}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Sid}" />
+<NumericUpDown Value="{Binding DisplaySid}" Minimum="0" Maximum="4294" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Sid}" />
+<TextBlock Text="{loc:Loc Trainer7_Country}" />
+<ComboBox ItemsSource="{Binding Countries}" SelectedValue="{Binding Country}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_Country}" />
+<TextBlock Text="{loc:Loc Trainer7_SubRegion}" />
+<ComboBox ItemsSource="{Binding Regions}" SelectedValue="{Binding SubRegion}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_SubRegion}" />
+<TextBlock Text="{loc:Loc Trainer7_ConsoleRegion}" />
+<ComboBox ItemsSource="{Binding ConsoleRegions}" SelectedValue="{Binding ConsoleRegion}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_ConsoleRegion}" />
+<TextBlock Text="{loc:Loc Trainer7_AlolaOffset}" />
+<ComboBox ItemsSource="{Binding TimeOffsets}" SelectedValue="{Binding AlolaOffset}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Name}" AutomationProperties.Name="{loc:Loc Trainer7_AlolaOffset}" />
+<TextBlock Text="{loc:Loc Trainer7_BattlePoints}" />
+<NumericUpDown Value="{Binding BattlePoints}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_BattlePoints}" />
+<TextBlock Text="{loc:Loc Trainer7_FestivalCoins}" />
+<NumericUpDown Value="{Binding FestivalCoins}" Minimum="0" Maximum="2147483647" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_FestivalCoins}" />
+<TextBlock Text="{loc:Loc Trainer7_FestivalName}" />
+<TextBox Text="{Binding FestivalName}" MaxLength="20" AutomationProperties.Name="{loc:Loc Trainer7_FestivalName}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Hours}" />
+<NumericUpDown Value="{Binding PlayedHours}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Hours}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Minutes}" />
+<NumericUpDown Value="{Binding PlayedMinutes}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Minutes}" />
+<TextBlock Text="{loc:Loc TrainerEditor_Seconds}" />
+<NumericUpDown Value="{Binding PlayedSeconds}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
+<TextBlock Text="{loc:Loc Trainer7_Started}" /><DatePicker SelectedDate="{Binding StartedDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><TimePicker SelectedTime="{Binding StartedTime}" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><NumericUpDown Value="{Binding StartedSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
+<TextBlock Text="{loc:Loc Trainer7_Fame}" /><DatePicker SelectedDate="{Binding FameDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><TimePicker SelectedTime="{Binding FameTime}" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><NumericUpDown Value="{Binding FameSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
+<TextBlock Text="{loc:Loc Trainer7_LastSaved}" /><DatePicker SelectedDate="{Binding LastSavedDate}" MinYear="0001-01-01T00:00:00+00:00" MaxYear="4095-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" /><TimePicker SelectedTime="{Binding LastSavedTime}" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" />
+<TextBlock Text="{loc:Loc Trainer7_Statistics}" /><ComboBox ItemsSource="{Binding TrainerRecords}" SelectedItem="{Binding SelectedRecord}" DisplayMemberBinding="{Binding Name}" AutomationProperties.Name="{loc:Loc Trainer7_Statistics}" /><ContentControl Content="{Binding SelectedRecord}"><ContentControl.ContentTemplate><DataTemplate DataType="vm:Gen7TrainerRecordViewModel"><NumericUpDown Value="{Binding Value}" Minimum="{Binding DisplayMinimum}" Maximum="{Binding DisplayMaximum}" ShowButtonSpinner="False" AutomationProperties.Name="{Binding Name}" /></DataTemplate></ContentControl.ContentTemplate></ContentControl></StackPanel></ScrollViewer></TabItem>
+<TabItem Header="{loc:Loc TrainerZA_MapMisc}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_MapId}" />
+<NumericUpDown Value="{Binding MapId}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_MapId}" />
+<TextBlock Text="{loc:Loc TrainerEditor_CoordX}" />
+<TextBox Text="{Binding XText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordX}" />
+<TextBlock Text="{loc:Loc TrainerEditor_CoordY}" />
+<TextBox Text="{Binding YText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordY}" />
+<TextBlock Text="{loc:Loc TrainerEditor_CoordZ}" />
+<TextBox Text="{Binding ZText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordZ}" />
+<TextBlock Text="{loc:Loc Trainer7_Rotation}" />
+<NumericUpDown Value="{Binding Rotation}" Minimum="-360" Maximum="360" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_Rotation}" />
+<TextBlock Text="{loc:Loc Trainer7_MapUnits}" TextWrapping="Wrap" /><TextBlock Text="{loc:Loc Trainer7_MapUnmask}" /><ItemsControl ItemsSource="{Binding MapUnmask}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:FlyDestination7ViewModel"><CheckBox Content="{Binding Name}" IsChecked="{Binding IsUnlocked}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></ScrollViewer></TabItem>
+<TabItem Header="{loc:Loc Trainer7_Appearance}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_Skin}" />
+<ComboBox ItemsSource="{Binding SkinColors}" SelectedValue="{Binding SkinColor}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_Skin}" />
+<TextBlock Text="{loc:Loc Trainer7_DaysRefresh}" />
+<NumericUpDown Value="{Binding DaysFromRefresh}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_DaysRefresh}" />
+<TextBlock Text="{loc:Loc Trainer7_BattleStyle}" />
+<ComboBox ItemsSource="{Binding BattleStyles}" SelectedValue="{Binding BattleStyle}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_BattleStyle}" />
+<TextBlock Text="{loc:Loc Trainer7_Fashion}" /><WrapPanel><Button Content="{loc:Loc Trainer7_FashionDefault}" Command="{Binding FashionCommand}" CommandParameter="{x:Static services:Gen7FashionMode.Default}" Margin="0,0,8,4" /><Button Content="{loc:Loc Trainer7_FashionLegal}" Command="{Binding FashionCommand}" CommandParameter="{x:Static services:Gen7FashionMode.Legal}" Margin="0,0,8,4" /><Button Content="{loc:Loc Trainer7_FashionAll}" Command="{Binding FashionCommand}" CommandParameter="{x:Static services:Gen7FashionMode.All}" Margin="0,0,8,4" /><Button Content="{loc:Loc Menu_Options_Undo}" Command="{Binding UndoFashionCommand}" IsEnabled="{Binding CanUndoFashion}" /></WrapPanel><ItemsControl ItemsSource="{Binding StyleFlags}" IsVisible="{Binding IsSM}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:Gen7BattleStyleFlagViewModel"><StackPanel Spacing="4"><TextBlock Text="{Binding Name}" /><CheckBox Content="{loc:Loc Trainer7_StyleUnlocked}" IsChecked="{Binding Unlocked}" IsEnabled="{Binding CanUnlock}" /><CheckBox Content="{loc:Loc Trainer7_StyleLearned}" IsChecked="{Binding Learned}" IsEnabled="{Binding CanLearn}" /></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><CheckBox Content="{loc:Loc Trainer7_Mega}" IsChecked="{Binding MegaUnlocked}" /><CheckBox Content="{loc:Loc Trainer7_ZMove}" IsChecked="{Binding ZMoveUnlocked}" /></StackPanel></ScrollViewer></TabItem>
+<TabItem Name="Trainer7BattleTree" Classes="editor-tab" Header="{loc:Loc Misc7Editor_BattleTree}">
                     <ScrollViewer>
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <!-- Unlock Flags -->
@@ -90,9 +146,7 @@
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-
-                <!-- Poké Finder Tab -->
-                <TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_PokeFinder}">
+<TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_PokeFinder}">
                     <ScrollViewer>
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <Border Classes="editor-section">
@@ -103,13 +157,13 @@
                                     </StackPanel>
                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,8,Auto,8,Auto,8,Auto,8,Auto">
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Misc7Editor_SnapsTaken}" VerticalAlignment="Center" Width="120" />
-                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding SnapCount}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding SnapCount}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Misc7Editor_TotalThumbsUp}" VerticalAlignment="Center" />
-                                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding ThumbsTotal}" Minimum="0" Maximum="9999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding ThumbsTotal}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Loc Misc7Editor_ThumbsRecord}" VerticalAlignment="Center" />
-                                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding ThumbsRecord}" Minimum="0" Maximum="9999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding ThumbsRecord}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="6" Grid.Column="0" Text="{loc:Loc Misc7Editor_CameraVersion}" VerticalAlignment="Center" />
                                         <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding CameraVersions}" SelectedValue="{Binding CameraVersion}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" HorizontalAlignment="Stretch" />
@@ -121,9 +175,7 @@
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-
-                <!-- Stamps Tab -->
-                <TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_Stamps}">
+<TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_Stamps}">
                     <ScrollViewer>
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <Border Classes="editor-section">
@@ -153,9 +205,7 @@
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-
-                <!-- Fly Destinations Tab -->
-                <TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_FlyDestinations}">
+<TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_FlyDestinations}">
                     <ScrollViewer>
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <Border Classes="editor-section">
@@ -185,9 +235,7 @@
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-
-                <!-- Ultra Tab (USUM only) -->
-                <TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_Ultra}" IsVisible="{Binding IsUSUM}">
+<TabItem Classes="editor-tab" Header="{loc:Loc Misc7Editor_Ultra}" IsVisible="{Binding IsUSUM}">
                     <ScrollViewer>
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <Border Classes="editor-section">
@@ -195,76 +243,22 @@
                                     <TextBlock Text="{loc:Loc Misc7Editor_MantineSurfHighScores}" FontWeight="SemiBold" Opacity="0.6" />
                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,8,Auto,8,Auto,8,Auto">
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Misc7Editor_Course1}" VerticalAlignment="Center" Width="100" />
-                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding MantineSurf0}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding MantineSurf0}" Minimum="-2147483648" Maximum="2147483647" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Misc7Editor_Course2}" VerticalAlignment="Center" />
-                                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding MantineSurf1}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding MantineSurf1}" Minimum="-2147483648" Maximum="2147483647" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Loc Misc7Editor_Course3}" VerticalAlignment="Center" />
-                                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding MantineSurf2}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding MantineSurf2}" Minimum="-2147483648" Maximum="2147483647" ShowButtonSpinner="False" />
 
                                         <TextBlock Grid.Row="6" Grid.Column="0" Text="{loc:Loc Misc7Editor_Course4}" VerticalAlignment="Center" />
-                                        <NumericUpDown Grid.Row="6" Grid.Column="1" Value="{Binding MantineSurf3}" Minimum="0" Maximum="999999" ShowButtonSpinner="False" />
+                                        <NumericUpDown Grid.Row="6" Grid.Column="1" Value="{Binding MantineSurf3}" Minimum="-2147483648" Maximum="2147483647" ShowButtonSpinner="False" />
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-<TabItem Header="{loc:Loc TrainerZA_Overview}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc TrainerEditor_TrainerName}" />
-<TextBox Text="{Binding TrainerName}" MaxLength="12" AutomationProperties.Name="{loc:Loc TrainerEditor_TrainerName}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Gender}" />
-<ComboBox ItemsSource="{Binding Genders}" SelectedValue="{Binding Gender}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Gender}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Language}" />
-<ComboBox ItemsSource="{Binding Languages}" SelectedValue="{Binding Language}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Language}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Money}" />
-<NumericUpDown Value="{Binding Money}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Money}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Tid}" />
-<NumericUpDown Value="{Binding Tid16}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Tid}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Sid}" />
-<NumericUpDown Value="{Binding Sid16}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Sid}" />
-<TextBlock Text="{loc:Loc Trainer7_Country}" />
-<ComboBox ItemsSource="{Binding Countries}" SelectedValue="{Binding Country}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_Country}" />
-<TextBlock Text="{loc:Loc Trainer7_SubRegion}" />
-<ComboBox ItemsSource="{Binding Regions}" SelectedValue="{Binding SubRegion}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_SubRegion}" />
-<TextBlock Text="{loc:Loc Trainer7_ConsoleRegion}" />
-<NumericUpDown Value="{Binding ConsoleRegion}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_ConsoleRegion}" />
-<TextBlock Text="{loc:Loc Trainer7_AlolaOffset}" />
-<NumericUpDown Value="{Binding AlolaOffset}" Minimum="0" Maximum="18446744073709551615" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_AlolaOffset}" />
-<TextBlock Text="{loc:Loc Trainer7_BattlePoints}" />
-<NumericUpDown Value="{Binding BattlePoints}" Minimum="0" Maximum="4294967295" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_BattlePoints}" />
-<TextBlock Text="{loc:Loc Trainer7_FestivalCoins}" />
-<NumericUpDown Value="{Binding FestivalCoins}" Minimum="0" Maximum="2147483647" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_FestivalCoins}" />
-<TextBlock Text="{loc:Loc Trainer7_FestivalName}" />
-<TextBox Text="{Binding FestivalName}" MaxLength="20" AutomationProperties.Name="{loc:Loc Trainer7_FestivalName}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Hours}" />
-<NumericUpDown Value="{Binding PlayedHours}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Hours}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Minutes}" />
-<NumericUpDown Value="{Binding PlayedMinutes}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Minutes}" />
-<TextBlock Text="{loc:Loc TrainerEditor_Seconds}" />
-<NumericUpDown Value="{Binding PlayedSeconds}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
-<TextBlock Text="{loc:Loc Trainer7_Started}" /><DatePicker SelectedDate="{Binding StartedDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><TimePicker SelectedTime="{Binding StartedTime}" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><NumericUpDown Value="{Binding StartedSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
-<TextBlock Text="{loc:Loc Trainer7_Fame}" /><DatePicker SelectedDate="{Binding FameDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><TimePicker SelectedTime="{Binding FameTime}" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><NumericUpDown Value="{Binding FameSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
-<TextBlock Text="{loc:Loc Trainer7_LastSaved}" /><DatePicker SelectedDate="{Binding LastSavedDate}" MinYear="0001-01-01T00:00:00+00:00" MaxYear="4095-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" /><TimePicker SelectedTime="{Binding LastSavedTime}" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" />
-<TextBlock Text="{loc:Loc Trainer7_Statistics}" /><ComboBox ItemsSource="{Binding TrainerRecords}" SelectedItem="{Binding SelectedRecord}" DisplayMemberBinding="{Binding Name}" AutomationProperties.Name="{loc:Loc Trainer7_Statistics}" /><ContentControl Content="{Binding SelectedRecord}"><ContentControl.ContentTemplate><DataTemplate DataType="vm:Gen7TrainerRecordViewModel"><NumericUpDown Value="{Binding Value}" Minimum="{Binding DisplayMinimum}" Maximum="{Binding DisplayMaximum}" ShowButtonSpinner="False" AutomationProperties.Name="{Binding Name}" /></DataTemplate></ContentControl.ContentTemplate></ContentControl></StackPanel></ScrollViewer></TabItem>
-<TabItem Header="{loc:Loc TrainerZA_MapMisc}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_MapId}" />
-<NumericUpDown Value="{Binding MapId}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_MapId}" />
-<TextBlock Text="{loc:Loc TrainerEditor_CoordX}" />
-<TextBox Text="{Binding XText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordX}" />
-<TextBlock Text="{loc:Loc TrainerEditor_CoordY}" />
-<TextBox Text="{Binding YText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordY}" />
-<TextBlock Text="{loc:Loc TrainerEditor_CoordZ}" />
-<TextBox Text="{Binding ZText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordZ}" />
-<TextBlock Text="{loc:Loc Trainer7_Rotation}" />
-<NumericUpDown Value="{Binding Rotation}" Minimum="-360" Maximum="360" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_Rotation}" />
-<TextBlock Text="{loc:Loc Trainer7_MapUnits}" TextWrapping="Wrap" /><TextBlock Text="{loc:Loc Trainer7_MapUnmask}" /><ItemsControl ItemsSource="{Binding MapUnmask}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:FlyDestination7ViewModel"><CheckBox Content="{Binding Name}" IsChecked="{Binding IsUnlocked}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></ScrollViewer></TabItem>
-<TabItem Header="{loc:Loc Trainer7_Appearance}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_Skin}" />
-<NumericUpDown Value="{Binding SkinColor}" Minimum="0" Maximum="7" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_Skin}" />
-<TextBlock Text="{loc:Loc Trainer7_DaysRefresh}" />
-<NumericUpDown Value="{Binding DaysFromRefresh}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_DaysRefresh}" />
-<TextBlock Text="{loc:Loc Trainer7_BattleStyle}" />
-<NumericUpDown Value="{Binding BattleStyle}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_BattleStyle}" />
-<CheckBox Content="{loc:Loc Trainer7_Mega}" IsChecked="{Binding MegaUnlocked}" /><CheckBox Content="{loc:Loc Trainer7_ZMove}" IsChecked="{Binding ZMoveUnlocked}" /></StackPanel></ScrollViewer></TabItem>
             </TabControl>
 
 <StackPanel Grid.Row="2" Spacing="6" Margin="0,8,0,0"><TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" /><Button Content="{loc:Loc TrainerEditor_Reset}" Command="{Binding ResetCommand}" HorizontalAlignment="Right" /></StackPanel>

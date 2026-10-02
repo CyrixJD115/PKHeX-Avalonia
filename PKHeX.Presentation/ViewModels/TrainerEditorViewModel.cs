@@ -26,7 +26,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _zaImageCodec = imageCodec;
         LgpeEditor = sav is SAV7b lgpe ? new Misc7bEditorViewModel(lgpe, dialogs) : null;
         _lgpeParentBaseline = sav is SAV7b lgpeBaseline ? (SAV7b)lgpeBaseline.Clone() : null;
-        Gen7Editor = sav is SAV7 gen7 ? new Misc7EditorViewModel(gen7) : null;
+        Gen7Editor = sav is SAV7 gen7 ? new Misc7EditorViewModel(gen7, dialogs) : null;
         _gen7ParentBaseline = sav is SAV7 baseline7 ? (SAV7)baseline7.Clone() : null;
         LoadFromSave();
     }

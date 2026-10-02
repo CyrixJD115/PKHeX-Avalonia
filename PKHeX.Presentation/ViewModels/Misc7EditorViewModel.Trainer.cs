@@ -13,6 +13,8 @@ public partial class Misc7EditorViewModel
     [ObservableProperty] private int _language = 0;
     [ObservableProperty] private ushort _tid16 = 0;
     [ObservableProperty] private ushort _sid16 = 0;
+    [ObservableProperty] private uint _displayTid;
+    [ObservableProperty] private uint _displaySid;
     [ObservableProperty] private int _playedHours = 0;
     [ObservableProperty] private int _playedMinutes = 0;
     [ObservableProperty] private int _playedSeconds = 0;
@@ -44,9 +46,30 @@ public partial class Misc7EditorViewModel
     [ObservableProperty] private int _lastSavedSecond;
     [ObservableProperty] private IReadOnlyList<ComboItem> _countries = [];
     [ObservableProperty] private IReadOnlyList<ComboItem> _regions = [];
-    public IReadOnlyList<ComboItem> Genders => [new(Localization.LocalizedStrings.Instance["Pokedex5Editor_Male"], 0), new(Localization.LocalizedStrings.Instance["Pokedex5Editor_Female"], 1)];
-    public IReadOnlyList<ComboItem> Languages => GameInfo.Sources.LanguageDataSource(7, EntityContext.Gen7);
+    public IReadOnlyList<ComboItem> Genders => WithUnknown([new(Localization.LocalizedStrings.Instance["Pokedex5Editor_Male"], 0), new(Localization.LocalizedStrings.Instance["Pokedex5Editor_Female"], 1)], Gender);
+    public IReadOnlyList<ComboItem> Languages => WithUnknown(GameInfo.Sources.LanguageDataSource(7, EntityContext.Gen7), Language);
+    public IReadOnlyList<ComboItem> ConsoleRegions => WithUnknown(GameInfo.Sources.Regions, ConsoleRegion);
+    public IReadOnlyList<ComboItem> SkinColors => WithUnknown(Enumerable.Range(0, 8).Select(i => new ComboItem(Localization.LocalizedStrings.Instance["Trainer7_Skin_" + i], i)).ToArray(), SkinColor);
+    public IReadOnlyList<ComboItem> BattleStyles => WithUnknown(Enumerable.Range(0, IsUSUM ? 9 : 8).Select(i => new ComboItem(Localization.LocalizedStrings.Instance["Trainer7_Style_" + i], i)).ToArray(), BattleStyle);
+    public IReadOnlyList<Gen7TimeOffsetChoice> TimeOffsets
+    {
+        get
+        {
+            var strings = Localization.LocalizedStrings.Instance;
+            var values = Enumerable.Range(1, 23).Select(hour => new Gen7TimeOffsetChoice(hour == 12 ? strings["Trainer7_MoonTime"] : strings.Format("Trainer7_OffsetHours", hour), (ulong)hour * 3600)).ToList();
+            values.Insert(0, new(strings["Trainer7_SunTime"], 86400));
+            if (values.All(item => item.Value != AlolaOffset)) values.Add(new(strings.Format("RaidSession_UnknownType", AlolaOffset), AlolaOffset));
+            return values;
+        }
+    }
+    private static IReadOnlyList<ComboItem> WithUnknown(IEnumerable<ComboItem> choices, int selected)
+    {
+        var result = choices.ToList();
+        if (result.All(item => item.Value != selected)) result.Add(new(Localization.LocalizedStrings.Instance.Format("RaidSession_UnknownType", selected), selected));
+        return result;
+    }
     public ObservableCollection<Gen7TrainerRecordViewModel> TrainerRecords { get; } = [];
+    public ObservableCollection<Gen7BattleStyleFlagViewModel> StyleFlags { get; } = [];
     [ObservableProperty] private Gen7TrainerRecordViewModel? _selectedRecord;
     private readonly Dictionary<string, string> _coordinateText = new();
     private readonly HashSet<string> _invalidCoordinateText = new();
@@ -75,7 +98,7 @@ public partial class Misc7EditorViewModel
     partial void OnYChanged(double value) => CoordinateChanged("Y");
     partial void OnZChanged(double value) => CoordinateChanged("Z");
 
-    public bool CanSave => !_closed && _invalidCoordinateText.Count == 0 && TrainerName.Length <= _sav.MaxStringLengthTrainer && FestivalName.Length <= 20 &&
+    public bool CanSave => !_closed && DisplayTid <= 999999 && (ulong)DisplaySid * 1_000_000 + DisplayTid <= uint.MaxValue && _invalidCoordinateText.Count == 0 && TrainerName.Length <= _sav.MaxStringLengthTrainer && FestivalName.Length <= 20 &&
         (Money == _baseline.Money || Money <= _sav.MaxMoney) &&
         SameOrRange(Gender, _baseline.Gender, 0, 1) && SameOrRange(Language, _baseline.Language, 1, 10) &&
         Country is >= 0 and <= 255 && SubRegion is >= 0 and <= 255 && ConsoleRegion is >= 0 and <= 255 &&
@@ -84,7 +107,7 @@ public partial class Misc7EditorViewModel
         (AlolaOffset == _baseline.GameTime.AlolaTime || AlolaOffset is >= 3600 and <= 86400 && AlolaOffset % 3600 == 0) &&
         MapId is >= 0 and <= 65535 && ValidPosition(X, _baseline.Situation.X) && ValidPosition(Y, _baseline.Situation.Y) && ValidPosition(Z, _baseline.Situation.Z) &&
         (Rotation.Equals(Math.Atan2(_baseline.Situation.RZ, _baseline.Situation.RW) * 360.0 / Math.PI) || double.IsFinite(Rotation) && Math.Abs(Rotation) <= 360) &&
-        SkinColor is >= 0 and <= 7 && DaysFromRefresh is >= 0 and <= 255 && SameOrRange(BattleStyle, _baseline.MyStatus.BallThrowType, 0, 8) &&
+        SkinColor is >= 0 and <= 7 && DaysFromRefresh is >= 0 and <= 255 && SameOrRange(BattleStyle, _baseline.MyStatus.BallThrowType, 0, IsUSUM ? 8 : 7) &&
         ValidDate(StartedDate, StartedTime, StartedSecond, ReadSeconds(_baseline.SecondsToStart), true) &&
         ValidDate(FameDate, FameTime, FameSecond, ReadSeconds(_baseline.SecondsToFame), true) &&
         ValidDate(LastSavedDate, LastSavedTime, 0, ReadLastSaved(_baseline), false) &&
@@ -113,6 +136,7 @@ public partial class Misc7EditorViewModel
         Language = _sav.Language;
         Tid16 = _sav.TID16;
         Sid16 = _sav.SID16;
+        DisplayTid = _sav.DisplayTID; DisplaySid = _sav.DisplaySID;
         PlayedHours = _sav.PlayedHours;
         PlayedMinutes = _sav.PlayedMinutes;
         PlayedSeconds = _sav.PlayedSeconds;
@@ -141,6 +165,10 @@ public partial class Misc7EditorViewModel
             if (IsUSUM || record.Key is not (70 or 72 or 73 or 74))
                 TrainerRecords.Add(new(record.Key, record.Value, _sav.GetRecord(record.Key), _sav.GetRecordMax(record.Key)));
         SelectedRecord = TrainerRecords.FirstOrDefault();
+        StyleFlags.Clear();
+        if (IsSM)
+            for (int i = 0; i < 8; i++) StyleFlags.Add(new(i, Localization.LocalizedStrings.Instance["Trainer7_Style_" + i],
+                i < 2 || _sav.EventWork.GetEventFlag(292 + i), i == 0 || _sav.EventWork.GetEventFlag(3479 + i)));
         OnPropertyChanged(nameof(XText)); OnPropertyChanged(nameof(YText)); OnPropertyChanged(nameof(ZText));
     }
 
@@ -175,6 +203,7 @@ public partial class Misc7EditorViewModel
         if (Language != _baseline.Language) _sav.Language = Language;
         if (Tid16 != _baseline.TID16) _sav.TID16 = Tid16;
         if (Sid16 != _baseline.SID16) _sav.SID16 = Sid16;
+        if (DisplayTid != _baseline.DisplayTID || DisplaySid != _baseline.DisplaySID) _sav.SetDisplayID(DisplayTid, DisplaySid);
         if (PlayedHours != _baseline.PlayedHours) _sav.PlayedHours = PlayedHours;
         if (PlayedMinutes != _baseline.PlayedMinutes) _sav.PlayedMinutes = PlayedMinutes;
         if (PlayedSeconds != _baseline.PlayedSeconds) _sav.PlayedSeconds = PlayedSeconds;
@@ -209,6 +238,13 @@ public partial class Misc7EditorViewModel
             _sav.Played.LastSavedDate = last;
         foreach (var record in TrainerRecords)
             if (record.Value != record.Original) _sav.SetRecord(record.Id, record.Value);
+        foreach (var style in StyleFlags)
+        {
+            if (style.CanUnlock && style.Unlocked != _baseline.EventWork.GetEventFlag(292 + style.Id))
+                _sav.EventWork.SetEventFlag(292 + style.Id, style.Unlocked);
+            if (style.CanLearn && style.Learned != _baseline.EventWork.GetEventFlag(3479 + style.Id))
+                _sav.EventWork.SetEventFlag(3479 + style.Id, style.Learned);
+        }
     }
 
     private static DateTime? Combine(DateTimeOffset? date, TimeSpan? time, int second) =>
@@ -224,4 +260,16 @@ public partial class Gen7TrainerRecordViewModel(int id, string name, int value, 
     public int DisplayMinimum => Math.Min(0, Original);
     public int DisplayMaximum => Math.Max(Maximum, Original);
     [ObservableProperty] private int _value = value;
+}
+
+public sealed record Gen7TimeOffsetChoice(string Name, ulong Value);
+
+public partial class Gen7BattleStyleFlagViewModel(int id, string name, bool unlocked, bool learned) : ObservableObject
+{
+    public int Id { get; } = id;
+    public bool CanUnlock => Id >= 2;
+    public bool CanLearn => Id >= 1;
+    [ObservableProperty] private string _name = name;
+    [ObservableProperty] private bool _unlocked = unlocked;
+    [ObservableProperty] private bool _learned = learned;
 }
