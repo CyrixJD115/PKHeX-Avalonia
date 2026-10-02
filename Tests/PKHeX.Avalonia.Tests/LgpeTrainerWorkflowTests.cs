@@ -25,6 +25,19 @@ public class LgpeTrainerWorkflowTests
         return data;
     }
     [Fact]
+    public void GenericTrainerApiAppliesChangesAndResetDoesNotReapplyDiscardedDrafts()
+    {
+        var save = CreateSave(); var parent = new TrainerEditorViewModel(save);
+        parent.TrainerName = "Ash"; parent.Money = 12345; parent.SaveCommand.Execute(null);
+        Assert.Equal("Ash", save.OT); Assert.Equal(12345u, save.Money);
+        parent.TrainerName = "Discard"; parent.ResetCommand.Execute(null); parent.SaveCommand.Execute(null);
+        Assert.Equal("Ash", save.OT);
+        parent.LgpeEditor!.RivalName = "Child"; parent.SaveCommand.Execute(null);
+        Assert.Equal("Child", save.Misc.RivalName);
+        parent.Dispose();
+    }
+
+    [Fact]
     public void TrainerMapScaleRotationAndDatesStageAndRoundtrip()
     {
         var save = CreateSave(); var before = save.Data.ToArray();

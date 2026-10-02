@@ -2,7 +2,7 @@
  xmlns:vm="clr-namespace:PKHeX.Presentation.ViewModels;assembly=PKHeX.Presentation"
  xmlns:loc="using:PKHeX.Avalonia.Localization" x:Class="PKHeX.Avalonia.Views.Misc7bEditor" x:DataType="vm:Misc7bEditorViewModel" MinWidth="620" MinHeight="420">
  <DockPanel Margin="16">
-  <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
+  <StackPanel DockPanel.Dock="Top" Classes="save-editor-header" Spacing="6" Margin="0,0,0,8">
    <TextBlock Text="{loc:Loc LgpeTrainer_Title}" Classes="view-title" />
    <TextBlock Text="{loc:Loc LgpeTrainer_Staging}" TextWrapping="Wrap" />
   </StackPanel>
@@ -41,7 +41,7 @@
     <WrapPanel><Button Content="{loc:Loc Misc7bEditor_UnlockAllTrainerTitles}" Command="{Binding UnlockAllTrainerTitlesCommand}" Margin="0,0,8,8" />
      <Button Content="{loc:Loc Misc7bEditor_UnlockAllFashion}" Command="{Binding UnlockAllFashionCommand}" Margin="0,0,8,8" /></WrapPanel>
    </StackPanel></ScrollViewer></TabItem>
-   <TabItem Header="{loc:Loc LgpeTrainer_Map}"><ScrollViewer><StackPanel Spacing="8" Margin="8">
+   <TabItem Header="{loc:Loc LgpeTrainer_Map}"><ScrollViewer><Border Classes="editor-section"><StackPanel Spacing="8" Margin="8">
     <TextBlock Text="{loc:Loc LgpeTrainer_MapId}" /><NumericUpDown Name="LgpeMapId" Value="{Binding MapId}" Minimum="0" Maximum="18446744073709551615" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc LgpeTrainer_MapId}" />
     <TextBlock Text="X" /><NumericUpDown Value="{Binding X}" FormatString="0.#####" ShowButtonSpinner="False" AutomationProperties.Name="X" />
     <TextBlock Text="Y" /><NumericUpDown Value="{Binding Y}" FormatString="0.#####" ShowButtonSpinner="False" AutomationProperties.Name="Y" />
@@ -50,7 +50,7 @@
     <TextBlock Text="{loc:Loc LgpeTrainer_ScaleY}" /><NumericUpDown Value="{Binding ScaleY}" FormatString="0.#####" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc LgpeTrainer_ScaleY}" />
     <TextBlock Text="{loc:Loc LgpeTrainer_ScaleZ}" /><NumericUpDown Value="{Binding ScaleZ}" FormatString="0.#####" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc LgpeTrainer_ScaleZ}" />
     <TextBlock Text="{loc:Loc TrainerZA_Rotation}" /><NumericUpDown Value="{Binding Rotation}" FormatString="0.####" Minimum="-360" Maximum="360" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerZA_Rotation}" />
-   </StackPanel></ScrollViewer></TabItem>
+   </StackPanel></Border></ScrollViewer></TabItem>
    <TabItem Header="{loc:Loc Misc7bEditor_GoPark}"><DockPanel Margin="8">
     <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
      <ComboBox Name="LgpeParkArea" ItemsSource="{Binding Areas}" SelectedValueBinding="{Binding Value}" SelectedValue="{Binding SelectedArea}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc LgpeTrainer_AreaLabel}" />
