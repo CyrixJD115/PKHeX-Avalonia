@@ -40,7 +40,7 @@ public partial class Misc7bEditorViewModel
             var record = _session.Staged.Park[index]; ushort species = record.Species;
             string name = species == 0 ? T("LgpeTrainer_EmptySlot") : species < GameInfo.Strings.Species.Count
                 ? GameInfo.Strings.Species[species] : LocalizedStrings.Instance.Format("LgpeTrainer_UnknownValue", species);
-            rows.Add(new(index, index - start + 1, name, record.LevelF.ToString("0.##"), record.CP, species != 0));
+            rows.Add(new(index, index - start + 1, name, species == 0 ? null : record.LevelF, species == 0 ? null : record.CP, species != 0));
         }
         ParkSlots = new(rows); SelectedSlot = ParkSlots.FirstOrDefault(row => row.Index == selected) ?? ParkSlots.FirstOrDefault();
         OnPropertyChanged(nameof(SlotDetails)); OnPropertyChanged(nameof(HasOccupiedSelection));
@@ -146,4 +146,4 @@ public partial class Misc7bEditorViewModel
     }
 }
 
-public sealed record GoParkSlotRow(int Index, int Number, string Name, string Level, int Cp, bool Occupied);
+public sealed record GoParkSlotRow(int Index, int Number, string Name, float? Level, int? Cp, bool Occupied);

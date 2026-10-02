@@ -8,15 +8,18 @@ using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
 using PKHeX.Core;
 using PKHeX.Presentation.ViewModels;
+using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Avalonia.Tests;
 
 public class LgpeTrainerBindingTests
 {
-    [AvaloniaFact]
-    public async Task BothTrainerWorkspaceAndMiscMenuUseTheCompleteStagedEditor()
+    public static IEnumerable<object[]> Locales => LocalizedStrings.SupportedLanguages.Select(language => new object[] { language });
+    [AvaloniaTheory] [MemberData(nameof(Locales))]
+    public async Task BothTrainerWorkspaceAndMiscMenuUseTheCompleteStagedEditor(string language)
     {
         using var app = new HeadlessAppFixture(); var save = LgpeTrainerWorkflowTests.CreateSave();
+        string previous = LocalizedStrings.Instance.CurrentLanguage; LocalizedStrings.Instance.SetLanguage(language);
         var before = save.Data.ToArray(); app.LoadSaveInstance(save);
         var editor = app.ViewModel.TrainerEditor!;
         Assert.True(editor.IsLGPE); Assert.NotNull(editor.LgpeEditor);
@@ -36,13 +39,15 @@ public class LgpeTrainerBindingTests
             editor.LgpeEditor.SelectedArea = 1; Pump(window);
             Assert.Equal(1, editor.LgpeEditor.SelectedArea);
             Assert.Equal(50, editor.LgpeEditor.ParkSlots[0].Index);
+            editor.LgpeEditor.RefreshLanguage(); Pump(window);
+            Assert.Equal(1, editor.LgpeEditor.SelectedArea);
             Assert.True(grid.Bounds.Height >= 80, $"Grid height {grid.Bounds.Height}");
             var apply = view.FindControl<Button>("LgpeTrainerApply")!; var point = apply.TranslatePoint(default, view)!.Value;
             Assert.True(point.Y >= 0 && point.Y + apply.Bounds.Height <= view.Bounds.Height);
             Assert.True(editor.LgpeEditor.CanSave); editor.LgpeEditor.SaveCommand.Execute(null);
             Assert.Equal(before, save.Data.ToArray());
         }
-        finally { window.Close(); }
+        finally { window.Close(); LocalizedStrings.Instance.SetLanguage(previous); }
     }
     private static void Pump(Window window)
     { Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); }

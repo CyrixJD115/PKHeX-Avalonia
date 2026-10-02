@@ -55,9 +55,9 @@
     <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
      <ComboBox Name="LgpeParkArea" ItemsSource="{Binding Areas}" SelectedValueBinding="{Binding Value}" SelectedValue="{Binding SelectedArea}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc LgpeTrainer_AreaLabel}" />
      <WrapPanel>
-      <Button Content="{loc:Loc LgpeTrainer_ImportSlot}" Command="{Binding ImportSlotCommand}" Margin="0,0,6,4" />
-      <Button Content="{loc:Loc LgpeTrainer_ExportSlot}" Command="{Binding ExportSlotCommand}" IsEnabled="{Binding HasOccupiedSelection}" Margin="0,0,6,4" />
-      <Button Content="{loc:Loc LgpeTrainer_DeleteSlot}" Command="{Binding DeleteSlotCommand}" IsEnabled="{Binding HasOccupiedSelection}" Margin="0,0,6,4" />
+      <Button Content="{loc:Loc BlockEditor_ImportButton}" ToolTip.Tip="{loc:Loc LgpeTrainer_ImportSlot}" Command="{Binding ImportSlotCommand}" Margin="0,0,6,4" />
+      <Button Content="{loc:Loc BlockEditor_ExportButton}" ToolTip.Tip="{loc:Loc LgpeTrainer_ExportSlot}" Command="{Binding ExportSlotCommand}" IsEnabled="{Binding HasOccupiedSelection}" Margin="0,0,6,4" />
+      <Button Content="{loc:Loc Common_Delete}" ToolTip.Tip="{loc:Loc LgpeTrainer_DeleteSlot}" Command="{Binding DeleteSlotCommand}" IsEnabled="{Binding HasOccupiedSelection}" Margin="0,0,6,4" />
       <Button Content="{loc:Loc LgpeTrainer_MoreActions}" Margin="0,0,6,4"><Button.Flyout><Flyout><ScrollViewer MaxHeight="300"><StackPanel Spacing="8" MaxWidth="400">
        <CheckBox Content="{loc:Loc LgpeTrainer_WholePark}" IsChecked="{Binding WholePark}" />
        <TextBlock Text="{loc:Loc LgpeTrainer_FolderScope}" TextWrapping="Wrap" />
@@ -69,12 +69,12 @@
      </WrapPanel>
     </StackPanel>
     <TextBlock DockPanel.Dock="Bottom" Text="{Binding SlotDetails}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SlotDetails}" AutomationProperties.HelpText="{Binding SlotDetails}" Margin="0,8,0,0" />
-    <DataGrid Name="LgpeParkSlots" ItemsSource="{Binding ParkSlots}" SelectedItem="{Binding SelectedSlot}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="None" HeadersVisibility="Column" CanUserSortColumns="True" AutomationProperties.Name="{loc:Loc LgpeTrainer_Slots}">
+    <DataGrid Name="LgpeParkSlots" Classes="save-grid" ItemsSource="{Binding ParkSlots}" SelectedItem="{Binding SelectedSlot}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="None" HeadersVisibility="Column" CanUserSortColumns="True" AutomationProperties.Name="{loc:Loc LgpeTrainer_Slots}">
      <DataGrid.Columns>
-      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_Slot}" Binding="{Binding Number}" Width="60" />
+      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_Slot}" Binding="{Binding Number}" Width="130" />
       <DataGridTextColumn Header="{loc:Loc LgpeTrainer_Pokemon}" Binding="{Binding Name}" Width="*" MinWidth="140" />
-      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_Level}" Binding="{Binding Level}" Width="70" />
-      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_CP}" Binding="{Binding Cp}" Width="80" />
+      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_Level}" Binding="{Binding Level, StringFormat='{}{0:0.##}'}" Width="100" />
+      <DataGridTextColumn Header="{loc:Loc LgpeTrainer_CP}" Binding="{Binding Cp}" Width="100" />
      </DataGrid.Columns>
     </DataGrid>
    </DockPanel></TabItem>

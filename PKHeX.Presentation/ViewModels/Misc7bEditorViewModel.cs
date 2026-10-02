@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PKHeX.Core;
 using PKHeX.Presentation.Localization;
 
@@ -66,6 +67,7 @@ public partial class Misc7bEditorViewModel : ViewModelBase, ICloseableDialog, ID
     {
         _session = new(save); _dialogs = dialogs; _baseline = (SAV7b)save.Clone();
         LoadData();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) => ((Misc7bEditorViewModel)recipient).RefreshLanguage());
     }
     private static bool ValidFloat(double value, float original) => value.Equals((double)original) || (double.IsFinite(value) && Math.Abs(value) <= float.MaxValue);
     private static bool ValidDate(DateTimeOffset? date, TimeSpan? time, int minimumYear) =>
@@ -171,5 +173,5 @@ public partial class Misc7bEditorViewModel : ViewModelBase, ICloseableDialog, ID
         _epoch++; RefreshPark(); NotifyState();
     }
     private void NotifyState() { OnPropertyChanged(nameof(CanSave)); OnPropertyChanged(nameof(CanUndo)); }
-    public void Dispose() { _closed = true; _epoch++; NotifyState(); }
+    public void Dispose() { _closed = true; _epoch++; WeakReferenceMessenger.Default.UnregisterAll(this); NotifyState(); }
 }
