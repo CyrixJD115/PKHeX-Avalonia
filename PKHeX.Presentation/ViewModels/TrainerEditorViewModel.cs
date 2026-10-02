@@ -10,6 +10,10 @@ namespace PKHeX.Presentation.ViewModels;
 public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 {
     private SaveFile _sav;
+    public Misc7bEditorViewModel? LgpeEditor { get; }
+    private SAV7b? _lgpeParentBaseline;
+    public bool IsLGPE => LgpeEditor is not null;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -17,6 +21,8 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _sav = _zaSession?.Staged ?? sav;
         _zaDialogs = dialogs;
         _zaImageCodec = imageCodec;
+        LgpeEditor = sav is SAV7b lgpe ? new Misc7bEditorViewModel(lgpe, dialogs) : null;
+        _lgpeParentBaseline = sav is SAV7b lgpeBaseline ? (SAV7b)lgpeBaseline.Clone() : null;
         LoadFromSave();
     }
 
@@ -421,6 +427,22 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (LgpeEditor is not null && _lgpeParentBaseline is { } lgpeBaseline)
+        {
+            if (TrainerName != lgpeBaseline.OT) LgpeEditor.TrainerName = TrainerName;
+            if (Gender != lgpeBaseline.Gender) LgpeEditor.Gender = Gender;
+            if (Money != lgpeBaseline.Money) LgpeEditor.Money = Money;
+            if (DisplayTid != lgpeBaseline.DisplayTID) LgpeEditor.DisplayTid = DisplayTid;
+            if (DisplaySid != lgpeBaseline.DisplaySID) LgpeEditor.DisplaySid = DisplaySid;
+            if (Language != lgpeBaseline.Language) LgpeEditor.Language = Language;
+            if (PlayedHours != lgpeBaseline.PlayedHours) LgpeEditor.PlayedHours = PlayedHours;
+            if (PlayedMinutes != lgpeBaseline.PlayedMinutes) LgpeEditor.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != lgpeBaseline.PlayedSeconds) LgpeEditor.PlayedSeconds = PlayedSeconds;
+            if (!LgpeEditor.CanSave) return;
+            LgpeEditor.SaveCommand.Execute(null);
+            if (!LgpeEditor.HasError) { _lgpeParentBaseline = (SAV7b)_sav.Clone(); LoadFromSave(); }
+            return;
+        }
         if (IsZA) { SaveZaFields(); return; }
         _sav.OT = TrainerName;
         _sav.Gender = (byte)Gender;
@@ -601,6 +623,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (LgpeEditor is not null) { LgpeEditor.ResetCommand.Execute(null); _lgpeParentBaseline = (SAV7b)_sav.Clone(); LoadFromSave(); return; }
         if (_zaClosed) return;
         if (_zaSession is not null) { _zaEpoch++; _zaSession.Reset(); _sav = _zaSession.Staged; }
         LoadFromSave();
@@ -608,6 +631,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 
     public void RefreshLanguage()
     {
+        LgpeEditor?.RefreshLanguage();
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
         OnPropertyChanged(nameof(GenderList));
         if (_sav is SAV9ZA za) LoadZaImages(za);

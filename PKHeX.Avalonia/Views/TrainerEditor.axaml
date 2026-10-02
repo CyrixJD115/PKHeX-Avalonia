@@ -8,7 +8,8 @@
 
     <Grid>
     <views:TrainerZaWorkspace IsVisible="{Binding IsZA}" />
-    <Border Classes="view-container" IsVisible="{Binding !IsZA}">
+    <Grid IsVisible="{Binding IsLGPE}"><views:Misc7bEditor DataContext="{Binding LgpeEditor}" /></Grid>
+    <Border Classes="view-container" IsVisible="{Binding !HasDedicatedTrainerWorkspace}">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Classes="view-stack">
                 <!-- Header actions stay visible while the long save form scrolls. -->
