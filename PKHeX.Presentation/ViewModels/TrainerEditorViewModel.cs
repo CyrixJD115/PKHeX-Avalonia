@@ -12,8 +12,11 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     private SaveFile _sav;
     public Misc7bEditorViewModel? LgpeEditor { get; }
     private SAV7b? _lgpeParentBaseline;
+    public Misc7EditorViewModel? Gen7Editor { get; }
+    private SAV7? _gen7ParentBaseline;
+    public bool IsGen7 => Gen7Editor is not null;
     public bool IsLGPE => LgpeEditor is not null;
-    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -23,6 +26,8 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _zaImageCodec = imageCodec;
         LgpeEditor = sav is SAV7b lgpe ? new Misc7bEditorViewModel(lgpe, dialogs) : null;
         _lgpeParentBaseline = sav is SAV7b lgpeBaseline ? (SAV7b)lgpeBaseline.Clone() : null;
+        Gen7Editor = sav is SAV7 gen7 ? new Misc7EditorViewModel(gen7) : null;
+        _gen7ParentBaseline = sav is SAV7 baseline7 ? (SAV7)baseline7.Clone() : null;
         LoadFromSave();
     }
 
@@ -427,6 +432,24 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (Gen7Editor is not null && _gen7ParentBaseline is { } gen7Baseline)
+        {
+            if (TrainerName != gen7Baseline.OT) Gen7Editor.TrainerName = TrainerName;
+            if (Gender != gen7Baseline.Gender) Gen7Editor.Gender = Gender;
+            if (Money != gen7Baseline.Money) Gen7Editor.Money = Money;
+            if (Language != gen7Baseline.Language) Gen7Editor.Language = Language;
+            if (PlayedHours != gen7Baseline.PlayedHours) Gen7Editor.PlayedHours = PlayedHours;
+            if (PlayedMinutes != gen7Baseline.PlayedMinutes) Gen7Editor.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != gen7Baseline.PlayedSeconds) Gen7Editor.PlayedSeconds = PlayedSeconds;
+            if (DisplayTid != gen7Baseline.DisplayTID || DisplaySid != gen7Baseline.DisplaySID)
+            {
+                uint id = checked(DisplaySid * 1_000_000 + DisplayTid);
+                Gen7Editor.Tid16 = (ushort)id; Gen7Editor.Sid16 = (ushort)(id >> 16);
+            }
+            Gen7Editor.SaveCommand.Execute(null);
+            if (!Gen7Editor.HasError) { _gen7ParentBaseline = (SAV7)_sav.Clone(); LoadFromSave(); }
+            return;
+        }
         if (LgpeEditor is not null && _lgpeParentBaseline is { } lgpeBaseline)
         {
             if (TrainerName != lgpeBaseline.OT) LgpeEditor.TrainerName = TrainerName;
@@ -623,6 +646,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (Gen7Editor is not null) { Gen7Editor.ResetCommand.Execute(null); _gen7ParentBaseline = (SAV7)_sav.Clone(); LoadFromSave(); return; }
         if (LgpeEditor is not null) { LgpeEditor.ResetCommand.Execute(null); _lgpeParentBaseline = (SAV7b)_sav.Clone(); LoadFromSave(); return; }
         if (_zaClosed) return;
         if (_zaSession is not null) { _zaEpoch++; _zaSession.Reset(); _sav = _zaSession.Staged; }
