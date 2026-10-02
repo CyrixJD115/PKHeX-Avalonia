@@ -641,6 +641,13 @@ public partial class MainWindowViewModel
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]
+    private async Task OpenGen3TicketsAsync()
+    {
+        if (CurrentSave is not SAV3 sav) return;
+        await _windowService.ShowDialogAsync(new Gen3TicketEditorViewModel(sav, _dialogService), T("Ticket3Flow_Title"));
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSave))]
     private async Task OpenMisc3Async()
     {
         if (CurrentSave is not SAV3 sav) return;
