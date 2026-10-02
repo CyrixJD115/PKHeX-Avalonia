@@ -36,6 +36,9 @@ public class Pokedex9aRenderTests
             var before = save.Zukan.Data.ToArray();
             using var vm = new Pokedex9aEditorViewModel(save, new Mock<IDialogService>().Object);
             vm.SelectedSpecies = vm.FilteredSpecies.Single(item => item.Value == (int)Species.Tatsugiri);
+            vm.Forms[0].Seen = true; vm.Forms[0].Caught = true; vm.Forms[0].Shiny = true;
+            vm.Flags[^1].Value = true; vm.Languages[1].Value = true;
+            vm.DisplayShiny = true; vm.IsNew = true;
             var view = new Pokedex9aEditor { DataContext = vm };
             window = new Window { Content = view, Width = width, Height = height }; window.Show();
             await PKHeX.Testing.HeadlessRenderSettling.Settle(window);

@@ -14,6 +14,17 @@ namespace PKHeX.Avalonia.Tests;
 
 public class Pokedex9aBindingTests
 {
+    [AvaloniaFact]
+    public async Task MainMenuOpensTheZAEditorThroughTheHostViewLocator()
+    {
+        using var app = new HeadlessAppFixture();
+        app.LoadSaveInstance(Pokedex9aFixtureTests.CreateSave(1));
+        await app.ViewModel.OpenPokedexCommand.ExecuteAsync(null);
+        using var vm = Assert.IsType<Pokedex9aEditorViewModel>(Assert.Single(app.Windows.ShownDialogs).ViewModel);
+        Assert.IsType<Pokedex9aEditor>(ViewLocator.Build(vm));
+        Assert.True(vm.IsSupported);
+    }
+
     public static IEnumerable<object[]> Locales => LocalizedStrings.SupportedLanguages.SelectMany(language => new[] { new object[] { language, 620, 420 }, new object[] { language, 960, 640 } });
     [AvaloniaTheory] [MemberData(nameof(Locales))]
     public void AllLocalesKeepApplyAndFinalLanguageReachableWithoutMutation(string language, int width, int height)

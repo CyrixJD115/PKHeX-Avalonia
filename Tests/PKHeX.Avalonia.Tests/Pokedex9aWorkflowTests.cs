@@ -59,6 +59,26 @@ public class Pokedex9aWorkflowTests
     }
 
     [Fact]
+    public async Task ClosingWhileConfirmationIsPendingDiscardsTheLateAnswer()
+    {
+        var save = Pokedex9aFixtureTests.CreateSave(1);
+        var before = save.AllBlocks.Select(block => block.Data.ToArray()).ToArray();
+        save.State.Edited = false;
+        var answer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dialogs = new Mock<IDialogService>();
+        dialogs.Setup(d => d.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(answer.Task);
+        var vm = new Pokedex9aEditorViewModel(save, dialogs.Object) { WholeDex = true };
+        var pending = vm.BulkCommand.ExecuteAsync("Complete");
+        vm.Dispose();
+        answer.SetResult(true);
+        await pending;
+        Assert.False(vm.CanUndo);
+        Assert.False(vm.CanSave);
+        Assert.False(save.State.Edited);
+        for (int i = 0; i < before.Length; i++) Assert.Equal(before[i], save.AllBlocks[i].Data.ToArray());
+    }
+
+    [Fact]
     public void SearchUsesNamesAndClearingRestoresDexOrder()
     {
         using var vm = new Pokedex9aEditorViewModel(new SAV9ZA(), Dialog().Object);
