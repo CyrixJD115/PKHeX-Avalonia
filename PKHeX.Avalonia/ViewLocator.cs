@@ -42,6 +42,7 @@ public static class ViewLocator
         [typeof(FashionEditorViewModel)] = () => new FashionEditorView(),
         [typeof(FestivalPlazaEditorViewModel)] = () => new FestivalPlazaEditor(),
         [typeof(FolderListViewModel)] = () => new FolderList(),
+        [typeof(Gen3TicketEditorViewModel)] = () => new Gen3TicketEditor(),
         [typeof(GearBREditorViewModel)] = () => new GearBREditor(),
         [typeof(Geonet4EditorViewModel)] = () => new Geonet4Editor(),
         [typeof(GlobalLink5EditorViewModel)] = () => new GlobalLink5Editor(),

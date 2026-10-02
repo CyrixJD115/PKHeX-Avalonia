@@ -219,6 +219,7 @@ public partial class MainWindowViewModel
         RegisterMenuCapability("Menu_Gen2_Misc", OpenMisc2Command, "Menu_Gen2");
 
         RegisterMenuCapability("Menu_Misc", OpenMisc3Command, "Menu_Gen3");
+        RegisterConditionalMenuCapability("Ticket3Flow_Title", OpenGen3TicketsCommand, "Menu_Gen3", () => CurrentSave is SAV3RS or SAV3E or SAV3FRLG);
         RegisterMenuCapability("Menu_Roamer", OpenRoamer3Command, "Menu_Gen3");
         RegisterMenuCapability("Menu_Gen3_SecretBase", OpenSecretBaseCommand, "Menu_Gen3");
         RegisterMenuCapability("Menu_Gen3_RTC", OpenRTC3Command, "Menu_Gen3");

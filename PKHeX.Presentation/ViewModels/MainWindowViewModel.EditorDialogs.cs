@@ -344,7 +344,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV9ZA sav) return;
         await _windowService.ShowDialogAsync(
-            new DonutEditorViewModel(sav),
+            new DonutEditorViewModel(sav, _dialogService),
             T("Dialog_DonutEditorPLZA"));
     }
 
@@ -638,6 +638,13 @@ public partial class MainWindowViewModel
         await _windowService.ShowDialogAsync(
             new Misc2EditorViewModel(sav),
             T("Dialog_MiscEditorGen2"));
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSave))]
+    private async Task OpenGen3TicketsAsync()
+    {
+        if (CurrentSave is not SAV3 sav) return;
+        await _windowService.ShowDialogAsync(new Gen3TicketEditorViewModel(sav, _dialogService), T("Ticket3Flow_Title"));
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]

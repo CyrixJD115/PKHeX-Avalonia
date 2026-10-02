@@ -33,7 +33,7 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
-    public void CaptureSwshCardTeams_WhenEnabled_WritesPng()
+    public async Task CaptureGen3TicketStates_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;
         var previous = LocalizedStrings.Instance.CurrentLanguage;
@@ -43,6 +43,86 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         try
         {
             foreach (var language in new[] { "en", "de" })
+            foreach (var version in new[] { GameVersion.R, GameVersion.S, GameVersion.E, GameVersion.FR, GameVersion.LG })
+            {
+                using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
+                var save = Gen3TicketWorkflowTests.CreateSave(version);
+                using var vm = new Gen3TicketEditorViewModel(save, new RecordingDialogService());
+                vm.Tickets[0].StageTicketAndRouteCommand.Execute(null);
+                var view = new Gen3TicketEditor { DataContext = vm };
+                var window = new Window { Content = view, Width = language == "en" ? 820 : 620, Height = language == "en" ? 650 : 440 };
+                window.Show();
+                try
+                {
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    CaptureOrSkip(window, $"tickets3-{language}-{version}.png", "Gen 3 named ticket states");
+                    view.FindControl<Expander>("Ticket3Advanced")!.IsExpanded = true;
+                    PumpToStableLayout(window); view.FindControl<ScrollViewer>("Ticket3Scroll")!.ScrollToEnd(); PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    CaptureOrSkip(window, $"tickets3-{language}-{version}-raw.png", "Staged raw event flags");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous); GameInfo.CurrentLanguage = dataLanguage;
+            GameInfo.Strings = strings; GameInfo.FilteredSources = filtered;
+            System.Globalization.CultureInfo.CurrentCulture = culture; System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = defaultCulture; System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = defaultUiCulture;
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task CaptureDonutTransactions_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        var dataLanguage = GameInfo.CurrentLanguage; var strings = GameInfo.Strings; var filtered = GameInfo.FilteredSources;
+        var culture = System.Globalization.CultureInfo.CurrentCulture; var uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            {
+                using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
+                var save = new SAV9ZA(); var donut = save.Donuts.GetDonut(0);
+                donut.MillisecondsSince1970 = 1; donut.Berry1 = 170; donut.Berry2 = 171;
+                donut.Flavor0 = DonutInfo.Flavors[0].Hash; donut.Flavor1 = ulong.MaxValue;
+                using var vm = new DonutEditorViewModel(save, new RecordingDialogService());
+                var view = new DonutEditor { DataContext = vm }; var window = new Window { Content = view, Width = language == "en" ? 1000 : 720, Height = language == "en" ? 760 : 460 };
+                window.Show();
+                try
+                {
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window); CaptureOrSkip(window, $"donut-{language}-detail.png", "Staged donut detail");
+                    view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToEnd(); PumpToStableLayout(window);
+                    await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    CaptureOrSkip(window, $"donut-{language}-profile.png", "Donut flavor profile");
+                    view.FindControl<ScrollViewer>("DonutDetailsScroll")!.ScrollToHome(); view.FindControl<Expander>("DonutGenerator")!.IsExpanded = true;
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window); CaptureOrSkip(window, $"donut-{language}-generator.png", "Inline donut generator");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous); GameInfo.CurrentLanguage = dataLanguage;
+            GameInfo.Strings = strings; GameInfo.FilteredSources = filtered;
+            System.Globalization.CultureInfo.CurrentCulture = culture; System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = defaultCulture; System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = defaultUiCulture;
+        }
+    }
+
+    [AvaloniaFact]
+    public void CaptureSwshCardTeams_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        var dataLanguage = GameInfo.CurrentLanguage; var strings = GameInfo.Strings; var filtered = GameInfo.FilteredSources;
+        var culture = System.Globalization.CultureInfo.CurrentCulture; var uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+        try
+        {
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             foreach (var tab in new[] { 0, 1, 2, 3 })
             {
                 using var app = new HeadlessAppFixture();
@@ -96,7 +176,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             foreach (var version in new[] { GameVersion.W2, GameVersion.X, GameVersion.SN, GameVersion.GP })
             foreach (var itemCard in new[] { false, true })
             {
@@ -142,7 +222,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 2, 5 })
@@ -165,7 +245,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in Enumerable.Range(0, 6))
@@ -209,7 +289,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 1, 2 })
@@ -231,7 +311,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var tab in new[] { 0, 1 })
@@ -261,7 +341,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 var save = new SAV6XY();
@@ -281,7 +361,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 var vm = new RaidEditorViewModel(global::PKHeX.Avalonia.Tests.Raid8TransactionTests.CreateSave());
@@ -314,7 +394,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var previous = LocalizedStrings.Instance.CurrentLanguage;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 LocalizedStrings.Instance.SetLanguage(language);
                 foreach (var (width, height) in new[] { (620, 350), (420, 300) })
