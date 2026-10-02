@@ -33,6 +33,46 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 {
     [AvaloniaFact]
+    public void CaptureGen3TicketStates_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        var dataLanguage = GameInfo.CurrentLanguage; var strings = GameInfo.Strings; var filtered = GameInfo.FilteredSources;
+        var culture = System.Globalization.CultureInfo.CurrentCulture; var uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+        var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+        try
+        {
+            foreach (var language in new[] { "en", "de" })
+            foreach (var version in new[] { GameVersion.R, GameVersion.S, GameVersion.E, GameVersion.FR, GameVersion.LG })
+            {
+                using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
+                var save = Gen3TicketWorkflowTests.CreateSave(version);
+                using var vm = new Gen3TicketEditorViewModel(save, new RecordingDialogService());
+                vm.Tickets[0].StageTicketAndRouteCommand.Execute(null);
+                var view = new Gen3TicketEditor { DataContext = vm };
+                var window = new Window { Content = view, Width = language == "en" ? 820 : 620, Height = language == "en" ? 650 : 440 };
+                window.Show();
+                try
+                {
+                    PumpToStableLayout(window);
+                    CaptureOrSkip(window, $"tickets3-{language}-{version}.png", "Gen 3 named ticket states");
+                    view.FindControl<Expander>("Ticket3Advanced")!.IsExpanded = true;
+                    PumpToStableLayout(window); view.FindControl<ScrollViewer>("Ticket3Scroll")!.ScrollToEnd(); PumpToStableLayout(window);
+                    CaptureOrSkip(window, $"tickets3-{language}-{version}-raw.png", "Staged raw event flags");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally
+        {
+            LocalizedStrings.Instance.SetLanguage(previous); GameInfo.CurrentLanguage = dataLanguage;
+            GameInfo.Strings = strings; GameInfo.FilteredSources = filtered;
+            System.Globalization.CultureInfo.CurrentCulture = culture; System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = defaultCulture; System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = defaultUiCulture;
+        }
+    }
+
+    [AvaloniaFact]
     public void CaptureSwshCardTeams_WhenEnabled_WritesPng()
     {
         if (SkipWhenCaptureDisabled()) return;
