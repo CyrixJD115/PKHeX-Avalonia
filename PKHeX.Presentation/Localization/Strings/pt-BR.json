@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "More actions",
-  "InventoryEditor_ArtworkHelp": "Item artwork. A generic icon means no image is bundled for this item."
+  "InventoryEditor_ArtworkHelp": "Item artwork. A shared icon is used when individual artwork is unavailable."
 }

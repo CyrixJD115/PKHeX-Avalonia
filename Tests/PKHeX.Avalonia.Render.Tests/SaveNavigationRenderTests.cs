@@ -48,6 +48,8 @@ public class SaveNavigationRenderTests
             foreach (var index in new[] { 2, 3, 4, 6 })
             {
                 vm.SelectWorkspaceTabCommand.Execute(index);
+                if (index == MainWindowViewModel.InventoryWorkspaceTabIndex)
+                    vm.InventoryEditor!.SelectedPouch = vm.InventoryEditor.Pouches.Single(p => p.ItemList.Any(item => item.Value == 632));
                 await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
                 var tabs = window.GetVisualDescendants().OfType<TabControl>().Single(x => x.Name == "WorkspacePane");
                 Assert.Equal(index, tabs.SelectedIndex);

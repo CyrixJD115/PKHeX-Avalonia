@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "レベル",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "その他の操作",
-  "InventoryEditor_ArtworkHelp": "道具の画像です。汎用アイコンは、この道具の画像が含まれていないことを示します。"
+  "InventoryEditor_ArtworkHelp": "個別の道具画像がない場合は共通のアイコンが表示されます。"
 }

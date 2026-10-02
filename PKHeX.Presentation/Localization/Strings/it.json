@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "Livello",
   "LgpeTrainer_CP": "PL",
   "LgpeTrainer_MoreActions": "Altre azioni",
-  "InventoryEditor_ArtworkHelp": "Immagine dello strumento. Un’icona generica indica che non è inclusa un’immagine per questo strumento."
+  "InventoryEditor_ArtworkHelp": "Grafica dello strumento. Se manca una grafica specifica, viene usata un’icona condivisa."
 }

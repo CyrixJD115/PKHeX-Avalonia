@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "WP",
   "LgpeTrainer_MoreActions": "Weitere Aktionen",
-  "InventoryEditor_ArtworkHelp": "Item-Abbildung. Ein allgemeines Symbol bedeutet, dass für dieses Item kein Bild enthalten ist."
+  "InventoryEditor_ArtworkHelp": "Gegenstandsgrafik. Ist keine individuelle Grafik vorhanden, wird ein gemeinsames Symbol verwendet."
 }

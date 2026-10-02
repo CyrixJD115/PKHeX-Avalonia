@@ -51,10 +51,12 @@ public class UtilityWindowInitialLayoutTests
         finally { window.Close(); }
     }
 
-    [AvaloniaFact]
-    public void LegalityReportFillsResizedHostInsteadOfRemainingASeparateFixedPanel()
+    [AvaloniaTheory]
+    [InlineData(false)] [InlineData(true)]
+    public void UtilityContentFillsResizedHostInsteadOfRemainingASeparateFixedPanel(bool about)
     {
-        using var app = new HeadlessAppFixture(); var view = new LegalityView { DataContext = new LegalityViewModel("Legal!") };
+        using var app = new HeadlessAppFixture();
+        Control view = about ? new AboutView { DataContext = new AboutViewModel() } : new LegalityView { DataContext = new LegalityViewModel("Legal!") };
         var window = new Window { Content = view, Width = 800, Height = 550 }; window.Show();
         try { Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); Assert.Equal(window.ClientSize.Width, view.Bounds.Width); Assert.Equal(window.ClientSize.Height, view.Bounds.Height); }
         finally { window.Close(); }

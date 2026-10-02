@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "레벨",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "추가 작업",
-  "InventoryEditor_ArtworkHelp": "도구 이미지입니다. 일반 아이콘은 이 도구의 이미지가 포함되지 않았음을 뜻합니다."
+  "InventoryEditor_ArtworkHelp": "개별 도구 이미지가 없으면 공용 아이콘이 표시됩니다."
 }

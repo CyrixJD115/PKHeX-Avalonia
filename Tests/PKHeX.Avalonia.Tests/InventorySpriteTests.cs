@@ -35,6 +35,11 @@ public class InventorySpriteTests
     [InlineData(EntityContext.Gen8a, 17, "17")]
     [InlineData(EntityContext.Gen9, 2160, "tm")]
     [InlineData(EntityContext.Gen9a, 2160, "tm")]
+    [InlineData(EntityContext.Gen9a, 632, "632")]
+    [InlineData(EntityContext.Gen9a, 700, "700")]
+    [InlineData(EntityContext.Gen9a, 765, "765")]
+    [InlineData(EntityContext.Gen9a, 847, "847")]
+    [InlineData(EntityContext.Gen9a, 1278, "1278")]
     [InlineData(EntityContext.Gen3, 9999, "unk")]
     [InlineData(EntityContext.Gen1, -1, "unk")]
     public void ItemIdentity_LoadsExpectedPixels(EntityContext context, int id, string asset)

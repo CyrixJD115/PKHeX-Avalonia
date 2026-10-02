@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "等级",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "更多操作",
-  "InventoryEditor_ArtworkHelp": "道具图像。通用图标表示未附带该道具的图像。"
+  "InventoryEditor_ArtworkHelp": "没有单独的道具图片时，会使用通用图标。"
 }

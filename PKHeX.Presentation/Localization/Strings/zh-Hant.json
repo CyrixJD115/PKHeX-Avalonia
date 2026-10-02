@@ -3334,5 +3334,5 @@
   "LgpeTrainer_Level": "等級",
   "LgpeTrainer_CP": "CP",
   "LgpeTrainer_MoreActions": "更多操作",
-  "InventoryEditor_ArtworkHelp": "道具影像。通用圖示表示未附帶該道具的影像。"
+  "InventoryEditor_ArtworkHelp": "沒有個別的道具圖片時，會使用共用圖示。"
 }
