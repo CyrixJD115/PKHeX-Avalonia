@@ -57,7 +57,7 @@ public class LgpeTrainerRenderTests
                 if (section == 2)
                 {
                     var grid = view.FindControl<DataGrid>("LgpeParkSlots")!;
-                    Assert.True(grid.Bounds.Height >= 80);
+                    Assert.True(grid.Bounds.Height >= 80, $"Grid height {grid.Bounds.Height} at {language} {width}x{height}");
                     Assert.True(vm.HasOccupiedSelection);
                     Assert.Contains(GameInfo.Strings.Species[25], vm.SelectedSlot!.Name);
                 }

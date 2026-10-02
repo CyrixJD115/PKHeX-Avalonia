@@ -4,7 +4,7 @@
  <DockPanel Margin="16">
   <StackPanel DockPanel.Dock="Top" Classes="save-editor-header" Spacing="6" Margin="0,0,0,8">
    <TextBlock Text="{loc:Loc LgpeTrainer_Title}" Classes="view-title" />
-   <TextBlock Text="{loc:Loc LgpeTrainer_Staging}" TextWrapping="Wrap" />
+   <TextBlock Text="{loc:Loc LgpeTrainer_Staging}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{loc:Loc LgpeTrainer_Staging}" AutomationProperties.HelpText="{loc:Loc LgpeTrainer_Staging}" />
   </StackPanel>
   <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
    <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap" />
