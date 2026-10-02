@@ -342,7 +342,8 @@ public sealed class ResponsiveShellTests
         Assert.NotEmpty(visibleTabs);
         Assert.All(visibleTabs, tab =>
         {
-            Assert.Equal(13, tab.FontSize);
+            // Save editor section headers share the compact Trainer tab typography.
+            Assert.Equal(11, tab.FontSize);
             Assert.Equal(VerticalAlignment.Center, tab.VerticalContentAlignment);
             Assert.InRange(tab.Bounds.Height, 30, 38);
         });

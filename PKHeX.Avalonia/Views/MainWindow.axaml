@@ -57,7 +57,7 @@
 
     <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" MinHeight="35" Background="{DynamicResource ThemeBackgroundCardBrush}">
-        <Menu Grid.Column="0" FontSize="11" VerticalAlignment="Center" Background="Transparent">
+        <Menu Grid.Column="0" FontSize="11" VerticalAlignment="Center" Background="Transparent" BorderThickness="0">
             <MenuItem Header="{loc:Loc Menu_File}">
                 <MenuItem Header="{loc:Loc Menu_File_Open}" Command="{Binding OpenFileCommand}" InputGesture="Ctrl+O" />
                 <MenuItem Header="{loc:Loc Menu_File_Save}" Command="{Binding SaveFileCommand}" InputGesture="Ctrl+S" />
