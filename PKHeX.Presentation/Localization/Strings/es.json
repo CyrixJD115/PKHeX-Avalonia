@@ -3286,5 +3286,6 @@
   "Dex9a_Language9": "Chino simplificado",
   "Dex9a_Language10": "Chino tradicional",
   "Dex9a_Language11": "Español latinoamericano",
-  "Dex9a_FormStateLabel": "{0}: {1}"
+  "Dex9a_FormStateLabel": "{0}: {1}",
+  "InventoryEditor_ArtworkHelp": "Imagen del objeto. Un icono genérico indica que no se incluye una imagen de este objeto."
 }

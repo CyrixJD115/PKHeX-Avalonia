@@ -104,12 +104,13 @@ public sealed class ResponsiveShellTests
     }
 
     [AvaloniaFact]
-    public void SaveAndWindowMenus_OpenWithoutThrowing()
+    public void WindowMenuOpensWithoutThrowingAndRedundantSaveMenuIsAbsent()
     {
         using var app = new HeadlessAppFixture();
         app.LoadSaveInstance(new SAV6XY());
 
-        foreach (var header in new[] { LocalizedStrings.Instance["Menu_Save"], LocalizedStrings.Instance["Menu_Window"] })
+        Assert.DoesNotContain(app.Window.GetVisualDescendants().OfType<MenuItem>(), item => Equals(item.Header, LocalizedStrings.Instance["Menu_Save"]));
+        foreach (var header in new[] { LocalizedStrings.Instance["Menu_Window"] })
         {
             var menu = app.Window.GetVisualDescendants()
                 .OfType<MenuItem>()

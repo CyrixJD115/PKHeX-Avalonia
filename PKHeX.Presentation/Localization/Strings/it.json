@@ -3286,5 +3286,6 @@
   "Dex9a_Language9": "Cinese semplificato",
   "Dex9a_Language10": "Cinese tradizionale",
   "Dex9a_Language11": "Spagnolo latinoamericano",
-  "Dex9a_FormStateLabel": "{0}: {1}"
+  "Dex9a_FormStateLabel": "{0}: {1}",
+  "InventoryEditor_ArtworkHelp": "Immagine dello strumento. Un’icona generica indica che non è inclusa un’immagine per questo strumento."
 }

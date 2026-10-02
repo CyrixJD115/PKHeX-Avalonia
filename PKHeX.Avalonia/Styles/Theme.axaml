@@ -1214,6 +1214,9 @@
     <Style Selector="TabControl.workspace-tabs /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="Margin" Value="0" />
     </Style>
+    <Style Selector="TabControl.workspace-tabs.save /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
 
     <Style Selector="TabControl.workspace-tabs /template/ ItemsPresenter#PART_ItemsPresenter &gt; WrapPanel">
         <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />

@@ -3286,5 +3286,6 @@
   "Dex9a_Language9": "Simplified Chinese",
   "Dex9a_Language10": "Traditional Chinese",
   "Dex9a_Language11": "Latin American Spanish",
-  "Dex9a_FormStateLabel": "{0}: {1}"
+  "Dex9a_FormStateLabel": "{0}: {1}",
+  "InventoryEditor_ArtworkHelp": "Item artwork. A generic icon means no image is bundled for this item."
 }

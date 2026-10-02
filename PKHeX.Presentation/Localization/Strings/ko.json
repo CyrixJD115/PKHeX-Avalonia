@@ -3286,5 +3286,6 @@
   "Dex9a_Language9": "중국어 간체",
   "Dex9a_Language10": "중국어 번체",
   "Dex9a_Language11": "라틴 아메리카 스페인어",
-  "Dex9a_FormStateLabel": "{0}: {1}"
+  "Dex9a_FormStateLabel": "{0}: {1}",
+  "InventoryEditor_ArtworkHelp": "도구 이미지입니다. 일반 아이콘은 이 도구의 이미지가 포함되지 않았음을 뜻합니다."
 }

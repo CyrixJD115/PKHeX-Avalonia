@@ -16,6 +16,9 @@ public partial class MainWindowViewModel
     public const int PartyWorkspaceTabIndex = 1;
     public const int TrainerWorkspaceTabIndex = 2;
     public const int InventoryWorkspaceTabIndex = 3;
+    public const int EventsWorkspaceTabIndex = 4;
+    public const int GiftsWorkspaceTabIndex = 5;
+    public const int BatchWorkspaceTabIndex = 6;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPokemonWorkspace))]

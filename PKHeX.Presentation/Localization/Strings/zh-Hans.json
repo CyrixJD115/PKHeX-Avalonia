@@ -3286,5 +3286,6 @@
   "Dex9a_Language9": "简体中文",
   "Dex9a_Language10": "繁体中文",
   "Dex9a_Language11": "拉丁美洲西班牙语",
-  "Dex9a_FormStateLabel": "{0}: {1}"
+  "Dex9a_FormStateLabel": "{0}: {1}",
+  "InventoryEditor_ArtworkHelp": "道具图像。通用图标表示未附带该道具的图像。"
 }

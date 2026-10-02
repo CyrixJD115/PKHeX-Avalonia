@@ -87,8 +87,11 @@
                 </MenuItem.ItemContainerTheme>
             </MenuItem>
             <MenuItem Header="{loc:Loc Menu_Window}">
-                <MenuItem Header="{loc:Loc Workspace_Pokemon}" Command="{Binding SelectWorkspaceCommand}" CommandParameter="{x:Static vm:MainWorkspace.Pokemon}" />
-                <MenuItem Header="{loc:Loc Workspace_Save}" Command="{Binding SelectWorkspaceCommand}" CommandParameter="{x:Static vm:MainWorkspace.Save}" />
+                <MenuItem Header="{loc:Loc Tab_Trainer}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.TrainerWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Inventory}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.InventoryWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Events}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Gifts}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Batch}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BatchWorkspaceTabIndex}" />
                 <MenuItem Header="{loc:Loc Workspace_Reports}" Command="{Binding SelectWorkspaceCommand}" CommandParameter="{x:Static vm:MainWorkspace.Reports}" />
                 <Separator />
                 <MenuItem Header="{loc:Loc Tab_Box}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BoxWorkspaceTabIndex}" />
@@ -131,7 +134,7 @@
         </Grid>
 
         <Border DockPanel.Dock="Top" MinHeight="49" Padding="17,6" Background="{DynamicResource ThemeBackgroundBaseBrush}"
-                BorderBrush="{DynamicResource ThemeBorderMutedBrush}" BorderThickness="0,1,0,1">
+                BorderBrush="{DynamicResource ThemeBorderMutedBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="190,*,Auto" ColumnSpacing="12">
                 <StackPanel Spacing="1" VerticalAlignment="Center">
                     <TextBlock Text="{Binding CurrentGameName}" ToolTip.Tip="{Binding CurrentSaveFileName}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
@@ -236,7 +239,13 @@
                                       IsVisible="{Binding IsPokemonWorkspace}"
                                       AutomationProperties.Name="{loc:Loc MainWindow_ResizeEditor}" />
 
-                        <TabControl x:Name="WorkspacePane" Grid.Column="2" Margin="16,5,16,12" Classes="workspace-tabs" Classes.pokemon="{Binding IsPokemonWorkspace}"
+                        <DockPanel Grid.Column="2" Margin="16,5,16,12">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" IsVisible="{Binding IsSaveNavigationSelected}" Spacing="8">
+                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Events}" IsVisible="{Binding IsEventsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
+                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Gifts}" IsVisible="{Binding IsGiftsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
+                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Batch}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BatchWorkspaceTabIndex}" />
+                        </StackPanel>
+                        <TabControl x:Name="WorkspacePane" Classes="workspace-tabs" Classes.pokemon="{Binding IsPokemonWorkspace}" Classes.save="{Binding IsSaveWorkspace}"
                                     SelectedIndex="{Binding SelectedWorkspaceIndex, Mode=TwoWay}">
                             <TabItem Classes="workspace-tab" IsVisible="{Binding IsPokemonWorkspace}">
                                 <TabItem.Header>
@@ -309,6 +318,7 @@
                                 </ContentControl>
                             </TabItem>
                         </TabControl>
+                        </DockPanel>
                     </Grid>
 
                     <!-- Reports and the launcher bind the same capability descriptors, so a tool's

@@ -1,0 +1,78 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
+using Moq;
+using PKHeX.Avalonia.Services;
+using PKHeX.Avalonia.Tests.Harness;
+using PKHeX.Avalonia.Views;
+using PKHeX.Presentation.ViewModels;
+using PKHeX.Core;
+
+namespace PKHeX.Avalonia.Tests;
+
+public class UtilityWindowInitialLayoutTests
+{
+    [AvaloniaTheory]
+    [InlineData(false, 480, 240)] [InlineData(true, 620, 440)]
+    public void CompactUtilitySizeIsSetBeforeShowingEvenWhenWindowStartedLarge(bool legality, int width, int height)
+    {
+        using var app = new HeadlessAppFixture();
+        var window = new Window { Width = 1200, Height = 720, WindowState = WindowState.Maximized };
+        WindowService.ConfigureCompactUtilityBounds(window, legality, 1200, 800);
+        Assert.Equal(width, window.Width); Assert.Equal(height, window.Height);
+        Assert.Equal(WindowState.Normal, window.WindowState); Assert.Equal(SizeToContent.Manual, window.SizeToContent);
+    }
+    [AvaloniaFact]
+    public void SmallMeasuredContentDoesNotAdoptTheOwnersLargeInitialBounds()
+    {
+        using var app = new HeadlessAppFixture();
+        var window = new Window { Content = new Border { Width = 400, Height = 344 }, Width = 1200, Height = 720, MaxWidth = 1200, MaxHeight = 800 };
+        WindowService.SetMeasuredInitialBounds(window);
+        Assert.Equal(420, window.Width); Assert.Equal(344, window.Height);
+    }
+    [AvaloniaFact]
+    public void DatabaseActionsAreReachableOnTheFirstShownFrameWithoutResizing()
+    {
+        using var app = new HeadlessAppFixture();
+        var vm = new PKMDatabaseViewModel(new SAV6XY(), Mock.Of<ISpriteRenderer>(), Mock.Of<IDialogService>());
+        var view = new PKMDatabaseView { DataContext = vm };
+        var window = new Window { Content = view, MaxWidth = 1200, MaxHeight = 650 };
+        WindowService.SetMeasuredInitialBounds(window); window.Show();
+        try
+        {
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            foreach (var name in new[] { "DatabaseSearchSave", "DatabaseScanFolder" })
+            {
+                var button = view.FindControl<Button>(name)!; var point = button.TranslatePoint(default, view)!.Value;
+                Assert.True(point.Y >= 0 && point.Y + button.Bounds.Height <= view.Bounds.Height, $"{name} at {point.Y} in {view.Bounds.Height}");
+            }
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void LegalityReportFillsResizedHostInsteadOfRemainingASeparateFixedPanel()
+    {
+        using var app = new HeadlessAppFixture(); var view = new LegalityView { DataContext = new LegalityViewModel("Legal!") };
+        var window = new Window { Content = view, Width = 800, Height = 550 }; window.Show();
+        try { Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); Assert.Equal(window.ClientSize.Width, view.Bounds.Width); Assert.Equal(window.ClientSize.Height, view.Bounds.Height); }
+        finally { window.Close(); }
+    }
+    [AvaloniaFact]
+    public void UpdateActionsRemainReachableWhenErrorTextIsLong()
+    {
+        using var app = new HeadlessAppFixture();
+        var vm = new UpdateDownloadViewModel(new ReleaseInfo("v1.79.0", "release", "notes", "https://example.com", false, []),
+            new ReleaseAsset("asset.zip", "https://example.com/asset.zip"), Mock.Of<IUpdateInstaller>(), Mock.Of<IAppLifetime>());
+        vm.ErrorMessage = string.Join(" ", Enumerable.Repeat("Long error detail.", 100));
+        var view = new UpdateDownloadView { DataContext = vm }; var window = new Window { Content = view, Width = 480, Height = 240 }; window.Show();
+        try
+        {
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            var button = view.FindControl<Button>("UpdateInstallButton")!; var point = button.TranslatePoint(default, view)!.Value;
+            Assert.True(point.Y >= 0 && point.Y + button.Bounds.Height <= view.Bounds.Height);
+        }
+        finally { window.Close(); }
+    }
+}
