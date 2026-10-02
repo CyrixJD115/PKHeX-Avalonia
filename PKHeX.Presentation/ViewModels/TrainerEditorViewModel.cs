@@ -10,6 +10,9 @@ namespace PKHeX.Presentation.ViewModels;
 public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 {
     private SaveFile _sav;
+    public Misc7bEditorViewModel? LgpeEditor { get; }
+    public bool IsLGPE => LgpeEditor is not null;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -17,6 +20,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _sav = _zaSession?.Staged ?? sav;
         _zaDialogs = dialogs;
         _zaImageCodec = imageCodec;
+        LgpeEditor = sav is SAV7b lgpe ? new Misc7bEditorViewModel(lgpe, dialogs) : null;
         LoadFromSave();
     }
 
@@ -421,6 +425,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (LgpeEditor is not null) { LgpeEditor.SaveCommand.Execute(null); return; }
         if (IsZA) { SaveZaFields(); return; }
         _sav.OT = TrainerName;
         _sav.Gender = (byte)Gender;
@@ -601,6 +606,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (LgpeEditor is not null) { LgpeEditor.ResetCommand.Execute(null); return; }
         if (_zaClosed) return;
         if (_zaSession is not null) { _zaEpoch++; _zaSession.Reset(); _sav = _zaSession.Staged; }
         LoadFromSave();
@@ -608,6 +614,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 
     public void RefreshLanguage()
     {
+        LgpeEditor?.RefreshLanguage();
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
         OnPropertyChanged(nameof(GenderList));
         if (_sav is SAV9ZA za) LoadZaImages(za);
