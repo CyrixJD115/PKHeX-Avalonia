@@ -89,8 +89,8 @@
             <MenuItem Header="{loc:Loc Menu_Window}">
                 <MenuItem Header="{loc:Loc Tab_Trainer}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.TrainerWorkspaceTabIndex}" />
                 <MenuItem Header="{loc:Loc Tab_Inventory}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.InventoryWorkspaceTabIndex}" />
-                <MenuItem Header="{loc:Loc Tab_Events}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
-                <MenuItem Header="{loc:Loc Tab_Gifts}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Events}" IsVisible="{Binding IsEventsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
+                <MenuItem Header="{loc:Loc Tab_Gifts}" IsVisible="{Binding IsGiftsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
                 <MenuItem Header="{loc:Loc Tab_Batch}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BatchWorkspaceTabIndex}" />
                 <MenuItem Header="{loc:Loc Workspace_Reports}" Command="{Binding SelectWorkspaceCommand}" CommandParameter="{x:Static vm:MainWorkspace.Reports}" />
                 <Separator />
@@ -241,9 +241,9 @@
 
                         <DockPanel Grid.Column="2" Margin="16,5,16,12">
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" IsVisible="{Binding IsSaveNavigationSelected}" Spacing="8">
-                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Events}" IsVisible="{Binding IsEventsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
-                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Gifts}" IsVisible="{Binding IsGiftsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
-                            <Button Classes="workspace-top-tab" Content="{loc:Loc Tab_Batch}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BatchWorkspaceTabIndex}" />
+                            <Button Classes="workspace-top-tab" Classes.active="{Binding IsEventsNavigationSelected}" Content="{loc:Loc Tab_Events}" IsVisible="{Binding IsEventsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.EventsWorkspaceTabIndex}" />
+                            <Button Classes="workspace-top-tab" Classes.active="{Binding IsGiftsNavigationSelected}" Content="{loc:Loc Tab_Gifts}" IsVisible="{Binding IsGiftsWorkspace}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.GiftsWorkspaceTabIndex}" />
+                            <Button Classes="workspace-top-tab" Classes.active="{Binding IsBatchNavigationSelected}" Content="{loc:Loc Tab_Batch}" Command="{Binding SelectWorkspaceTabCommand}" CommandParameter="{x:Static vm:MainWindowViewModel.BatchWorkspaceTabIndex}" />
                         </StackPanel>
                         <TabControl x:Name="WorkspacePane" Classes="workspace-tabs" Classes.pokemon="{Binding IsPokemonWorkspace}" Classes.save="{Binding IsSaveWorkspace}"
                                     SelectedIndex="{Binding SelectedWorkspaceIndex, Mode=TwoWay}">
