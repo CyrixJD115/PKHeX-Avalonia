@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "寶可夢",
   "LgpeTrainer_Level": "等級",
   "LgpeTrainer_CP": "CP",
-  "LgpeTrainer_MoreActions": "更多操作"
+  "LgpeTrainer_MoreActions": "更多操作",
+  "InventoryEditor_ArtworkHelp": "沒有個別的道具圖片時，會使用共用圖示。"
 }

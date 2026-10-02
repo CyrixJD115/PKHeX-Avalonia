@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "Pokémon",
   "LgpeTrainer_Level": "Nivel",
   "LgpeTrainer_CP": "PC",
-  "LgpeTrainer_MoreActions": "Más acciones"
+  "LgpeTrainer_MoreActions": "Más acciones",
+  "InventoryEditor_ArtworkHelp": "Imagen del objeto. Se usa un icono compartido cuando no hay una imagen individual."
 }

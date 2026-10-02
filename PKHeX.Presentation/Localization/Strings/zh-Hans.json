@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "宝可梦",
   "LgpeTrainer_Level": "等级",
   "LgpeTrainer_CP": "CP",
-  "LgpeTrainer_MoreActions": "更多操作"
+  "LgpeTrainer_MoreActions": "更多操作",
+  "InventoryEditor_ArtworkHelp": "没有单独的道具图片时，会使用通用图标。"
 }

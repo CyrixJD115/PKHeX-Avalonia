@@ -755,8 +755,9 @@
     <Style Selector="TabControl.pouch-tabs TabItem">
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="30" />
-        <Setter Property="Padding" Value="10,5" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="{DynamicResource UiDensityEditorTabPadding}" />
+        <Setter Property="Margin" Value="{DynamicResource UiDensityEditorTabMargin}" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -1213,6 +1214,9 @@
 
     <Style Selector="TabControl.workspace-tabs /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="TabControl.workspace-tabs.save /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="IsVisible" Value="False" />
     </Style>
 
     <Style Selector="TabControl.workspace-tabs /template/ ItemsPresenter#PART_ItemsPresenter &gt; WrapPanel">

@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "Pokémon",
   "LgpeTrainer_Level": "Livello",
   "LgpeTrainer_CP": "PL",
-  "LgpeTrainer_MoreActions": "Altre azioni"
+  "LgpeTrainer_MoreActions": "Altre azioni",
+  "InventoryEditor_ArtworkHelp": "Grafica dello strumento. Se manca una grafica specifica, viene usata un’icona condivisa."
 }

@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "Pokémon",
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "CP",
-  "LgpeTrainer_MoreActions": "More actions"
+  "LgpeTrainer_MoreActions": "More actions",
+  "InventoryEditor_ArtworkHelp": "Item artwork. A shared icon is used when individual artwork is unavailable."
 }

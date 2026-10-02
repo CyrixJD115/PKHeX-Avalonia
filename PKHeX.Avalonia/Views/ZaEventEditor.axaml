@@ -26,7 +26,7 @@
             <Grid ColumnDefinitions="160,8,*">
                 <DockPanel>
                     <TextBox DockPanel.Dock="Top" Text="{Binding CategorySearch}" Watermark="{loc:Loc ZaEvents_CategorySearch}" AutomationProperties.Name="{loc:Loc ZaEvents_CategorySearch}" Margin="0,0,0,6" />
-                    <ListBox ItemsSource="{Binding VisibleCategories}" SelectedItem="{Binding SelectedCategory}" AutomationProperties.Name="{loc:Loc ZaEvents_Categories}">
+                    <ListBox Background="Transparent" ItemsSource="{Binding VisibleCategories}" SelectedItem="{Binding SelectedCategory}" AutomationProperties.Name="{loc:Loc ZaEvents_Categories}">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="vm:ZaEventCategoryViewModel"><TextBlock Text="{Binding Name}" TextWrapping="Wrap" ToolTip.Tip="{Binding Name}" Margin="0,4" /></DataTemplate>
                         </ListBox.ItemTemplate>

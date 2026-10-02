@@ -3333,5 +3333,6 @@
   "LgpeTrainer_Pokemon": "Pokémon",
   "LgpeTrainer_Level": "Level",
   "LgpeTrainer_CP": "WP",
-  "LgpeTrainer_MoreActions": "Weitere Aktionen"
+  "LgpeTrainer_MoreActions": "Weitere Aktionen",
+  "InventoryEditor_ArtworkHelp": "Gegenstandsgrafik. Ist keine individuelle Grafik vorhanden, wird ein gemeinsames Symbol verwendet."
 }
