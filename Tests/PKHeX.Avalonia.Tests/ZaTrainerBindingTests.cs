@@ -8,15 +8,19 @@ using PKHeX.Avalonia.Tests.Fixtures;
 using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Avalonia.Views;
 using PKHeX.Core;
+using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Avalonia.Tests;
 
 public class ZaTrainerBindingTests
 {
-    [AvaloniaFact]
-    public void ComposedZAWorkspaceExposesFourSectionsAndKeepsApplyVisible()
+    public static IEnumerable<object[]> Locales => LocalizedStrings.SupportedLanguages.Select(language => new object[] { language });
+    [AvaloniaTheory] [MemberData(nameof(Locales))]
+    public void ComposedZAWorkspaceExposesFourSectionsAndKeepsApplyVisible(string language)
     {
         using var app = new HeadlessAppFixture();
+        string previous = LocalizedStrings.Instance.CurrentLanguage;
+        LocalizedStrings.Instance.SetLanguage(language);
         var save = ZaTrainerWorkflowTests.CreateSave();
         var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
         app.LoadSaveInstance(save);
@@ -35,13 +39,14 @@ public class ZaTrainerBindingTests
                 var apply = view.FindControl<Button>("TrainerZaApply")!;
                 var point = apply.TranslatePoint(default, view)!.Value;
                 Assert.True(point.Y >= 0 && point.Y + apply.Bounds.Height <= view.Bounds.Height);
+                Assert.True(point.X >= 0 && point.X + apply.Bounds.Width <= view.Bounds.Width);
             }
             Assert.Equal(3, vm.ZaImages.Count);
             Assert.True(vm.HasHyperspacePoints); Assert.True(vm.HasStreetName);
             vm.SaveCommand.Execute(null);
             foreach (var block in save.AllBlocks) Assert.True(before[block.Key].AsSpan().SequenceEqual(block.Data), $"Changed {block.Key:X8}; rotation VM {vm.ZaRotation}, source {save.Coordinates.Rotation}; position {vm.X}/{vm.Y}/{vm.Z}");
         }
-        finally { window.Close(); }
+        finally { window.Close(); LocalizedStrings.Instance.SetLanguage(previous); }
     }
 
     private static void Pump(Window window)

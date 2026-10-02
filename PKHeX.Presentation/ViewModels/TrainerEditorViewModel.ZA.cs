@@ -177,11 +177,17 @@ public partial class TrainerEditorViewModel
             byte[]? png = null;
             try
             {
-                uint w = za.GetValue<uint>(width), h = za.GetValue<uint>(height);
-                var bytes = za.Blocks.GetBlock(data).Data;
-                if (_zaImageCodec is not null && w is > 0 and <= 2048 && h is > 0 and <= 2048 && w % 4 == 0 && h % 4 == 0 &&
-                    bytes.Length >= (w / 4) * (h / 4) * 8)
-                    png = _zaImageCodec.EncodePng(new PixelImage((int)w, (int)h, DXT1.Decompress(bytes, (int)w, (int)h)));
+                if (_zaImageCodec is not null &&
+                    za.Blocks.TryGetBlock(width, out var widthBlock) && widthBlock.Type == SCTypeCode.UInt32 &&
+                    za.Blocks.TryGetBlock(height, out var heightBlock) && heightBlock.Type == SCTypeCode.UInt32 &&
+                    za.Blocks.TryGetBlock(data, out var imageBlock))
+                {
+                    uint w = (uint)widthBlock.GetValue(), h = (uint)heightBlock.GetValue();
+                    var bytes = imageBlock.Data;
+                    if (w is > 0 and <= 2048 && h is > 0 and <= 2048 && w % 4 == 0 && h % 4 == 0 &&
+                        bytes.Length >= (w / 4) * (h / 4) * 8)
+                        png = _zaImageCodec.EncodePng(new PixelImage((int)w, (int)h, DXT1.Decompress(bytes, (int)w, (int)h)));
+                }
             }
             catch (ArgumentException) { }
             catch (InvalidOperationException) { }

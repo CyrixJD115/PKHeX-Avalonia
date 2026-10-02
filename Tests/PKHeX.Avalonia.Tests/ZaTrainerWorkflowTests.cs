@@ -185,6 +185,20 @@ public class ZaTrainerWorkflowTests
     }
 
     [Fact]
+    public void UnsupportedImageDimensionsDoNotPreventEditingOrNormalizeSource()
+    {
+        var save = CreateSave();
+        var width = new byte[8]; BinaryPrimitives.WriteUInt64LittleEndian(width, 4);
+        var malformed = ParseBlock(SaveBlockAccessor9ZA.KPictureCurrentWidth, SCTypeCode.UInt64, width);
+        save = new SAV9ZA(SwishCrypto.Encrypt(save.AllBlocks.Where(block => block.Key != malformed.Key).Append(malformed).OrderBy(block => block.Key).ToArray()));
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        var vm = new TrainerEditorViewModel(save, imageCodec: new PngImageCodec());
+        Assert.False(vm.ZaImages[0].HasImage);
+        vm.SaveCommand.Execute(null);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+    }
+
+    [Fact]
     public void PreUnlockSaveDoesNotExposeOrManufactureMissingDlcBlocks()
     {
         var save = Assert.IsType<SAV9ZA>(SaveUtil.GetSaveFile(File.ReadAllBytes(

@@ -64,9 +64,9 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 
     // Data sources
     [ObservableProperty] private IReadOnlyList<ComboItem> _languageList = [];
-    public IReadOnlyList<ComboItem> GenderList { get; } = [
-        new ComboItem("Male", 0),
-        new ComboItem("Female", 1)
+    public IReadOnlyList<ComboItem> GenderList => [
+        new ComboItem(Localization.LocalizedStrings.Instance["Pokedex5Editor_Male"], 0),
+        new ComboItem(Localization.LocalizedStrings.Instance["Pokedex5Editor_Female"], 1)
     ];
 
     // Max values for validation
@@ -225,6 +225,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 
         // Initialize language list based on generation
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
+        OnPropertyChanged(nameof(GenderList));
 
         LoadBadges();
         LoadAdventureInfo();
@@ -608,6 +609,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     public void RefreshLanguage()
     {
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
+        OnPropertyChanged(nameof(GenderList));
         if (_sav is SAV9ZA za) LoadZaImages(za);
     }
 }
