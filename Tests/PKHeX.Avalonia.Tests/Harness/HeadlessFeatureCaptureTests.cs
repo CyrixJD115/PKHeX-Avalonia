@@ -523,6 +523,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 
         var view = new Misc4Editor { DataContext = vm };
         var window = new Window { Content = view, Width = 520, Height = 400 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
@@ -559,6 +560,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         // Match the minimum width of the editor pane in MainWindow so this capture is a meaningful
         // regression artifact for the compact headers and Hyper Training column.
         var window = new Window { Content = view, Width = 360, Height = 620 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
@@ -632,6 +634,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 
         var view = new PKMDatabaseView { DataContext = vm };
         var window = new Window { Content = view, Width = 960, Height = 620 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
