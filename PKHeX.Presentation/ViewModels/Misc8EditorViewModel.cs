@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
 using PKHeX.Presentation.Localization;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace PKHeX.Presentation.ViewModels;
 
@@ -28,6 +29,7 @@ public partial class Misc8EditorViewModel : ViewModelBase, IDisposable
         LoadTrainerFields();
         LoadMisc();
         LoadBattleTower();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) => ((Misc8EditorViewModel)recipient).RefreshLanguage());
     }
 
     public bool IsIoA { get; }
@@ -101,7 +103,17 @@ public partial class Misc8EditorViewModel : ViewModelBase, IDisposable
     #region Fashion
 
     [RelayCommand]
-    private Task UnlockAllFashion() => RunActionAsync("Fashion", save => save.Fashion.UnlockAllLegal());
+    private Task UnlockAllFashion()
+    {
+        if (Gender is not (0 or 1)) return Task.CompletedTask;
+        int gender = Gender;
+        return RunActionAsync("Fashion", save =>
+        {
+            byte original = save.Gender;
+            try { save.Gender = (byte)gender; save.Fashion.UnlockAllLegal(); }
+            finally { save.Gender = original; }
+        }, () => Gender == gender);
+    }
 
     #endregion
 

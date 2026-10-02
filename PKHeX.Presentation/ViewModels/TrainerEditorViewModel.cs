@@ -14,9 +14,12 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     private SAV7b? _lgpeParentBaseline;
     public Misc7EditorViewModel? Gen7Editor { get; }
     private SAV7? _gen7ParentBaseline;
+    public Misc8EditorViewModel? SwshEditor { get; }
+    private SAV8SWSH? _swshParentBaseline;
+    public bool IsSWSH => SwshEditor is not null;
     public bool IsGen7 => Gen7Editor is not null;
     public bool IsLGPE => LgpeEditor is not null;
-    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7 || IsSWSH;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -28,6 +31,8 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _lgpeParentBaseline = sav is SAV7b lgpeBaseline ? (SAV7b)lgpeBaseline.Clone() : null;
         Gen7Editor = sav is SAV7 gen7 ? new Misc7EditorViewModel(gen7, dialogs) : null;
         _gen7ParentBaseline = sav is SAV7 baseline7 ? (SAV7)baseline7.Clone() : null;
+        SwshEditor = sav is SAV8SWSH swsh ? new Misc8EditorViewModel(swsh, dialogs) : null;
+        _swshParentBaseline = sav is SAV8SWSH swshBaseline ? (SAV8SWSH)swshBaseline.Clone() : null;
         LoadFromSave();
     }
 
@@ -432,6 +437,23 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (SwshEditor is not null && _swshParentBaseline is { } swshBaseline)
+        {
+            if (TrainerName != swshBaseline.OT) SwshEditor.TrainerName = TrainerName;
+            if (Gender != swshBaseline.Gender) SwshEditor.Gender = Gender;
+            if (Money != swshBaseline.Money) SwshEditor.Money = Money;
+            if (Language != swshBaseline.Language) SwshEditor.Language = Language;
+            if (PlayedHours != swshBaseline.PlayedHours) SwshEditor.PlayedHours = PlayedHours;
+            if (PlayedMinutes != swshBaseline.PlayedMinutes) SwshEditor.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != swshBaseline.PlayedSeconds) SwshEditor.PlayedSeconds = PlayedSeconds;
+            if (DisplayTid != swshBaseline.DisplayTID) SwshEditor.DisplayTid = DisplayTid;
+            if (DisplaySid != swshBaseline.DisplaySID) SwshEditor.DisplaySid = DisplaySid;
+            if (HasWatts && Watts != swshBaseline.MyStatus.Watt) SwshEditor.Watts = Watts;
+            if (IsBadgeCount && BadgeCount != swshBaseline.Badges) SwshEditor.BadgeCount = BadgeCount;
+            SwshEditor.SaveCommand.Execute(null);
+            if (!SwshEditor.HasError) { _swshParentBaseline = (SAV8SWSH)_sav.Clone(); LoadFromSave(); }
+            return;
+        }
         if (Gen7Editor is not null && _gen7ParentBaseline is { } gen7Baseline)
         {
             if (TrainerName != gen7Baseline.OT) Gen7Editor.TrainerName = TrainerName;
@@ -646,6 +668,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (SwshEditor is not null) { SwshEditor.ResetCommand.Execute(null); _swshParentBaseline = (SAV8SWSH)_sav.Clone(); LoadFromSave(); return; }
         if (Gen7Editor is not null) { Gen7Editor.ResetCommand.Execute(null); _gen7ParentBaseline = (SAV7)_sav.Clone(); LoadFromSave(); return; }
         if (LgpeEditor is not null) { LgpeEditor.ResetCommand.Execute(null); _lgpeParentBaseline = (SAV7b)_sav.Clone(); LoadFromSave(); return; }
         if (_zaClosed) return;
@@ -656,6 +679,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     public void RefreshLanguage()
     {
         LgpeEditor?.RefreshLanguage();
+        SwshEditor?.RefreshLanguage();
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
         OnPropertyChanged(nameof(GenderList));
         if (_sav is SAV9ZA za) LoadZaImages(za);
