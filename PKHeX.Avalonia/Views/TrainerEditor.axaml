@@ -2,10 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:PKHeX.Presentation.ViewModels;assembly=PKHeX.Presentation"
              xmlns:loc="using:PKHeX.Avalonia.Localization"
+             xmlns:views="using:PKHeX.Avalonia.Views"
              x:Class="PKHeX.Avalonia.Views.TrainerEditor"
              x:DataType="vm:TrainerEditorViewModel">
 
-    <Border Classes="view-container">
+    <Grid>
+    <views:TrainerZaWorkspace IsVisible="{Binding IsZA}" />
+    <Border Classes="view-container" IsVisible="{Binding !IsZA}">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Classes="view-stack">
                 <!-- Header actions stay visible while the long save form scrolls. -->
@@ -268,4 +271,5 @@
             </StackPanel>
         </ScrollViewer>
     </Border>
+    </Grid>
 </UserControl>

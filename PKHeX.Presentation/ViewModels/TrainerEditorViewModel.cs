@@ -7,13 +7,16 @@ using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class TrainerEditorViewModel : ViewModelBase
+public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 {
-    private readonly SaveFile _sav;
+    private SaveFile _sav;
 
-    public TrainerEditorViewModel(SaveFile sav)
+    public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
-        _sav = sav;
+        _zaSession = sav is SAV9ZA za ? new ZaTrainerDataSession(za) : null;
+        _sav = _zaSession?.Staged ?? sav;
+        _zaDialogs = dialogs;
+        _zaImageCodec = imageCodec;
         LoadFromSave();
     }
 
@@ -61,9 +64,9 @@ public partial class TrainerEditorViewModel : ViewModelBase
 
     // Data sources
     [ObservableProperty] private IReadOnlyList<ComboItem> _languageList = [];
-    public IReadOnlyList<ComboItem> GenderList { get; } = [
-        new ComboItem("Male", 0),
-        new ComboItem("Female", 1)
+    public IReadOnlyList<ComboItem> GenderList => [
+        new ComboItem(Localization.LocalizedStrings.Instance["Pokedex5Editor_Male"], 0),
+        new ComboItem(Localization.LocalizedStrings.Instance["Pokedex5Editor_Female"], 1)
     ];
 
     // Max values for validation
@@ -93,7 +96,7 @@ public partial class TrainerEditorViewModel : ViewModelBase
 
     public bool IsDisplayIdValid => !UsesSixDigitTrainerIds || _sav.IsValidTrainerID7(DisplaySid, DisplayTid);
 
-    private bool CanSave() => IsDisplayIdValid;
+    private bool CanSave() => IsDisplayIdValid && (!IsZA || (!_zaClosed && IsZaInputValid));
 
     partial void OnDisplayTidChanged(uint value)
     {
@@ -222,12 +225,14 @@ public partial class TrainerEditorViewModel : ViewModelBase
 
         // Initialize language list based on generation
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
+        OnPropertyChanged(nameof(GenderList));
 
         LoadBadges();
         LoadAdventureInfo();
         LoadCoordinates();
         LoadCurrencies();
         LoadBattleChateau();
+        LoadZaFields();
     }
 
     private void LoadBattleChateau()
@@ -416,6 +421,7 @@ public partial class TrainerEditorViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (IsZA) { SaveZaFields(); return; }
         _sav.OT = TrainerName;
         _sav.Gender = (byte)Gender;
         _sav.Money = Money;
@@ -595,12 +601,16 @@ public partial class TrainerEditorViewModel : ViewModelBase
     [RelayCommand]
     private void Reset()
     {
+        if (_zaClosed) return;
+        if (_zaSession is not null) { _zaEpoch++; _zaSession.Reset(); _sav = _zaSession.Staged; }
         LoadFromSave();
     }
 
     public void RefreshLanguage()
     {
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
+        OnPropertyChanged(nameof(GenderList));
+        if (_sav is SAV9ZA za) LoadZaImages(za);
     }
 }
 
