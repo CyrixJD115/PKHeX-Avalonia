@@ -26,7 +26,7 @@
             <TabControl Name="Trainer7Sections" Grid.Row="1" Classes="compact-editor-tabs">
                 <TabControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></TabControl.ItemsPanel>
                 <!-- Battle Tree Tab -->
-                <TabItem Header="{loc:Loc TrainerZA_Overview}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc TrainerEditor_TrainerName}" />
+                <TabItem Classes="editor-tab" Header="{loc:Loc TrainerZA_Overview}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc TrainerEditor_TrainerName}" />
 <TextBox Text="{Binding TrainerName}" MaxLength="12" AutomationProperties.Name="{loc:Loc TrainerEditor_TrainerName}" />
 <TextBlock Text="{loc:Loc TrainerEditor_Gender}" />
 <ComboBox ItemsSource="{Binding Genders}" SelectedValue="{Binding Gender}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc TrainerEditor_Gender}" />
@@ -58,11 +58,11 @@
 <NumericUpDown Value="{Binding PlayedMinutes}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Minutes}" />
 <TextBlock Text="{loc:Loc TrainerEditor_Seconds}" />
 <NumericUpDown Value="{Binding PlayedSeconds}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
-<TextBlock Text="{loc:Loc Trainer7_Started}" /><DatePicker SelectedDate="{Binding StartedDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><TimePicker SelectedTime="{Binding StartedTime}" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><NumericUpDown Value="{Binding StartedSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
-<TextBlock Text="{loc:Loc Trainer7_Fame}" /><DatePicker SelectedDate="{Binding FameDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><TimePicker SelectedTime="{Binding FameTime}" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><NumericUpDown Value="{Binding FameSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
+<TextBlock Text="{loc:Loc Trainer7_Started}" /><DatePicker SelectedDate="{Binding StartedDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><TimePicker SelectedTime="{Binding StartedTime}" AutomationProperties.Name="{loc:Loc Trainer7_Started}" /><TextBlock Text="{loc:Loc TrainerEditor_Seconds}" /><NumericUpDown Value="{Binding StartedSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
+<TextBlock Text="{loc:Loc Trainer7_Fame}" /><DatePicker SelectedDate="{Binding FameDate}" MinYear="2000-01-01T00:00:00+00:00" MaxYear="2136-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><TimePicker SelectedTime="{Binding FameTime}" AutomationProperties.Name="{loc:Loc Trainer7_Fame}" /><TextBlock Text="{loc:Loc TrainerEditor_Seconds}" /><NumericUpDown Value="{Binding FameSecond}" Minimum="0" Maximum="59" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc TrainerEditor_Seconds}" />
 <TextBlock Text="{loc:Loc Trainer7_LastSaved}" /><DatePicker SelectedDate="{Binding LastSavedDate}" MinYear="0001-01-01T00:00:00+00:00" MaxYear="4095-12-31T00:00:00+00:00" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" /><TimePicker SelectedTime="{Binding LastSavedTime}" AutomationProperties.Name="{loc:Loc Trainer7_LastSaved}" />
 <TextBlock Text="{loc:Loc Trainer7_Statistics}" /><ComboBox ItemsSource="{Binding TrainerRecords}" SelectedItem="{Binding SelectedRecord}" DisplayMemberBinding="{Binding Name}" AutomationProperties.Name="{loc:Loc Trainer7_Statistics}" /><ContentControl Content="{Binding SelectedRecord}"><ContentControl.ContentTemplate><DataTemplate DataType="vm:Gen7TrainerRecordViewModel"><NumericUpDown Value="{Binding Value}" Minimum="{Binding DisplayMinimum}" Maximum="{Binding DisplayMaximum}" ShowButtonSpinner="False" AutomationProperties.Name="{Binding Name}" /></DataTemplate></ContentControl.ContentTemplate></ContentControl></StackPanel></ScrollViewer></TabItem>
-<TabItem Header="{loc:Loc TrainerZA_MapMisc}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_MapId}" />
+<TabItem Classes="editor-tab" Header="{loc:Loc TrainerZA_MapMisc}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_MapId}" />
 <NumericUpDown Value="{Binding MapId}" Minimum="0" Maximum="65535" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_MapId}" />
 <TextBlock Text="{loc:Loc TrainerEditor_CoordX}" />
 <TextBox Text="{Binding XText}" AutomationProperties.Name="{loc:Loc TrainerEditor_CoordX}" />
@@ -73,7 +73,7 @@
 <TextBlock Text="{loc:Loc Trainer7_Rotation}" />
 <NumericUpDown Value="{Binding Rotation}" Minimum="-360" Maximum="360" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_Rotation}" />
 <TextBlock Text="{loc:Loc Trainer7_MapUnits}" TextWrapping="Wrap" /><TextBlock Text="{loc:Loc Trainer7_MapUnmask}" /><ItemsControl ItemsSource="{Binding MapUnmask}"><ItemsControl.ItemTemplate><DataTemplate DataType="vm:FlyDestination7ViewModel"><CheckBox Content="{Binding Name}" IsChecked="{Binding IsUnlocked}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></ScrollViewer></TabItem>
-<TabItem Header="{loc:Loc Trainer7_Appearance}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_Skin}" />
+<TabItem Classes="editor-tab" Header="{loc:Loc Trainer7_Appearance}"><ScrollViewer><StackPanel Spacing="8" Margin="8"><TextBlock Text="{loc:Loc Trainer7_Skin}" />
 <ComboBox ItemsSource="{Binding SkinColors}" SelectedValue="{Binding SkinColor}" SelectedValueBinding="{Binding Value}" DisplayMemberBinding="{Binding Text}" AutomationProperties.Name="{loc:Loc Trainer7_Skin}" />
 <TextBlock Text="{loc:Loc Trainer7_DaysRefresh}" />
 <NumericUpDown Value="{Binding DaysFromRefresh}" Minimum="0" Maximum="255" ShowButtonSpinner="False" AutomationProperties.Name="{loc:Loc Trainer7_DaysRefresh}" />

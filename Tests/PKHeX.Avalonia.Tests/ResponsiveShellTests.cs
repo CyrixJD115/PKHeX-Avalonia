@@ -556,7 +556,8 @@ public sealed class ResponsiveShellTests
         {
             var source = ReadSourceFile("Views", view);
             Assert.DoesNotContain("<TabItem Header=", source);
-            Assert.Contains("Classes=\"editor-tabs\"", source);
+            var classes = view == "Misc7Editor.axaml" ? "compact-editor-tabs" : "editor-tabs";
+            Assert.Contains($"Classes=\"{classes}\"", source);
         }
 
         var misc7 = ReadSourceFile("Views", "Misc7Editor.axaml");
