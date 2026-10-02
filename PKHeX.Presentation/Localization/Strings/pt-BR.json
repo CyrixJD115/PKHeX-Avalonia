@@ -3233,7 +3233,7 @@
   "Dex9a_ActionCaughtAll": "Set caught states",
   "Dex9a_ActionComplete": "Complete entry / Pokédex",
   "Dex9a_WholeDex": "Entire Pokédex",
-  "Dex9a_ScopeHelp": "Scope: current entry unless Entire Pokédex is selected. Seen and caught actions change only their named form flags.",
+  "Dex9a_ScopeHelp": "Scope: current entry unless Entire Pokédex is selected. Other states are preserved unless Include shiny is selected.",
   "Dex9a_IncludeShiny": "Include shiny seen flags",
   "Dex9a_Confirm": "Apply this action to {0} in the staged copy? Undo restores the previous staged Pokédex. Apply is still required to change the loaded save.",
   "Dex9a_Apply": "Apply",

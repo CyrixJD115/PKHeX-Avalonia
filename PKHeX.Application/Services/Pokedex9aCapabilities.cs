@@ -34,7 +34,9 @@ public static class Pokedex9aCapabilities
 
     public static uint GetFormMask(ushort species)
     {
-        int count = Math.Clamp((int)PersonalTable.ZA[species].FormCount, 1, 32);
+        var strings = GameInfo.Strings;
+        int names = FormConverter.GetFormList(species, strings.Types, strings.forms, GameInfo.GenderSymbolASCII, EntityContext.Gen9a).Length;
+        int count = Math.Clamp(Math.Max((int)PersonalTable.ZA[species].FormCount, names), 1, 32);
         uint mask = count == 32 ? uint.MaxValue : (1u << count) - 1;
         if (Zukan9a.GetFormExtraFlags(species, out var extra)) mask |= extra;
         return mask;
