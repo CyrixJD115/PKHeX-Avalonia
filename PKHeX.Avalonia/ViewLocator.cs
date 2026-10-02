@@ -92,6 +92,7 @@ public static class ViewLocator
         [typeof(Pokedex7EditorViewModel)] = () => new Pokedex7Editor(),
         [typeof(Pokedex7bEditorViewModel)] = () => new Pokedex7bEditor(),
         [typeof(Pokedex8EditorViewModel)] = () => new Pokedex8Editor(),
+        [typeof(Pokedex9aEditorViewModel)] = () => new Pokedex9aEditor(),
         [typeof(Pokedex8bEditorViewModel)] = () => new Pokedex8bEditor(),
         [typeof(PokedexGen9EditorViewModel)] = () => new PokedexGen9Editor(),
         [typeof(PokedexLAEditorViewModel)] = () => new PokedexLAEditor(),

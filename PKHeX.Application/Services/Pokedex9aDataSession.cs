@@ -7,8 +7,10 @@ public sealed class Pokedex9aDataSession
 {
     private readonly SAV9ZA _source;
     private byte[] _original;
+    private readonly Stack<byte[]> _undo = new();
     public SAV9ZA Staged { get; private set; }
     public Zukan9a Dex => Staged.Zukan;
+    public bool CanUndo => _undo.Count != 0;
 
     public Pokedex9aDataSession(SAV9ZA source)
     {
@@ -17,10 +19,55 @@ public sealed class Pokedex9aDataSession
         _original = Dex.Data.ToArray();
     }
 
+    public void Undo()
+    {
+        if (_undo.TryPop(out var data)) data.CopyTo(Dex.Data);
+    }
+
+    public void ApplyBulk(Dex9aBulkAction action, ushort? currentSpecies, bool shinyToo)
+    {
+        var before = Dex.Data.ToArray();
+        try
+        {
+            int start = currentSpecies ?? 1, end = currentSpecies ?? Staged.MaxSpeciesID;
+            for (int value = start; value <= end; value++)
+            {
+                ushort species = (ushort)value;
+                if (species == 0 || species > Staged.MaxSpeciesID || !Staged.Personal.IsSpeciesInGame(species)) continue;
+                var entry = Dex.GetEntry(species);
+                uint mask = Pokedex9aCapabilities.GetFormMask(species);
+                if (action == Dex9aBulkAction.Complete)
+                {
+                    Dex.SetDexEntryAll(species, shinyToo);
+                    continue;
+                }
+                for (byte form = 0; form < 32; form++)
+                {
+                    if ((mask & (1u << form)) == 0) continue;
+                    if (action is Dex9aBulkAction.SeenNone or Dex9aBulkAction.SeenAll)
+                    {
+                        bool seen = action == Dex9aBulkAction.SeenAll;
+                        entry.SetIsFormSeen(form, seen);
+                        if (shinyToo) entry.SetIsShinySeen(form, seen);
+                    }
+                    else
+                    {
+                        bool caught = action == Dex9aBulkAction.CaughtAll;
+                        entry.SetIsFormCaught(form, caught);
+                        if (shinyToo) entry.SetIsShinySeen(form, caught);
+                    }
+                }
+            }
+        }
+        catch { before.CopyTo(Dex.Data); throw; }
+        if (!before.AsSpan().SequenceEqual(Dex.Data)) _undo.Push(before);
+    }
+
     public void Reset()
     {
         Staged = (SAV9ZA)_source.Clone();
         _original = Dex.Data.ToArray();
+        _undo.Clear();
     }
 
     public bool TryCommit()
