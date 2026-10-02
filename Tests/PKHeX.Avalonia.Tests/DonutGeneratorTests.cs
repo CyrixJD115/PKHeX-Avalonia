@@ -48,16 +48,16 @@ public class DonutGeneratorTests
 
         vm.GenerateCommand.Execute(null);
 
-        // Save is marked dirty.
-        Assert.True(sav.State.Edited);
+        // Generation remains staged until Save.
+        Assert.False(sav.State.Edited);
 
-        var pocket = sav.Donuts;
+        var pocket = vm.Donuts;
         var chosenHash = chosen.Hash;
 
         // Indices in [start, end) are populated with the chosen flavor (only one option => Flavor0 set, rest 0).
         for (int i = start; i < end; i++)
         {
-            var donut = pocket.GetDonut(i);
+            var donut = pocket[i];
             Assert.NotEqual(0ul, donut.MillisecondsSince1970); // timestamp applied
             Assert.Equal(chosenHash, donut.Flavor0);
             Assert.Equal(0ul, donut.Flavor1);
@@ -65,7 +65,7 @@ public class DonutGeneratorTests
         }
 
         // The slot just past the range is untouched (no flavors written).
-        var after = pocket.GetDonut(end);
+        var after = pocket[end];
         Assert.Equal(0ul, after.Flavor0);
     }
 
@@ -85,11 +85,11 @@ public class DonutGeneratorTests
         vm.GenerateEnd = 50;
         vm.GenerateCommand.Execute(null);
 
-        var pocket = sav.Donuts;
+        var pocket = vm.Donuts;
         for (int i = 0; i < 50; i++)
         {
-            var donut = pocket.GetDonut(i);
-            foreach (var flavor in donut.GetFlavors())
+            var donut = pocket[i];
+            foreach (var flavor in new[] { donut.Flavor0, donut.Flavor1, donut.Flavor2 })
             {
                 if (flavor == 0ul)
                     continue;

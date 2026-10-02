@@ -344,7 +344,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV9ZA sav) return;
         await _windowService.ShowDialogAsync(
-            new DonutEditorViewModel(sav),
+            new DonutEditorViewModel(sav, _dialogService),
             T("Dialog_DonutEditorPLZA"));
     }
 
