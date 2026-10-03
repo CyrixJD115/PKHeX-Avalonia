@@ -33,7 +33,7 @@ public partial class PokedexGen9EditorViewModel
             ushort id = region == 1 ? ids.Paldea : region == 2 ? ids.Kitakami : ids.Blueberry;
             if (id == 0) continue;
             var state = _session.ReadDisplay(species, region);
-            RegionalDisplays.Add(new(region, state, FormStates.Select(form => new ComboItem(form.Name, form.Form)), value =>
+            RegionalDisplays.Add(new(region, state, FormStates.Where(form => _session.IsRegionalFormSupported(species, form.Form, region)).Select(form => new ComboItem(form.Name, form.Form)), value =>
             {
                 if (!_closed && generation == _generation && value.IsValid) _session.WriteDisplay(species, value.Region, (uint)value.Form, value.Gender, value.Shiny);
             }));
@@ -65,7 +65,7 @@ public partial class PokedexGen9EditorViewModel
 public partial class SvDexFormViewModel : ViewModelBase
 {
     public byte Form { get; }
-    public string Name { get; }
+    [ObservableProperty] private string _name = string.Empty;
     private readonly Action<SvDexFormViewModel> _changed;
     [ObservableProperty] private bool _obtained;
     [ObservableProperty] private bool _seen;
@@ -86,9 +86,10 @@ public partial class SvDexDisplayViewModel : ViewModelBase
 {
     public int Region { get; }
     public string Name => LocalizedStrings.Instance["SvDex_Region" + Region];
-    public IReadOnlyList<ComboItem> FormChoices { get; }
+    [ObservableProperty] private IReadOnlyList<ComboItem> _formChoices = [];
     public IReadOnlyList<ComboItem> GenderChoices => PokedexGen9EditorViewModel.GenderOptions(Gender);
     private readonly Action<SvDexDisplayViewModel> _changed;
+    private bool _refreshing;
     private readonly (uint Form, int Gender, bool Shiny) _original;
     public bool IsValid => (Form == _original.Form || FormChoices.Any(item => item.Value == Form) && Form is >= 0 and < 32) && (Gender == _original.Gender || Gender is >= 0 and <= 2);
     [ObservableProperty] private int _form;
@@ -99,7 +100,18 @@ public partial class SvDexDisplayViewModel : ViewModelBase
         Region = region; _changed = changed; _original = state; _form = (int)state.Form; _gender = state.Gender; _shiny = state.Shiny;
         var forms = choices.ToList(); if (forms.All(item => item.Value != Form)) forms.Add(new(LocalizedStrings.Instance.Format("RaidSession_UnknownType", state.Form), Form)); FormChoices = forms;
     }
-    partial void OnFormChanged(int value) => _changed(this);
-    partial void OnGenderChanged(int value) => _changed(this);
-    partial void OnShinyChanged(bool value) => _changed(this);
+    public void RefreshLabels(IEnumerable<ComboItem> choices)
+    {
+        int form = Form, gender = Gender;
+        _refreshing = true;
+        try
+        {
+            var values = choices.ToList(); if (values.All(item => item.Value != form)) values.Add(new(LocalizedStrings.Instance.Format("RaidSession_UnknownType", form), form));
+            FormChoices = values; OnPropertyChanged(nameof(GenderChoices)); OnPropertyChanged(nameof(Name)); Form = form; Gender = gender;
+        }
+        finally { _refreshing = false; }
+    }
+    partial void OnFormChanged(int value) { if (!_refreshing) _changed(this); }
+    partial void OnGenderChanged(int value) { if (!_refreshing) _changed(this); }
+    partial void OnShinyChanged(bool value) { if (!_refreshing) _changed(this); }
 }

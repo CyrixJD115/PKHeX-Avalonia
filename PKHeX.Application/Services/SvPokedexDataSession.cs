@@ -26,6 +26,18 @@ public sealed class SvPokedexDataSession
         if (form >= 32 || !Staged.Personal.IsPresentInGame(species, form)) return false;
         return Staged.Personal.GetFormEntry(species, form).DexGroup <= Staged.SaveRevision + 1;
     }
+    public bool IsRegionalFormSupported(ushort species, byte form, int region)
+    {
+        if (!IsFormSupported(species, form)) return false;
+        var entry = Staged.Personal.GetFormEntry(species, form);
+        return region switch
+        {
+            1 => entry.DexPaldea != 0,
+            2 => Staged.SaveRevision >= 1 && entry.DexKitakami != 0,
+            3 => Staged.SaveRevision >= 2 && entry.DexBlueberry != 0,
+            _ => false,
+        };
+    }
     public (ushort Paldea, ushort Kitakami, ushort Blueberry) Identifiers(ushort species)
     {
         ushort paldea = 0, kitakami = 0, blueberry = 0;
@@ -87,6 +99,7 @@ public sealed class SvPokedexDataSession
     public void WriteDisplay(ushort species, int region, uint form, int gender, bool shiny)
     {
         var old = ReadDisplay(species, region);
+        if (form != old.Form && (form > byte.MaxValue || !IsRegionalFormSupported(species, (byte)form, region))) throw new ArgumentOutOfRangeException(nameof(form));
         if (!UsesDlcFormat)
         {
             var entry = Staged.Blocks.Zukan.DexPaldea.Get(species);

@@ -9,6 +9,45 @@ namespace PKHeX.Avalonia.Tests;
 
 public class SvPokedexSessionTests(ITestOutputHelper output)
 {
+    private static SAV9SV LoadDlc() => Assert.IsType<SAV9SV>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, "gen9_violet_indigo_public.main")));
+    [Theory] [InlineData(1017)] [InlineData(1024)] [InlineData(1025)]
+    public void DlcFormsRoundtripWithoutWritingTheRetiredPaldeaBlock(int species)
+    {
+        var save = LoadDlc(); var retired = save.Blocks.GetBlock(0x0DEAAEBD).Data.ToArray();
+        using var vm = new PokedexGen9EditorViewModel(save); vm.SelectedSpecies = vm.SpeciesList.Single(choice => choice.Value == species);
+        Assert.True(vm.UsesDlcFormat); Assert.NotEmpty(vm.FormStates);
+        var form = vm.FormStates[0]; bool wanted = !form.Obtained; form.Obtained = wanted; form.Seen = true; form.Heard = true; form.Viewed = true;
+        vm.SaveCurrentCommand.Execute(null); Assert.Empty(vm.Error);
+        Assert.Equal(retired, save.Blocks.GetBlock(0x0DEAAEBD).Data.ToArray());
+        var reopened = Assert.IsType<SAV9SV>(SaveUtil.GetSaveFile(save.Write())); var session = new SvPokedexDataSession(reopened);
+        var stored = session.ReadForm((ushort)species, form.Form);
+        Assert.Equal(wanted, stored.Obtained); Assert.True(stored.Seen); Assert.True(stored.Heard); Assert.True(stored.Viewed);
+    }
+    [Fact]
+    public void RegionalDisplayEditsPreserveIndependentOpaqueSelections()
+    {
+        var save = LoadDlc(); var entry = save.Blocks.Zukan.DexKitakami.Get(25);
+        entry.DisplayedPaldeaShiny = 7; entry.DisplayedKitakamiGender = 255; entry.DisplayedBlueberryShiny = 9;
+        using var vm = new PokedexGen9EditorViewModel(save); vm.SelectedSpecies = vm.SpeciesList.Single(choice => choice.Value == 25);
+        Assert.Equal(new[] { 1, 2 }, vm.RegionalDisplays.Select(display => display.Region));
+        var paldea = vm.RegionalDisplays.Single(display => display.Region == 1); paldea.Gender = paldea.Gender == 0 ? 1 : 0;
+        vm.SaveCurrentCommand.Execute(null); Assert.Empty(vm.Error);
+        var actual = save.Blocks.Zukan.DexKitakami.Get(25);
+        Assert.Equal(7, actual.DisplayedPaldeaShiny); Assert.Equal(255, actual.DisplayedKitakamiGender); Assert.Equal(9, actual.DisplayedBlueberryShiny);
+        Assert.Equal(paldea.Gender, actual.DisplayedPaldeaGender);
+    }
+    [Fact]
+    public void ConflictingDlcEditorRejectsEveryWriteAndRetainsItsDraft()
+    {
+        var save = LoadDlc(); using var first = new PokedexGen9EditorViewModel(save); using var second = new PokedexGen9EditorViewModel(save);
+        first.SelectedSpecies = first.SpeciesList.Single(choice => choice.Value == 1017); second.SelectedSpecies = second.SpeciesList.Single(choice => choice.Value == 1024);
+        first.FormStates[0].Obtained = !first.FormStates[0].Obtained; first.SaveCurrentCommand.Execute(null); Assert.Empty(first.Error);
+        bool wanted = !second.FormStates[0].Seen; second.FormStates[0].Seen = wanted;
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        second.SaveCurrentCommand.Execute(null); Assert.NotEmpty(second.Error); Assert.Equal(wanted, second.FormStates[0].Seen);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+        second.ResetCommand.Execute(null); Assert.Empty(second.Error);
+    }
     private static SAV9SV LoadBase() => Assert.IsType<SAV9SV>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, "gen9_scarlet.main")));
     [Fact]
     public async Task SeenOnlyConfirmationPreservesCaughtAndStagesUntilApply()
@@ -33,7 +72,7 @@ public class SvPokedexSessionTests(ITestOutputHelper output)
         await vm.CaughtAllCommand.ExecuteAsync(null); vm.UndoCommand.Execute(null); vm.SaveCurrentCommand.Execute(null); Assert.Empty(vm.Error);
         foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
     }
-    [Theory] [InlineData("gen9_scarlet.main")] [InlineData("gen9_violet.main")] [InlineData("gen9_violet_indigo_public.main")]
+    [Theory] [InlineData("gen9_scarlet.main")] [InlineData("gen9_violet.main")] [InlineData("gen9_violet_indigo_public.main")] [InlineData("gen9_scarlet_teal_public.main")]
     public void ViewModelDraftsDoNotWriteBeforeApplyAndResetDiscards(string filename)
     {
         var save = Assert.IsType<SAV9SV>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, filename)));
@@ -47,7 +86,7 @@ public class SvPokedexSessionTests(ITestOutputHelper output)
         vm.ResetCommand.Execute(null); vm.SaveCurrentCommand.Execute(null); Assert.Empty(vm.Error);
         foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
     }
-    [Theory] [InlineData("gen9_scarlet.main")] [InlineData("gen9_violet.main")] [InlineData("gen9_violet_indigo_public.main")]
+    [Theory] [InlineData("gen9_scarlet.main")] [InlineData("gen9_violet.main")] [InlineData("gen9_violet_indigo_public.main")] [InlineData("gen9_scarlet_teal_public.main")]
     public void CorpusUsesTheActiveFormatAndPreservesNoOpBytes(string filename)
     {
         var save = Assert.IsType<SAV9SV>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, filename)));
