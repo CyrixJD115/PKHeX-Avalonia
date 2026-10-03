@@ -2,22 +2,34 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
+using PKHeX.Presentation.Localization;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace PKHeX.Presentation.ViewModels;
 
 /// <summary>
 /// Misc editor for Gen 8 Sword/Shield saves covering Battle Tower, Watts, BP.
 /// </summary>
-public partial class Misc8EditorViewModel : ViewModelBase
+public partial class Misc8EditorViewModel : ViewModelBase, IDisposable
 {
-    private readonly SAV8SWSH _sav;
+    private SAV8SWSH _sav;
+    private SAV8SWSH _baseline;
+    private readonly TrainerScBlockDataSession<SAV8SWSH> _session;
+    private readonly IDialogService? _dialogs;
+    private bool _closed;
+    private int _epoch;
+    [ObservableProperty] private string _error = string.Empty;
+    public bool HasError => Error.Length != 0;
+    public bool CanUndo => !_closed && _session.CanUndo;
 
-    public Misc8EditorViewModel(SAV8SWSH sav)
+    public Misc8EditorViewModel(SAV8SWSH sav, IDialogService? dialogs = null)
     {
-        _sav = sav;
+        _session = new(sav); _sav = _session.Staged; _baseline = (SAV8SWSH)_sav.Clone(); _dialogs = dialogs;
         IsIoA = sav.SaveRevision >= 1; // Isle of Armor+
+        LoadTrainerFields();
         LoadMisc();
         LoadBattleTower();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) => ((Misc8EditorViewModel)recipient).RefreshLanguage());
     }
 
     public bool IsIoA { get; }
@@ -35,10 +47,12 @@ public partial class Misc8EditorViewModel : ViewModelBase
 
     private void SaveMisc()
     {
-        _sav.MyStatus.Watt = Watts;
-        if (_sav.GetRecord(Record8.WattTotal) < (int)Watts)
-            _sav.SetRecord(Record8.WattTotal, (int)Watts);
-        _sav.Misc.BP = Bp;
+        if (Watts != _baseline.MyStatus.Watt)
+        {
+            _sav.MyStatus.Watt = Watts;
+            if (_sav.GetRecord(Record8.WattTotal) < Watts) _sav.SetRecord(Record8.WattTotal, (int)Watts);
+        }
+        if (Bp != _baseline.Misc.BP) _sav.Misc.BP = Bp;
     }
 
     [RelayCommand]
@@ -74,13 +88,14 @@ public partial class Misc8EditorViewModel : ViewModelBase
     {
         var singles = Math.Min(9_999_999u, SinglesWins);
         var doubles = Math.Min(9_999_999u, DoublesWins);
-        _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerSinglesVictory, singles);
-        _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerDoublesVictory, doubles);
-        _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerSinglesStreak, (ushort)Math.Min(300, (int)SinglesStreak));
-        _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerDoublesStreak, (ushort)Math.Min(300, (int)DoublesStreak));
+        if (SinglesWins != _baseline.GetValue<uint>(SaveBlockAccessor8SWSH.KBattleTowerSinglesVictory))
+        { _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerSinglesVictory, singles); _sav.SetRecord(RecordLists.G8BattleTowerSingleWin, (int)singles); }
+        if (DoublesWins != _baseline.GetValue<uint>(SaveBlockAccessor8SWSH.KBattleTowerDoublesVictory))
+        { _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerDoublesVictory, doubles); _sav.SetRecord(RecordLists.G8BattleTowerDoubleWin, (int)doubles); }
+        if (SinglesStreak != _baseline.GetValue<ushort>(SaveBlockAccessor8SWSH.KBattleTowerSinglesStreak)) _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerSinglesStreak, (ushort)Math.Min(300, (int)SinglesStreak));
+        if (DoublesStreak != _baseline.GetValue<ushort>(SaveBlockAccessor8SWSH.KBattleTowerDoublesStreak)) _sav.SetValue(SaveBlockAccessor8SWSH.KBattleTowerDoublesStreak, (ushort)Math.Min(300, (int)DoublesStreak));
 
-        _sav.SetRecord(RecordLists.G8BattleTowerSingleWin, (int)singles);
-        _sav.SetRecord(RecordLists.G8BattleTowerDoubleWin, (int)doubles);
+
     }
 
     #endregion
@@ -88,9 +103,16 @@ public partial class Misc8EditorViewModel : ViewModelBase
     #region Fashion
 
     [RelayCommand]
-    private void UnlockAllFashion()
+    private Task UnlockAllFashion()
     {
-        _sav.Fashion.UnlockAllLegal();
+        if (Gender is not (0 or 1)) return Task.CompletedTask;
+        int gender = Gender;
+        return RunActionAsync("Fashion", save =>
+        {
+            byte original = save.Gender;
+            try { save.Gender = (byte)gender; save.Fashion.UnlockAllLegal(); }
+            finally { save.Gender = original; }
+        }, () => Gender == gender);
     }
 
     #endregion
@@ -98,11 +120,7 @@ public partial class Misc8EditorViewModel : ViewModelBase
     #region Diglett (IoA)
 
     [RelayCommand]
-    private void CollectAllDiglett()
-    {
-        if (IsIoA)
-            _sav.UnlockAllDiglett();
-    }
+    private Task CollectAllDiglett() => IsIoA ? RunActionAsync("Diglett", save => save.UnlockAllDiglett()) : Task.CompletedTask;
 
     #endregion
 
@@ -111,8 +129,12 @@ public partial class Misc8EditorViewModel : ViewModelBase
     [RelayCommand]
     private void Save()
     {
-        SaveMisc();
-        SaveBattleTower();
+        if (_closed || !CanSave) { Error = LocalizedStrings.Instance["Trainer7_InvalidValues"]; return; }
+        _epoch++;
+        if (!_session.TryCommit(staged => { _sav = staged; SaveTrainerFields(); SaveMisc(); SaveBattleTower(); }))
+        { _sav = _session.Staged; Error = LocalizedStrings.Instance["LgpeTrainer_Conflict"]; return; }
+        _sav = _session.Staged; _baseline = (SAV8SWSH)_sav.Clone(); LoadTrainerFields(); LoadMisc(); LoadBattleTower(); Error = string.Empty;
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     #endregion

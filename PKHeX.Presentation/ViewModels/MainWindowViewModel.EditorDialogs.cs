@@ -714,7 +714,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV8SWSH sav) return;
         await _windowService.ShowDialogAsync(
-            new Misc8EditorViewModel(sav),
+            new Misc8EditorViewModel(sav, _dialogService),
             T("Dialog_MiscEditorSWSH"));
     }
 
