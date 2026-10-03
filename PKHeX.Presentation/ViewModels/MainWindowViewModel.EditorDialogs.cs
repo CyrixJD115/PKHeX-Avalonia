@@ -386,7 +386,7 @@ public partial class MainWindowViewModel
             SAV9SV s    => ((object)new PokedexGen9EditorViewModel(s, _dialogService), T("Dialog_PokedexEditorGen9SV")),
             SAV8SWSH s  => (new Pokedex8EditorViewModel(s),                T("Dialog_PokedexEditorGen8SwSh")),
             SAV8BS s    => (new Pokedex8bEditorViewModel(s),               T("Dialog_PokedexEditorGen8BDSP")),
-            SAV8LA s    => (new PokedexLAEditorViewModel(s),               T("Dialog_PokedexEditorPLA")),
+            SAV8LA s    => (new PokedexLAEditorViewModel(s, _dialogService), T("Dialog_PokedexEditorPLA")),
             SAV7b s     => (new Pokedex7bEditorViewModel(s),               T("Dialog_PokedexEditorLetsGo")),
             SAV7 s      => (new Pokedex7EditorViewModel(s),                T("Dialog_PokedexEditorGen7")),
             SAV6 s      => (new Pokedex6EditorViewModel(s),                T("Dialog_PokedexEditorGen6")),
