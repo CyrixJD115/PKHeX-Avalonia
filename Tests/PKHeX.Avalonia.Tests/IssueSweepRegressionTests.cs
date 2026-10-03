@@ -44,6 +44,7 @@ public sealed class IssueSweepRegressionTests
         {
             DataContext = new Misc7EditorViewModel(new SAV7SM()),
         };
+        view.FindControl<TabControl>("Trainer7Sections")!.SelectedItem = view.FindControl<TabItem>("Trainer7BattleTree");
         var window = Show(view, 920, 700);
         try
         {

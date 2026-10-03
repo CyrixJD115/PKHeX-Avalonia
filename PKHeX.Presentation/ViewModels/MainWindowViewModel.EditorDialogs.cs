@@ -383,10 +383,10 @@ public partial class MainWindowViewModel
         (object view, string title) = CurrentSave switch
         {
             SAV9ZA s    => ((object)new Pokedex9aEditorViewModel(s, _dialogService), T("Dex9a_Title")),
-            SAV9SV s    => ((object)new PokedexGen9EditorViewModel(s),   T("Dialog_PokedexEditorGen9SV")),
+            SAV9SV s    => ((object)new PokedexGen9EditorViewModel(s, _dialogService), T("Dialog_PokedexEditorGen9SV")),
             SAV8SWSH s  => (new Pokedex8EditorViewModel(s),                T("Dialog_PokedexEditorGen8SwSh")),
             SAV8BS s    => (new Pokedex8bEditorViewModel(s),               T("Dialog_PokedexEditorGen8BDSP")),
-            SAV8LA s    => (new PokedexLAEditorViewModel(s),               T("Dialog_PokedexEditorPLA")),
+            SAV8LA s    => (new PokedexLAEditorViewModel(s, _dialogService), T("Dialog_PokedexEditorPLA")),
             SAV7b s     => (new Pokedex7bEditorViewModel(s),               T("Dialog_PokedexEditorLetsGo")),
             SAV7 s      => (new Pokedex7EditorViewModel(s),                T("Dialog_PokedexEditorGen7")),
             SAV6 s      => (new Pokedex6EditorViewModel(s),                T("Dialog_PokedexEditorGen6")),
@@ -705,7 +705,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV7 sav) return;
         await _windowService.ShowDialogAsync(
-            new Misc7EditorViewModel(sav),
+            new Misc7EditorViewModel(sav, _dialogService),
             T("Dialog_MiscEditorGen7"));
     }
 
@@ -714,7 +714,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV8SWSH sav) return;
         await _windowService.ShowDialogAsync(
-            new Misc8EditorViewModel(sav),
+            new Misc8EditorViewModel(sav, _dialogService),
             T("Dialog_MiscEditorSWSH"));
     }
 
@@ -732,7 +732,7 @@ public partial class MainWindowViewModel
     {
         if (CurrentSave is not SAV7b sav) return;
         await _windowService.ShowDialogAsync(
-            new Misc7bEditorViewModel(sav),
+            new Misc7bEditorViewModel(sav, _dialogService),
             T("Dialog_MiscEditorLetsGo"));
     }
 

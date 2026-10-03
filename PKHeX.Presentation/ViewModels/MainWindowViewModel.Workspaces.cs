@@ -16,6 +16,9 @@ public partial class MainWindowViewModel
     public const int PartyWorkspaceTabIndex = 1;
     public const int TrainerWorkspaceTabIndex = 2;
     public const int InventoryWorkspaceTabIndex = 3;
+    public const int EventsWorkspaceTabIndex = 4;
+    public const int GiftsWorkspaceTabIndex = 5;
+    public const int BatchWorkspaceTabIndex = 6;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPokemonWorkspace))]
@@ -42,6 +45,9 @@ public partial class MainWindowViewModel
     public bool IsTrainerNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == TrainerWorkspaceTabIndex;
     public bool IsInventoryNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == InventoryWorkspaceTabIndex;
     public bool IsSaveNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex >= 4;
+    public bool IsEventsNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == EventsWorkspaceTabIndex;
+    public bool IsGiftsNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == GiftsWorkspaceTabIndex;
+    public bool IsBatchNavigationSelected => IsSaveWorkspace && SelectedWorkspaceIndex == BatchWorkspaceTabIndex;
     public bool IsEventsWorkspace => IsSaveWorkspace && EventFlagsEditor?.IsSupported == true;
     public bool IsGiftsWorkspace => IsSaveWorkspace && MysteryGiftEditor?.HasAnySupport == true;
     public IReadOnlyList<ToolLauncherItem> ToolLauncherItems => _capabilityRegistry;
@@ -77,6 +83,9 @@ public partial class MainWindowViewModel
         OnPropertyChanged(nameof(IsTrainerNavigationSelected));
         OnPropertyChanged(nameof(IsInventoryNavigationSelected));
         OnPropertyChanged(nameof(IsSaveNavigationSelected));
+        OnPropertyChanged(nameof(IsEventsNavigationSelected));
+        OnPropertyChanged(nameof(IsGiftsNavigationSelected));
+        OnPropertyChanged(nameof(IsBatchNavigationSelected));
     }
 
     [RelayCommand]

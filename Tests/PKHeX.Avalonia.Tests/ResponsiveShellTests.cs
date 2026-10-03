@@ -104,12 +104,13 @@ public sealed class ResponsiveShellTests
     }
 
     [AvaloniaFact]
-    public void SaveAndWindowMenus_OpenWithoutThrowing()
+    public void WindowMenuOpensWithoutThrowingAndRedundantSaveMenuIsAbsent()
     {
         using var app = new HeadlessAppFixture();
         app.LoadSaveInstance(new SAV6XY());
 
-        foreach (var header in new[] { LocalizedStrings.Instance["Menu_Save"], LocalizedStrings.Instance["Menu_Window"] })
+        Assert.DoesNotContain(app.Window.GetVisualDescendants().OfType<MenuItem>(), item => Equals(item.Header, LocalizedStrings.Instance["Menu_Save"]));
+        foreach (var header in new[] { LocalizedStrings.Instance["Menu_Window"] })
         {
             var menu = app.Window.GetVisualDescendants()
                 .OfType<MenuItem>()
@@ -341,7 +342,8 @@ public sealed class ResponsiveShellTests
         Assert.NotEmpty(visibleTabs);
         Assert.All(visibleTabs, tab =>
         {
-            Assert.Equal(13, tab.FontSize);
+            // Save editor section headers share the compact Trainer tab typography.
+            Assert.Equal(11, tab.FontSize);
             Assert.Equal(VerticalAlignment.Center, tab.VerticalContentAlignment);
             Assert.InRange(tab.Bounds.Height, 30, 38);
         });
@@ -554,7 +556,8 @@ public sealed class ResponsiveShellTests
         {
             var source = ReadSourceFile("Views", view);
             Assert.DoesNotContain("<TabItem Header=", source);
-            Assert.Contains("Classes=\"editor-tabs\"", source);
+            var classes = view == "Misc7Editor.axaml" ? "compact-editor-tabs" : "editor-tabs";
+            Assert.Contains($"Classes=\"{classes}\"", source);
         }
 
         var misc7 = ReadSourceFile("Views", "Misc7Editor.axaml");

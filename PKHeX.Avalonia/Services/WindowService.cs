@@ -46,9 +46,13 @@ public sealed class WindowService : IWindowService
             dialog.MinWidth = 390;
             dialog.MinHeight = 420;
         }
+        else if (viewModel is UpdateDownloadViewModel or LegalityViewModel)
+        {
+            ConfigureCompactUtilityBounds(dialog, viewModel is LegalityViewModel, GetMaxWindowWidth(owner), GetToolMaxHeight(owner));
+        }
         else
         {
-            StabilizeInitialBounds(dialog);
+            SetMeasuredInitialBounds(dialog);
         }
 
         if (viewModel is CosmeticInventory4EditorViewModel)
@@ -162,8 +166,7 @@ public sealed class WindowService : IWindowService
             }
             else
             {
-                window.SizeToContent = SizeToContent.WidthAndHeight;
-                StabilizeInitialBounds(window);
+                SetMeasuredInitialBounds(window);
             }
         }
 
@@ -225,18 +228,19 @@ public sealed class WindowService : IWindowService
         return Math.Clamp(workingWidth - 48, 620, 1200);
     }
 
-    private static void StabilizeInitialBounds(Window window)
+    internal static void SetMeasuredInitialBounds(Window window)
     {
-        window.Opened += (_, _) =>
-        {
-            var measuredWidth = double.IsFinite(window.Width) && window.Width > 0 ? window.Width : window.Bounds.Width;
-            var measuredHeight = double.IsFinite(window.Height) && window.Height > 0 ? window.Height : window.Bounds.Height;
-            var (width, height) = ClampInitialBounds(measuredWidth, measuredHeight, window.MaxWidth, window.MaxHeight);
-
-            window.Width = width;
-            window.Height = height;
-            window.SizeToContent = SizeToContent.Manual;
-        };
+        // Measure against a finite working area before creating the native window.
+        // Reading Window.Width in Opened can adopt the platform's initial owner-sized
+        // bounds instead of the content's intended dimensions on macOS.
+        var content = window.Content as Control;
+        content?.Measure(new Size(window.MaxWidth, window.MaxHeight));
+        var desired = content?.DesiredSize ?? default;
+        var (width, height) = ClampInitialBounds(desired.Width, desired.Height, window.MaxWidth, window.MaxHeight);
+        window.SizeToContent = SizeToContent.Manual;
+        window.WindowState = WindowState.Normal;
+        window.Width = width;
+        window.Height = height;
     }
 
     internal static (double Width, double Height) ClampInitialBounds(
@@ -252,5 +256,19 @@ public sealed class WindowService : IWindowService
         var width = Math.Clamp(double.IsFinite(measuredWidth) && measuredWidth > 0 ? measuredWidth : minWidth, minWidth, maxWidth);
         var height = Math.Clamp(double.IsFinite(measuredHeight) && measuredHeight > 0 ? measuredHeight : minHeight, minHeight, maxHeight);
         return (width, height);
+    }
+
+    internal static void ConfigureCompactUtilityBounds(Window window, bool legalityReport, double availableWidth, double availableHeight)
+    {
+        // Establish bounds before native showing/measurement, rather than adopting
+        // a large initial platform size in the generic Opened callback.
+        window.SizeToContent = SizeToContent.Manual;
+        window.WindowState = WindowState.Normal;
+        window.MaxWidth = Math.Min(legalityReport ? 960 : 640, availableWidth);
+        window.MaxHeight = Math.Min(legalityReport ? 720 : 480, availableHeight);
+        window.MinWidth = Math.Min(legalityReport ? 420 : 360, window.MaxWidth);
+        window.MinHeight = Math.Min(legalityReport ? 300 : 180, window.MaxHeight);
+        window.Width = Math.Min(legalityReport ? 620 : 480, window.MaxWidth);
+        window.Height = Math.Min(legalityReport ? 440 : 240, window.MaxHeight);
     }
 }

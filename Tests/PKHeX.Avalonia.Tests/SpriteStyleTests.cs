@@ -143,6 +143,7 @@ public class SpriteStyleTests
         var vm = new SettingsViewModel(settings, new FakeSettingsStore(), new ThemeService(settings, new FakeSettingsStore()), new UiDensityService(settings, new FakeSettingsStore()), new PKHeX.Application.Services.LanguageService(), UpdateTestDoubles.Coordinator());
         var view = new SettingsView { DataContext = vm };
         var window = new Window { Content = view, Width = 480, Height = 720 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

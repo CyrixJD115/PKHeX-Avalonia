@@ -42,7 +42,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             foreach (var version in new[] { GameVersion.R, GameVersion.S, GameVersion.E, GameVersion.FR, GameVersion.LG })
             {
                 using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
@@ -82,7 +82,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         var defaultCulture = System.Globalization.CultureInfo.DefaultThreadCurrentCulture; var defaultUiCulture = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
         try
         {
-            foreach (var language in new[] { "en", "de" })
+            foreach (var language in new[] { "en", "de", "pt-BR" })
             {
                 using var app = new HeadlessAppFixture(); app.ViewModel.LanguageService.SetLanguage(language);
                 var save = new SAV9ZA(); var donut = save.Donuts.GetDonut(0);
@@ -523,6 +523,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 
         var view = new Misc4Editor { DataContext = vm };
         var window = new Window { Content = view, Width = 520, Height = 400 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
@@ -559,6 +560,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         // Match the minimum width of the editor pane in MainWindow so this capture is a meaningful
         // regression artifact for the compact headers and Hyper Training column.
         var window = new Window { Content = view, Width = 360, Height = 620 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
@@ -632,6 +634,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
 
         var view = new PKMDatabaseView { DataContext = vm };
         var window = new Window { Content = view, Width = 960, Height = 620 };
+        using var windowLifetime = new HeadlessWindowLifetime(window);
         window.Show();
         PumpToStableLayout(window);
 
@@ -1109,6 +1112,35 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
             1100,
             700,
             "Mystery Gift Database");
+    }
+
+    [AvaloniaFact]
+    public async Task CapturePokedexZaStates_WhenEnabled_WritesPng()
+    {
+        if (SkipWhenCaptureDisabled()) return;
+        var previous = LocalizedStrings.Instance.CurrentLanguage;
+        try
+        {
+            foreach (var language in new[] { "en", "de", "pt-BR" })
+            {
+                LocalizedStrings.Instance.SetLanguage(language);
+                using var vm = new Pokedex9aEditorViewModel(Pokedex9aFixtureTests.CreateSave(1), new RecordingDialogService());
+                vm.SelectedSpecies = vm.FilteredSpecies.Single(item => item.Value == (int)Species.Tatsugiri);
+                var view = new Pokedex9aEditor { DataContext = vm };
+                var window = new Window { Content = view, Width = 620, Height = 420 };
+                window.Show();
+                try
+                {
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    CaptureOrSkip(window, $"dex9a-{language}-detail.png", "Z-A Pokédex details");
+                    view.FindControl<ScrollViewer>("Dex9aDetails")!.ScrollToEnd();
+                    PumpToStableLayout(window); await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                    CaptureOrSkip(window, $"dex9a-{language}-languages.png", "Z-A Pokédex language flags");
+                }
+                finally { window.Close(); }
+            }
+        }
+        finally { LocalizedStrings.Instance.SetLanguage(previous); }
     }
 
     [AvaloniaFact]

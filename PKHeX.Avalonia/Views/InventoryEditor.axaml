@@ -59,6 +59,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="vm:InventoryItemViewModel">
                                                     <Image Width="24" Height="24"
+                                                           ToolTip.Tip="{loc:Loc InventoryEditor_ArtworkHelp}"
+                                                           AutomationProperties.Name="{loc:Loc InventoryEditor_ArtworkHelp}"
                                                            Source="{Binding Sprite, Converter={StaticResource PngBytesToBitmap}}"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center" />
