@@ -491,8 +491,52 @@
         <Setter Property="BorderThickness" Value="2" />
     </Style>
 
+    <!-- Shared host and disclosure surfaces must use the app palette, including auxiliary views
+         whose roots are transparent. Fluent's default Expander surfaces use a separate palette. -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBaseBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Expander">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
+    </Style>
+    <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
+    </Style>
+    <Style Selector="Expander /template/ ToggleButton#ExpanderHeader /template/ Border#ToggleButtonBackground">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
+    </Style>
+    <Style Selector="Expander /template/ ToggleButton#ExpanderHeader:pointerover /template/ Border#ToggleButtonBackground">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundHoverBrush}" />
+    </Style>
+    <Style Selector="Expander /template/ ToggleButton#ExpanderHeader:pressed /template/ Border#ToggleButtonBackground">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundElevatedBrush}" />
+    </Style>
     <Style Selector="Window.compact-settings">
         <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBaseBrush}" />
+    </Style>
+
+    <Style Selector="DatePicker">
+        <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlBorderBrush}" />
+    </Style>
+    <Style Selector="TimePicker">
+        <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlBorderBrush}" />
+    </Style>
+    <Style Selector="DatePickerPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
+    </Style>
+    <Style Selector="TimePickerPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
     </Style>
 
     <Style Selector="Border.compact-settings">
@@ -958,6 +1002,10 @@
         <Setter Property="BorderBrush" Value="{DynamicResource CompactAccentTextBrush}" />
     </Style>
 
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />
+    </Style>
     <Style Selector="ListBox.list-surface">
         <Setter Property="Background" Value="{DynamicResource ThemeBackgroundCardBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMutedBrush}" />

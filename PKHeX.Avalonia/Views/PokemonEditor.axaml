@@ -244,12 +244,13 @@
                                                 AutomationProperties.Name="{loc:Loc PokemonEditor_Exp}"
                                                 PointerPressed="ExpBar_PointerPressed"
                                                 PointerMoved="ExpBar_PointerMoved">
-                                            <ProgressBar Minimum="0" Maximum="1" Value="{Binding ExpPercent}"
+                                            <ProgressBar x:Name="ExpProgress" Minimum="0" Maximum="1" Value="{Binding ExpPercent}"
                                                          IsHitTestVisible="False"
                                                          Background="Transparent"
                                                          Foreground="{DynamicResource CompactAccentTextBrush}"
                                                          CornerRadius="7"
-                                                         MinHeight="0" />
+                                                         MinWidth="0" MinHeight="0" Padding="0" BorderThickness="0"
+                                                         VerticalAlignment="Stretch" />
                                         </Border>
                                         <CheckBox Content="{loc:Loc PokemonEditor_IsEgg}" IsChecked="{Binding IsEgg}" AutomationProperties.Name="{loc:Loc PokemonEditor_IsEgg}" />
                                     </StackPanel>

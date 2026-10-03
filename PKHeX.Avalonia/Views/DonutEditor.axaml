@@ -22,7 +22,7 @@
   </StackPanel>
   <TextBlock Text="{loc:Loc DonutEditor_NotAvailable}" IsVisible="{Binding !IsSupported}" TextWrapping="Wrap" />
   <Grid ColumnDefinitions="190,8,*" IsVisible="{Binding IsSupported}">
-   <ListBox Name="DonutList" ItemsSource="{Binding Donuts}" SelectedItem="{Binding SelectedDonut}">
+   <ListBox Name="DonutList" Classes="list-surface" ItemsSource="{Binding Donuts}" SelectedItem="{Binding SelectedDonut}">
     <ListBox.ItemTemplate><DataTemplate DataType="vm:DonutEntryViewModel"><TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" /></DataTemplate></ListBox.ItemTemplate>
    </ListBox>
    <ScrollViewer Name="DonutDetailsScroll" Grid.Column="2"><StackPanel Spacing="12">

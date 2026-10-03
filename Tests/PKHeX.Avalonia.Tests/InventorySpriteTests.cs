@@ -11,6 +11,20 @@ namespace PKHeX.Avalonia.Tests;
 
 public class InventorySpriteTests
 {
+    public static IEnumerable<object[]> ReportedAdditionalItems() => new[] { 2137, 2619 }
+        .Concat(Enumerable.Range(2595, 19)).Concat(Enumerable.Range(2620, 15)).Select(id => new object[] { id });
+
+    [Theory]
+    [MemberData(nameof(ReportedAdditionalItems))]
+    public void ReportedAdditionalItemsLoadIndividualArtworkInsteadOfUnknownBag(int id)
+    {
+        var loader = new SpriteLoader();
+        using var actual = loader.GetItemSprite(id, EntityContext.Gen9a, GameVersion.ZA);
+        using var unknown = loader.GetItemSprite(-1, EntityContext.Gen9a, GameVersion.ZA);
+        Assert.NotNull(actual); Assert.NotNull(unknown);
+        Assert.False(actual.Bytes.SequenceEqual(unknown.Bytes));
+        AssertAsset(actual, $"Big_Items.bitem_{id}.png");
+    }
     [Theory]
     [InlineData(EntityContext.Gen1, 10, "81")]
     [InlineData(EntityContext.Gen1, 20, "17")]
