@@ -1219,8 +1219,10 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
             return;
 
         using var app = new HeadlessAppFixture();
-        app.Window.Width = 1024;
-        app.Window.Height = 720;
+        app.Window.Width = 900;
+        app.Window.Height = 600;
+        app.Services.GetRequiredService<IThemeService>().ApplyTheme(AppTheme.Light);
+        app.ViewModel.RefreshThemeSelection();
         var saveDirectory = SaveFileFixture.FindSaveFilesPath();
         Assert.NotNull(saveDirectory);
         app.LoadSave(Path.Combine(saveDirectory!, "gen9a_legendsza.main"));
@@ -1247,6 +1249,7 @@ public sealed class HeadlessFeatureCaptureTests(ITestOutputHelper output)
         CaptureFreshShellState(app, "shell-save.png", "Save workspace");
 
         app.ViewModel.SelectedWorkspaceIndex = 3;
+        app.ViewModel.InventoryEditor!.SelectedPouch = app.ViewModel.InventoryEditor.Pouches.Single(p => p.ItemList.Any(item => item.Value == 632));
         app.Pump();
         CaptureFreshShellState(app, "shell-inventory.png", "Inventory workspace");
 

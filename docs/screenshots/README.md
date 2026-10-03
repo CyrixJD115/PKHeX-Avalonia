@@ -1,12 +1,10 @@
 # README screenshots
 
-The README's dark and light lead screenshots were rendered on 2026-09-26 from
-real 900×600 Avalonia views, including the direct top-row workspace tabs. They use
-`CompactUiCaptureTests.ReadmeHero_UsesLegalSaveFixture` with the repository test
-save `Tests/savefiles/gen9a_legendsza.main`, Box 1 and its existing party.
-Charizard (Box 1, slot 6) is selected. The capture asserts that every displayed
-box/party slot and the selected Pokémon pass legality checks; warnings remain
-enabled. The source save file and Pokémon data are not rewritten.
+All nine images referenced by the root README were refreshed on 2026-10-03 from the real Avalonia views. The main shell captures use the default 900x600 compact layout, with the theme picker matching the rendered palette.
+
+The dark and light lead frames use `CompactUiCaptureTests.ReadmeMarkers_UsesPublicSaveClone`. This loads `Tests/savefiles/gen9a_legendsza.main`, selects the existing Alpha Machamp in Box 1, and makes that Pokemon Shiny in the in-memory copy. Both original PKHeX markers appear together in the box and editor preview. Core legality checks stay enabled and the selected Pokemon passes. The fixture file is never written, and the demonstration is not a claim of an in-game Shiny capture.
+
+`ReadmeHero_UsesLegalSaveFixture` also verifies the unmodified source box, party, and selected Charizard against Core legality checks. Its original-fixture frames remain available for comparison. No private save data is used.
 
 ## Regenerate without using the desktop
 
@@ -16,35 +14,19 @@ From the repository root in PowerShell:
 dotnet build Tests/PKHeX.Avalonia.Tests/PKHeX.Avalonia.Tests.csproj -c Release
 $env:PKHEX_HEADLESS_CAPTURE = '1'
 $env:PKHEX_HEADLESS_CAPTURE_DIR = Join-Path (Get-Location) 'tmp/readme-captures'
-dotnet test Tests/PKHeX.Avalonia.Tests/PKHeX.Avalonia.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~ReadmeHero_UsesLegalSaveFixture'
+
+dotnet test Tests/PKHeX.Avalonia.Tests/PKHeX.Avalonia.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~ReadmeMarkers_UsesPublicSaveClone|FullyQualifiedName~ReadmeHero_UsesLegalSaveFixture|FullyQualifiedName~CaptureTaskAwareShellStates_WhenEnabled_WritesPng|FullyQualifiedName~CaptureIssueSweepNextEditors_WhenEnabled_WritesPng'
 Remove-Item Env:PKHEX_HEADLESS_CAPTURE, Env:PKHEX_HEADLESS_CAPTURE_DIR
 ```
 
-The capture flag selects the Skia-backed headless renderer. The test creates no
-native desktop window and does not move the mouse or keyboard focus. The two
-theme variants are written to `tmp/`; only the reviewed lead frames are published in this directory.
+The flag selects Skia-backed headless rendering. These captures create no native desktop windows and do not move the user's mouse or keyboard focus.
 
-Inspect both production frames before copying them into the documentation:
-
-```powershell
-Copy-Item tmp/readme-captures/readme-legal-dark.png docs/screenshots/pokemon-editor-dark.png
-Copy-Item tmp/readme-captures/readme-legal-light.png docs/screenshots/pokemon-editor-light.png
-```
-
-Keep the full frame, readable text, and actual legality indicators. Do not retouch
-the UI to imply behavior that the application does not have. After regeneration,
-update the capture provenance above and verify both README image links.
-
-## Expandable gallery
-
-The root README keeps a centered 600px preview and nine images inside five
-GitHub-native `details`/`summary` sections, collapsed by default.
-
-Seven additional images were captured on 2026-09-20 from the same application
-source using `HeadlessFeatureCaptureTests`:
+Inspect every frame before publishing it. Keep the full frame and actual legality indicators; do not retouch the UI or add markers to the images.
 
 | Capture method | Generated file | Published file |
 |---|---|---|
+| `ReadmeMarkers_UsesPublicSaveClone` | `readme-markers-dark.png` | `pokemon-editor-dark.png` |
+| Same | `readme-markers-light.png` | `pokemon-editor-light.png` |
 | `CaptureTaskAwareShellStates_WhenEnabled_WritesPng` | `shell-save.png` | `gallery-trainer.png` |
 | Same | `shell-inventory.png` | `gallery-inventory.png` |
 | Same | `shell-reports.png` | `gallery-reports.png` |
@@ -53,17 +35,19 @@ source using `HeadlessFeatureCaptureTests`:
 | Same | `next-seal-stickers-editor.png` | `gallery-stickers.png` |
 | Same | `next-tech-record-editor.png` | `gallery-records.png` |
 
-Use the capture environment variables above and filter for these methods to
-regenerate the gallery. The shell images use the checked-in
-`Tests/savefiles/gen9a_legendsza.main` fixture. The three auxiliary editors use
-blank/synthetic save and Pokémon objects. None use private user saves.
+For example:
 
-For this capture session, the shell fixture explicitly applied `AppTheme.Light`
-and called `RefreshThemeSelection()` immediately after constructing
-`HeadlessAppFixture`, before loading the save. This temporary test-only setup
-kept the theme picker consistent with the rendered palette; it was removed
-after capture. Repeat that setup before building if regenerating these exact
-light-theme frames. Production application code was unchanged.
+```powershell
+Copy-Item tmp/readme-captures/readme-markers-dark.png docs/screenshots/pokemon-editor-dark.png
+Copy-Item tmp/readme-captures/readme-markers-light.png docs/screenshots/pokemon-editor-light.png
+```
 
-Other PNGs in this directory are earlier documentation assets retained for
-existing consumers.
+Verify copied files against their capture hashes and check every README image link. Update this provenance when regenerating the gallery.
+
+## Gallery scope
+
+The root README retains its centered lead image and five collapsible gallery sections. Trainer, Inventory, Reports, and the launcher use the checked-in Z-A fixture. Inventory selects Key Items to show the restored individual artwork. The shell capture applies the Light theme explicitly and refreshes the picker; no temporary production changes are needed.
+
+The BDSP Pokedex, Seal Stickers, and Technical Records frames use blank/synthetic save and Pokemon objects. Their displayed state and controls are the actual production views, including staged actions where supported.
+
+Other PNGs in this directory are earlier assets retained for existing consumers.

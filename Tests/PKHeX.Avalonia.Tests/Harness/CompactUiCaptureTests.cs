@@ -16,6 +16,35 @@ namespace PKHeX.Avalonia.Tests.Harness;
 public sealed class CompactUiCaptureTests
 {
     [AvaloniaFact]
+    public async Task ReadmeMarkers_UsesPublicSaveClone()
+    {
+        var directory = Fixtures.SaveFileFixture.FindSaveFilesPath()!;
+        var save = Assert.IsType<SAV9ZA>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(directory, "gen9a_legendsza.main")));
+        save.CurrentBox = 0;
+        var index = Enumerable.Range(0, save.BoxSlotCount).First(i => save.GetBoxSlotAtIndex(0, i) is PA9 { Species: 68, IsAlpha: true });
+        var pokemon = save.GetBoxSlotAtIndex(0, index);
+        pokemon.SetShiny();
+        Assert.True(new LegalityAnalysis(pokemon, save.Personal).Valid);
+        save.SetBoxSlotAtIndex(pokemon, 0, index);
+        using var app = new HeadlessAppFixture();
+        app.Window.Width = 900; app.Window.Height = 600;
+        app.Services.GetRequiredService<AppSettings>().Sprite.SpritePreference = SpritePreference.ForceArtwork;
+        app.LoadSaveInstance(save, "gen9a_legendsza.main");
+        app.BoxViewer!.SelectedIndex = index;
+        app.ViewModel.CurrentPokemonEditor!.LoadPKM(pokemon);
+        Assert.True(app.BoxViewer.Slots[index].IsShiny);
+        Assert.Contains("Alpha", app.BoxViewer.Slots[index].AccessibleName);
+        Assert.True(app.ViewModel.CurrentPokemonEditor.IsLegal);
+        var theme = app.Services.GetRequiredService<IThemeService>();
+        foreach (var variant in new[] { AppTheme.Light, AppTheme.Dark })
+        {
+            theme.ApplyTheme(variant); app.ViewModel.RefreshThemeSelection(); app.Pump();
+            await PKHeX.Testing.HeadlessRenderSettling.Settle(app.Window);
+            if (Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE") == "1")
+                Assert.NotNull(app.CaptureFrame(Path.Combine(Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE_DIR")!, $"readme-markers-{variant.ToString().ToLowerInvariant()}.png")));
+        }
+    }
+    [AvaloniaFact]
     public async Task ReadmeHero_UsesLegalSaveFixture()
     {
         var directory = Fixtures.SaveFileFixture.FindSaveFilesPath()!;
