@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "Connu",
   "SvDex_Viewed": "Consulté",
   "BdspTrainer_Badge": "Badge {0}",
-  "BdspTrainer_Height": "Hauteur"
+  "BdspTrainer_Height": "Hauteur",
+  "SlotState_Alpha": "Baron",
+  "SlotState_Gigantamax": "Gigamax",
+  "SlotState_Egg": "Œuf",
+  "SlotState_Shiny": "Chromatique",
+  "SlotState_Illegal": "Avertissement de légalité",
+  "SlotState_MoveHint": "Capacité indisponible",
+  "SlotState_Team": "Équipe de combat",
+  "SlotState_Locked": "Verrouillé",
+  "SlotState_Party": "Place dans l’équipe {0}",
+  "SlotState_Starter": "Pokémon de départ"
 }

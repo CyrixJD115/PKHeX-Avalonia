@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "已知",
   "SvDex_Viewed": "已查看",
   "BdspTrainer_Badge": "徽章 {0}",
-  "BdspTrainer_Height": "高度"
+  "BdspTrainer_Height": "高度",
+  "SlotState_Alpha": "头目",
+  "SlotState_Gigantamax": "超极巨化",
+  "SlotState_Egg": "蛋",
+  "SlotState_Shiny": "异色",
+  "SlotState_Illegal": "合法性警告",
+  "SlotState_MoveHint": "不可用招式提示",
+  "SlotState_Team": "对战队伍",
+  "SlotState_Locked": "已锁定",
+  "SlotState_Party": "同行位置 {0}",
+  "SlotState_Starter": "初始宝可梦"
 }

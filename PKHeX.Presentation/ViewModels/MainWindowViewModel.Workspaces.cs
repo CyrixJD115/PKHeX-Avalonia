@@ -122,7 +122,7 @@ public partial class MainWindowViewModel
     private void OpenBoxWorkspace()
     {
         if (BoxViewer is not null)
-            _windowService.ShowTool(BoxViewer, LocalizedStrings.Instance["Tab_Box"]);
+            BoxViewer.OpenDetachedToolCommand.Execute(null);
     }
 
     [RelayCommand(CanExecute = nameof(HasSave))]

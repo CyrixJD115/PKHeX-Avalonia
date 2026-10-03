@@ -28,6 +28,7 @@ public partial class PartySlotData : ObservableObject
     [ObservableProperty] private byte _status; // Status condition
     [ObservableProperty] private bool _isLegal = true;
     [ObservableProperty] private string _showdownSummary = string.Empty;
+    public string SemanticSummary { get; init; } = string.Empty;
     
     /// <summary>
     /// HP percentage for display.
@@ -46,7 +47,7 @@ public partial class PartySlotData : ObservableObject
     /// </summary>
     public string ToolTipSummary => IsEmpty
         ? "Empty"
-        : ShowdownSummary;
+        : string.Join(Environment.NewLine, new[] { SemanticSummary, ShowdownSummary }.Where(s => s.Length != 0));
 
     /// <summary>
     /// Concise, screen-reader-friendly announcement for this slot, e.g.
@@ -60,18 +61,18 @@ public partial class PartySlotData : ObservableObject
             if (IsEmpty)
                 return $"{header}: Empty";
 
-            if (IsEgg)
-                return $"{header}: {SpeciesName} Egg";
-
             var parts = new System.Collections.Generic.List<string>
             {
                 SpeciesName,
                 $"Lv. {Level}",
             };
-            if (IsShiny)
+            if (IsEgg && SemanticSummary.Length == 0)
+                parts.Add(PKHeX.Presentation.Localization.LocalizedStrings.Instance["SlotState_Egg"]);
+            if (IsShiny && SemanticSummary.Length == 0)
                 parts.Add("shiny");
-            if (!IsLegal)
+            if (!IsLegal && SemanticSummary.Length == 0)
                 parts.Add("illegal");
+            if (SemanticSummary.Length != 0) parts.Add(SemanticSummary);
             if (MaxHp > 0 && CurrentHp == 0)
                 parts.Add("fainted");
 

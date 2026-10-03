@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "알려짐",
   "SvDex_Viewed": "확인함",
   "BdspTrainer_Badge": "배지 {0}",
-  "BdspTrainer_Height": "높이"
+  "BdspTrainer_Height": "높이",
+  "SlotState_Alpha": "우두머리",
+  "SlotState_Gigantamax": "거다이맥스",
+  "SlotState_Egg": "알",
+  "SlotState_Shiny": "색이 다른",
+  "SlotState_Illegal": "적법성 경고",
+  "SlotState_MoveHint": "사용할 수 없는 기술 안내",
+  "SlotState_Team": "배틀팀",
+  "SlotState_Locked": "잠김",
+  "SlotState_Party": "파티 슬롯 {0}",
+  "SlotState_Starter": "스타팅 포켓몬"
 }

@@ -23,6 +23,7 @@ public partial class ZaEventEditorViewModel : EventEditorViewModel, ICloseableDi
         foreach (var field in Categories.SelectMany(c => c.Records).SelectMany(r => r.Fields)) field.PropertyChanged += FieldChanged;
         _selectedCategory = Categories[0];
         _selectedRecord = _selectedCategory.Records.FirstOrDefault();
+        FilterCategories();
         Filter();
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) => RefreshLanguage());
     }
@@ -44,20 +45,31 @@ public partial class ZaEventEditorViewModel : EventEditorViewModel, ICloseableDi
     public bool HasStatus => StatusText.Length != 0;
     public string ValidationText => CanApply ? string.Empty : LocalizedStrings.Instance["ZaEvents_Invalid"];
     partial void OnSelectedCategoryChanged(ZaEventCategoryViewModel value)
-    { Filter(); SelectedRecord = VisibleRecords.FirstOrDefault(); OnPropertyChanged(nameof(ScopeText)); }
+    {
+        // A selector can temporarily clear its selection when its filtered items change.
+        if (value is null)
+        {
+            SelectedCategory = VisibleCategories.FirstOrDefault() ?? Categories[0];
+            return;
+        }
+        Filter(); SelectedRecord = VisibleRecords.FirstOrDefault(); OnPropertyChanged(nameof(ScopeText));
+    }
     partial void OnSelectedRecordChanged(ZaEventRecordViewModel? value) => OnPropertyChanged(nameof(CanEditSelected));
     partial void OnAdvancedChanged(bool value)
     { foreach (var record in Categories.SelectMany(c => c.Records)) record.SetAdvanced(value); OnPropertyChanged(nameof(CanEditSelected)); }
     partial void OnSearchTextChanged(string value) => Filter();
-    partial void OnCategorySearchChanged(string value) => Filter();
+    partial void OnCategorySearchChanged(string value) => FilterCategories();
     partial void OnHideEmptyChanged(bool value) => Filter();
     partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatus));
     private void Filter()
     {
-        VisibleCategories = Categories.Where(c => string.IsNullOrWhiteSpace(CategorySearch) || c.Name.Contains(CategorySearch, StringComparison.CurrentCultureIgnoreCase)).ToArray();
         VisibleRecords = SelectedCategory.Records.Where(r => (!HideEmpty || !r.IsEmpty)
             && (string.IsNullOrWhiteSpace(SearchText) || r.Matches(SearchText))).ToArray();
         OnPropertyChanged(nameof(ScopeText));
+    }
+    private void FilterCategories()
+    {
+        VisibleCategories = Categories.Where(c => string.IsNullOrWhiteSpace(CategorySearch) || c.Name.Contains(CategorySearch, StringComparison.CurrentCultureIgnoreCase)).ToArray();
     }
     private void FieldChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -101,7 +113,7 @@ public partial class ZaEventEditorViewModel : EventEditorViewModel, ICloseableDi
     {
         foreach (var category in Categories) category.RefreshLanguage();
         foreach (var record in Categories.SelectMany(c => c.Records)) record.RefreshLanguage();
-        OnPropertyChanged(nameof(ValidationText)); Filter();
+        OnPropertyChanged(nameof(ValidationText)); FilterCategories(); Filter();
     }
     public void Dispose()
     {

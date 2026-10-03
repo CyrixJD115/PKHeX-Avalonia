@@ -30,6 +30,8 @@ public partial class SlotData : ObservableObject
     [ObservableProperty] private string _natureName = string.Empty;
     [ObservableProperty] private string _showdownSummary = string.Empty;
     [ObservableProperty] private bool _isLegal;
+    public string SemanticSummary { get; init; } = string.Empty;
+    public bool HasVisibleSprite { get; init; }
 
     /// <summary>One-based slot number shown in the storage tray.</summary>
     public int SlotNumber => Slot + 1;
@@ -38,8 +40,8 @@ public partial class SlotData : ObservableObject
     /// Short summary for tooltip.
     /// </summary>
     public string ToolTipSummary => IsEmpty
-        ? "Empty"
-        : ShowdownSummary;
+        ? string.Join(", ", new[] { "Empty", SemanticSummary }.Where(s => s.Length != 0))
+        : string.Join(Environment.NewLine, new[] { SemanticSummary, ShowdownSummary }.Where(s => s.Length != 0));
 
     /// <summary>
     /// Concise, screen-reader-friendly announcement for this slot, e.g.
@@ -51,20 +53,20 @@ public partial class SlotData : ObservableObject
         {
             var header = $"Slot {Slot + 1}";
             if (IsEmpty)
-                return $"{header}: Empty";
-
-            if (IsEgg)
-                return $"{header}: {SpeciesName} Egg";
+                return $"{header}: {ToolTipSummary}";
 
             var parts = new System.Collections.Generic.List<string>
             {
                 SpeciesName,
                 $"Lv. {Level}",
             };
-            if (IsShiny)
+            if (IsEgg && SemanticSummary.Length == 0)
+                parts.Add(PKHeX.Presentation.Localization.LocalizedStrings.Instance["SlotState_Egg"]);
+            if (IsShiny && SemanticSummary.Length == 0)
                 parts.Add("shiny");
-            if (!IsLegal)
+            if (!IsLegal && SemanticSummary.Length == 0)
                 parts.Add("illegal");
+            if (SemanticSummary.Length != 0) parts.Add(SemanticSummary);
 
             return $"{header}: {string.Join(", ", parts)}";
         }

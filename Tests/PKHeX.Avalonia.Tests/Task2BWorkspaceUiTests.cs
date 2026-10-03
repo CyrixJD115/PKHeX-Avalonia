@@ -8,6 +8,7 @@ using Avalonia.VisualTree;
 using PKHeX.Avalonia.Controls;
 using PKHeX.Avalonia.Tests.Harness;
 using PKHeX.Core;
+using PKHeX.Presentation.ViewModels;
 
 namespace PKHeX.Avalonia.Tests;
 
@@ -65,7 +66,7 @@ public sealed class Task2BWorkspaceUiTests
     }
 
     [AvaloniaFact]
-    public void RoutedHeaderDoubleTaps_OpenTheExactLiveBoxAndPartyWorkspaces()
+    public void RoutedHeaderDoubleTaps_OpenIndependentBoxAndLivePartyWorkspaces()
     {
         using var app = new HeadlessAppFixture();
         app.LoadSaveInstance(new SAV6XY());
@@ -80,7 +81,12 @@ public sealed class Task2BWorkspaceUiTests
         partyHeader.RaiseEvent(new TappedEventArgs(InputElement.DoubleTappedEvent, null!));
 
         Assert.Equal(2, app.Windows.ActiveToolCount);
-        Assert.Contains(app.Windows.ShownTools, tool => ReferenceEquals(tool.ViewModel, app.BoxViewer));
+        var detached = Assert.IsType<BoxViewerViewModel>(app.Windows.ShownTools[0].ViewModel);
+        Assert.NotSame(app.BoxViewer, detached);
+        Assert.Equal(app.BoxViewer!.SessionId, detached.SessionId);
+        detached.NextBoxCommand.Execute(null);
+        Assert.Equal(0, app.BoxViewer.CurrentBox);
+        Assert.Equal(1, detached.CurrentBox);
         Assert.Contains(app.Windows.ShownTools, tool => ReferenceEquals(tool.ViewModel, app.ViewModel.PartyViewer));
     }
 

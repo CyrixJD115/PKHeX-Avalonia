@@ -55,6 +55,9 @@ public sealed class WindowService : IWindowService
             SetMeasuredInitialBounds(dialog);
         }
 
+        if (viewModel is AboutViewModel)
+            ConfigureAboutAutoSize(dialog);
+
         if (viewModel is CosmeticInventory4EditorViewModel)
         {
             dialog.SizeToContent = SizeToContent.Manual;
@@ -124,6 +127,30 @@ public sealed class WindowService : IWindowService
         dialog.Closed += (_, _) => (viewModel as IDisposable)?.Dispose();
 
         await dialog.ShowDialog(owner);
+    }
+
+    internal static void ConfigureAboutAutoSize(Window dialog)
+    {
+        if (dialog.Content is not Control { DataContext: AboutViewModel vm } content) return;
+        var closed = false;
+        // Keep native initial bounds explicit, then remeasure at the user's current width after
+        // bindings receive each asynchronous status change. Native SizeToContent can be disabled
+        // by platform resize notifications, so it cannot own this dynamic content transition.
+        void Resize()
+        {
+            if (closed) return;
+            content.InvalidateMeasure();
+            var width = dialog.ClientSize.Width > 0 ? dialog.ClientSize.Width : dialog.Width;
+            content.Measure(new Size(width, dialog.MaxHeight));
+            dialog.Height = Math.Clamp(content.DesiredSize.Height, Math.Min(300, dialog.MaxHeight), dialog.MaxHeight);
+        }
+        void StatusChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AboutViewModel.UpdateCheckStatus))
+                global::Avalonia.Threading.Dispatcher.UIThread.Post(Resize);
+        }
+        vm.PropertyChanged += StatusChanged;
+        dialog.Closed += (_, _) => { closed = true; vm.PropertyChanged -= StatusChanged; };
     }
 
     public void ShowTool(object viewModel, string title)

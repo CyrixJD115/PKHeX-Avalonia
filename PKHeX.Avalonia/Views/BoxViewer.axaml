@@ -63,7 +63,7 @@
                             FontSize="16">
                         <Path Width="8" Height="12" Data="M7 1 L1 6 L7 11" Stroke="{DynamicResource ThemeTextMutedBrush}" StrokeThickness="1.5" />
                     </Button>
-                    
+
                     <controls:DoubleTapCommandBorder Grid.Column="0" Command="{Binding OpenDetachedToolCommand}" ToolTip.Tip="{loc:Loc BoxViewer_PopOut}" Background="Transparent">
                     <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock Text="{Binding BoxName}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
@@ -196,7 +196,7 @@
                                                   IsEnabled="{Binding !IsEmpty}" />
                                     </ContextMenu>
                                 </Button.ContextMenu>
-                                
+
                                 <!-- Content stretches to fill. Hit-test-transparent so drag/drop
                                      hit-testing resolves to the Button itself (which carries
                                      DragDrop.AllowDrop) rather than the sprite Image swallowing it. -->
@@ -209,7 +209,7 @@
                                      <Image Source="{Binding Sprite, Converter={StaticResource PngBytesToBitmap}}"
                                             Stretch="Uniform"
                                             RenderOptions.BitmapInterpolationMode="HighQuality"
-                                            IsVisible="{Binding !IsEmpty}"
+                                            IsVisible="{Binding HasVisibleSprite}"
                                             MaxHeight="47" VerticalAlignment="Center" Margin="4,0,4,14" />
 
                                      <TextBlock Text="{Binding SlotNumber}"
@@ -217,14 +217,6 @@
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Top"
                                                 Margin="4,3,0,0" />
-
-                                     <TextBlock Text="★"
-                                                Foreground="{DynamicResource ThemeShinyBrush}"
-                                                FontSize="10"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Margin="0,4,5,0"
-                                                IsVisible="{Binding IsShiny}" />
 
                                      <Border Background="Transparent"
                                              VerticalAlignment="Bottom"

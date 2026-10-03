@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "Heard of",
   "SvDex_Viewed": "Viewed",
   "BdspTrainer_Badge": "Badge {0}",
-  "BdspTrainer_Height": "Height"
+  "BdspTrainer_Height": "Height",
+  "SlotState_Alpha": "Alpha",
+  "SlotState_Gigantamax": "Gigantamax",
+  "SlotState_Egg": "Egg",
+  "SlotState_Shiny": "Shiny",
+  "SlotState_Illegal": "Legality warning",
+  "SlotState_MoveHint": "Unavailable move hint",
+  "SlotState_Team": "Battle team",
+  "SlotState_Locked": "Locked",
+  "SlotState_Party": "Party slot {0}",
+  "SlotState_Starter": "Starter"
 }

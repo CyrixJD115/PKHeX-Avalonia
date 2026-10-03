@@ -8,6 +8,7 @@ namespace PKHeX.Presentation.ViewModels;
 
 public partial class PokemonEditorViewModel
 {
+    public string SpriteAccessibleName => $"{Title}: {PKHeX.Presentation.Models.SpriteStateDescription.Describe(_pk, default)}";
     public bool ShowLegalityStatus => Species != 0 && !IsHaXMode;
     [ObservableProperty]
     private bool _isLegal;
@@ -21,6 +22,8 @@ public partial class PokemonEditorViewModel
         var la = new LegalityAnalysis(pk, _sav.Personal);
         IsLegal = _haXMode || la.Valid;
         LegalityReport = la.Report();
+        Sprite = _spriteRenderer.GetSprite(pk);
+        OnPropertyChanged(nameof(SpriteAccessibleName));
     }
 
     [RelayCommand]
