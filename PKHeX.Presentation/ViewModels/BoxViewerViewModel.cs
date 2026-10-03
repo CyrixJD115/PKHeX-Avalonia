@@ -18,6 +18,9 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
     private readonly IWindowService? _windowService;
     private readonly IDialogService? _dialogService;
     private readonly bool _haXMode;
+    private readonly bool _isDetached;
+    private BoxViewerViewModel? _detachedViewer;
+    private BoxViewerViewModel? _embeddedViewer;
 
     private const int Columns = 6;
 
@@ -68,7 +71,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
         SelectedIndex = slot;
     }
 
-    public BoxViewerViewModel(SaveFile sav, ISpriteRenderer spriteRenderer, ISlotService? slotService = null, IWindowService? windowService = null, IDialogService? dialogService = null, bool haXMode = false)
+    public BoxViewerViewModel(SaveFile sav, ISpriteRenderer spriteRenderer, ISlotService? slotService = null, IWindowService? windowService = null, IDialogService? dialogService = null, bool haXMode = false, bool isDetached = false)
     {
         _sav = sav;
         _spriteRenderer = spriteRenderer;
@@ -78,6 +81,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
         _windowService = windowService;
         _dialogService = dialogService;
         _haXMode = haXMode;
+        _isDetached = isDetached;
         Seek = new EntitySeekViewModel(sav, this);
 
         LoadBox(GetInitialBoxIndex(sav));
@@ -108,8 +112,25 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
     [RelayCommand]
     private void OpenDetachedTool()
     {
-        if (IsSessionCurrent())
+        if (!IsSessionCurrent()) return;
+        if (_isDetached)
+        {
             _windowService?.ShowTool(this, LocalizedStrings.Instance["Tab_Box"]);
+            return;
+        }
+        if (_detachedViewer is null)
+        {
+            _detachedViewer = new BoxViewerViewModel(_sav, _spriteRenderer, _slotService, _windowService, _dialogService, _haXMode, isDetached: true);
+            _detachedViewer._embeddedViewer = this;
+            _detachedViewer.LoadBox(CurrentBox);
+            _detachedViewer.SlotActivated += (box, slot) => SlotActivated?.Invoke(box, slot);
+            _detachedViewer.ViewSlotRequested += (box, slot) => ViewSlotRequested?.Invoke(box, slot);
+            _detachedViewer.SetSlotRequested += (box, slot) => SetSlotRequested?.Invoke(box, slot);
+            _detachedViewer.DeleteSlotRequested += (box, slot) => DeleteSlotRequested?.Invoke(box, slot);
+            _detachedViewer.SaveFileDropRequested += paths => SaveFileDropRequested?.Invoke(paths);
+        }
+        _detachedViewer.RefreshCurrentBox();
+        _windowService?.ShowTool(_detachedViewer, LocalizedStrings.Instance["Tab_Box"]);
     }
 
     partial void OnSelectedIndexChanged(int value)
@@ -126,7 +147,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
 
         var previousIndex = SelectedIndex;
         CurrentBox = box;
-        if (_sav.CurrentBox != box)
+        if (!_isDetached && _sav.CurrentBox != box)
             _sav.CurrentBox = box;
         BoxName = _sav is IBoxDetailNameRead r
             ? r.GetBoxName(box)
@@ -140,6 +161,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
         {
             var pk = boxData[slot];
             var isEmpty = pk.Species == 0;
+            var state = PKHeX.Application.Models.SpriteSlotState.Create(pk, _sav, StorageSlotType.Box, _sav.GetBoxSlotFlags(box, slot), _haXMode);
 
             // Use StringResourceLookup for all string-table accesses to safely
             // handle Gen 1/2 where Ability is -1 and some properties are placeholders.
@@ -148,7 +170,9 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
                 Slot = slot,
                 Box = box,
                 Species = pk.Species,
-                Sprite = _spriteRenderer.GetSprite(pk),
+                Sprite = _spriteRenderer.GetSlotSprite(pk, state),
+                SemanticSummary = SpriteStateDescription.Describe(pk, state),
+                HasVisibleSprite = !isEmpty || state.Storage != StorageSlotSource.None,
                 IsEmpty = isEmpty,
                 IsShiny = !isEmpty && pk.IsShiny,
                 Nickname = isEmpty ? string.Empty : pk.Nickname,
@@ -164,7 +188,7 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
                 Nature = (byte)pk.Nature,
                 NatureName = StringResourceLookup.Nature((int)pk.Nature),
                 ShowdownSummary = isEmpty ? string.Empty : new ShowdownSet(pk).Text,
-                IsLegal = _haXMode || isEmpty || new LegalityAnalysis(pk).Valid,
+                IsLegal = !state.Illegal,
                 IsSelected = false,
             };
 
@@ -247,7 +271,13 @@ public partial class BoxViewerViewModel : ViewModelBase, IBoxNavigator
 
     public void RefreshCurrentBox()
     {
+        if (_embeddedViewer is not null)
+        {
+            _embeddedViewer.RefreshCurrentBox();
+            return;
+        }
         LoadBox(CurrentBox);
+        _detachedViewer?.LoadBox(_detachedViewer.CurrentBox);
     }
 
     public event Action<int, int>? SlotActivated;

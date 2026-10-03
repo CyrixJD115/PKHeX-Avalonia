@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "Conocido",
   "SvDex_Viewed": "Consultado",
   "BdspTrainer_Badge": "Medalla {0}",
-  "BdspTrainer_Height": "Altura"
+  "BdspTrainer_Height": "Altura",
+  "SlotState_Alpha": "Alfa",
+  "SlotState_Gigantamax": "Gigamax",
+  "SlotState_Egg": "Huevo",
+  "SlotState_Shiny": "Variocolor",
+  "SlotState_Illegal": "Aviso de legalidad",
+  "SlotState_MoveHint": "Aviso de movimiento no disponible",
+  "SlotState_Team": "Equipo de combate",
+  "SlotState_Locked": "Bloqueado",
+  "SlotState_Party": "Puesto del equipo {0}",
+  "SlotState_Starter": "Inicial"
 }

@@ -10,6 +10,7 @@ namespace PKHeX.Application.Abstractions;
 public interface ISpriteRenderer
 {
     byte[]? GetSprite(PKM pk, bool isEgg = false);
+    byte[]? GetSlotSprite(PKM pk, PKHeX.Application.Models.SpriteSlotState state) => GetSprite(pk);
     byte[]? GetSprite(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context);
     /// <summary>Renders an item whose ID is already in the modern (Gen 4+) numbering scheme.</summary>
     byte[]? GetItemSprite(int itemId);

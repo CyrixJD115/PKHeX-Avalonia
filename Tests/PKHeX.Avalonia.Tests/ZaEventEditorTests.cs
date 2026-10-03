@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -17,6 +18,32 @@ namespace PKHeX.Avalonia.Tests;
 
 public class ZaEventEditorTests
 {
+    [AvaloniaFact]
+    public void RepeatedCategoryClicksKeepSidebarItemsAndChosenCategoryStable()
+    {
+        using var app = new HeadlessAppFixture();
+        using var vm = new ZaEventEditorViewModel(Load(), app.Dialogs);
+        var view = new ZaEventEditor { DataContext = vm };
+        app.Window.Content = view; app.Pump();
+        var list = view.GetVisualDescendants().OfType<ListBox>().Single();
+        var items = vm.VisibleCategories;
+        foreach (var category in new[] { vm.Categories[8], vm.Categories[3], vm.Categories[12], vm.Categories[8] })
+        {
+            list.ScrollIntoView(category); app.Pump();
+            var item = list.GetVisualDescendants().OfType<ListBoxItem>().Single(i => ReferenceEquals(i.DataContext, category));
+            var point = item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), app.Window)!.Value;
+            app.Window.MouseDown(point, MouseButton.Left); app.Window.MouseUp(point, MouseButton.Left); app.Pump();
+            Assert.Same(category, vm.SelectedCategory);
+            Assert.Same(category, list.SelectedItem);
+            Assert.Same(items, vm.VisibleCategories);
+            Assert.All(vm.VisibleRecords, r => Assert.Contains(r, category.Records));
+        }
+        vm.CategorySearch = vm.Categories[3].Name; app.Pump();
+        Assert.NotEmpty(vm.VisibleCategories);
+        Assert.NotNull(vm.SelectedCategory);
+        vm.SearchText = "no matching event"; app.Pump();
+        Assert.Same(vm.VisibleCategories, list.ItemsSource);
+    }
     private static SAV9ZA Load() => Assert.IsType<SAV9ZA>(SaveFileFixture.LoadSave(
         Path.Combine(SaveFileFixture.FindSaveFilesPath()!, "gen9a_legendsza.main")));
     private static void Seed(ZaEventDataSession session)

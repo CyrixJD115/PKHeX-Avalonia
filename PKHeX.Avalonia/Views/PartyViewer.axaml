@@ -176,18 +176,8 @@
                                                    Width="56" Height="48"
                                                    Stretch="Uniform"
                                                    RenderOptions.BitmapInterpolationMode="HighQuality" />
-                                            <TextBlock Text="★"
-                                                       Foreground="{DynamicResource ThemeShinyBrush}"
-                                                       FontSize="10"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Top"
-                                                       IsVisible="{Binding IsShiny}" />
-                                            <Path Data="M 8,0 L 16,14 L 0,14 Z M 8.5,12 H 7.5 V 10.5 H 8.5 V 12 Z M 8.5,9 H 7.5 V 4.5 H 8.5 V 9 Z"
-                                                  Fill="{DynamicResource ThemeShinyBrush}"
-                                                  HorizontalAlignment="Right"
-                                                  VerticalAlignment="Top"
-                                                  IsVisible="{Binding !IsLegal}"
-                                                  Width="10" Height="9" />
+
+
                                         </Panel>
                                         <DockPanel Grid.Row="1" Margin="0,3,0,0">
                                             <Border DockPanel.Dock="Right"

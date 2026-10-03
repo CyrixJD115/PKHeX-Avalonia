@@ -32,6 +32,12 @@ public sealed class AvaloniaSpriteRenderer : ISpriteRenderer
         if (pk.Species == 0)
             return GetEmptySlot();
 
+        using var composed = CreateSprite(pk);
+        return EncodePng(composed);
+    }
+
+    private SKBitmap CreateSprite(PKM pk)
+    {
         var baseSprite = _loader.GetSprite(
             pk.Species,
             pk.Form,
@@ -40,11 +46,9 @@ public sealed class AvaloniaSpriteRenderer : ISpriteRenderer
             pk.IsShiny,
             _context);
 
-        if (baseSprite is null)
-            return CreatePlaceholderSprite(pk);
+        using var placeholder = baseSprite is null ? SKBitmap.Decode(CreatePlaceholderSprite(pk)) : null;
 
-        using var composed = ComposeSprite(baseSprite, pk);
-        return EncodePng(composed);
+        return ComposeSprite(baseSprite ?? placeholder!, pk);
     }
 
     public byte[]? GetSprite(ushort species, byte form, byte gender, uint formarg, bool shiny, EntityContext context)
@@ -52,6 +56,21 @@ public sealed class AvaloniaSpriteRenderer : ISpriteRenderer
         var skBitmap = _loader.GetSprite(species, form, gender, formarg, shiny, context);
         if (skBitmap == null) return null;
         return EncodePng(skBitmap);
+    }
+
+    public byte[]? GetSlotSprite(PKM pk, PKHeX.Application.Models.SpriteSlotState state)
+    {
+        var empty = pk.Species == 0;
+        using var bitmap = empty ? new SKBitmap(SpriteWidth, SpriteHeight) : CreateSprite(pk);
+        using var canvas = new SKCanvas(bitmap);
+        if (empty) { canvas.Clear(SKColors.Transparent); state = state with { Illegal = false, MoveHint = false }; }
+        if (state.Illegal || state.MoveHint) DrawOverlay(canvas, _loader.GetLegalityOverlay(state.Illegal), 0, 44);
+        if (state.Storage.IsBattleTeam() >= 0) DrawOverlay(canvas, _loader.GetSlotOverlay("team"), 0, 30);
+        if (state.Storage.HasFlag(StorageSlotSource.Locked)) DrawOverlay(canvas, _loader.GetSlotOverlay("locked"), 14, 30);
+        var party = state.Storage.IsParty();
+        if (party >= 0) DrawOverlay(canvas, _loader.GetSlotOverlay($"party{party + 1}"), 14, 44);
+        if (state.Storage.HasFlag(StorageSlotSource.Starter)) DrawOverlay(canvas, _loader.GetSlotOverlay("starter"), 28, 44);
+        return EncodePng(bitmap);
     }
 
     public byte[]? GetItemSprite(int itemId)
@@ -106,45 +125,23 @@ public sealed class AvaloniaSpriteRenderer : ISpriteRenderer
 
         if (pk.IsShiny)
         {
-            var shinyOverlay = _loader.GetShinyOverlay();
-            if (shinyOverlay is not null)
-            {
-                using var shinyPaint = new SKPaint { Color = SKColors.White.WithAlpha(178) };
-                canvas.DrawBitmap(shinyOverlay, 0, 0, shinyPaint);
-            }
-            else
-            {
-                DrawShinyIndicator(canvas);
-            }
+            DrawOverlay(canvas, _loader.GetShinyOverlay(), 0, 0, 20);
         }
+
+        // Independent fixed lanes preserve the form sprite and keep all concurrent states visible.
+        if (pk is IAlphaReadOnly { IsAlpha: true } && _loader.GetAlphaOverlay() is { } alpha)
+            canvas.DrawBitmap(alpha, SKRect.Create(48, 0, 20, 20));
+        if (pk is IGigantamaxReadOnly { CanGigantamax: true } && _loader.GetGigantamaxOverlay() is { } gmax)
+            canvas.DrawBitmap(gmax, SKRect.Create(24, 0, 20, 20));
 
         return result;
     }
 
-    private static void DrawShinyIndicator(SKCanvas canvas)
+    private static void DrawOverlay(SKCanvas canvas, SKBitmap? overlay, float x, float y, float size = 12)
     {
-        using var paint = new SKPaint
-        {
-            Color = new SKColor(255, 215, 0), // Gold
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill
-        };
-
-        // Simple star shape at top-left
-        var path = new SKPath();
-        float cx = 8, cy = 8, r = 6;
-        for (int i = 0; i < 5; i++)
-        {
-            float angle = (float)(i * 144 - 90) * (float)Math.PI / 180f;
-            float x = cx + r * (float)Math.Cos(angle);
-            float y = cy + r * (float)Math.Sin(angle);
-            if (i == 0)
-                path.MoveTo(x, y);
-            else
-                path.LineTo(x, y);
-        }
-        path.Close();
-        canvas.DrawPath(path, paint);
+        if (overlay is null) return;
+        var scale = Math.Min(size / overlay.Width, size / overlay.Height);
+        canvas.DrawBitmap(overlay, SKRect.Create(x, y, overlay.Width * scale, overlay.Height * scale));
     }
 
     private static uint GetFormArg(PKM pk)

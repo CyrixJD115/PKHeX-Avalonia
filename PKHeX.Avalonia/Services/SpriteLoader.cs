@@ -123,6 +123,11 @@ public sealed class SpriteLoader
         return LoadFromPrefix(OverlayPrefix, "rare_icon_alt.png");
     }
 
+    public SKBitmap? GetAlphaOverlay() => LoadFromPrefix(OverlayPrefix, "alpha_alt.png");
+    public SKBitmap? GetGigantamaxOverlay() => LoadFromPrefix(OverlayPrefix, "dyna.png");
+    public SKBitmap? GetSlotOverlay(string name) => LoadFromPrefix(OverlayPrefix, name + ".png");
+    public SKBitmap? GetLegalityOverlay(bool illegal) => LoadFromPrefix(ImagePrefix, illegal ? "warn.png" : "hint.png");
+
     public SKBitmap? GetEggSprite(ushort species)
     {
         var res = GetStyleResources(Style);

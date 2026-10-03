@@ -18,12 +18,54 @@ using PKHeX.Presentation.ViewModels;
 namespace PKHeX.Avalonia.Tests;
 
 /// <summary>
-/// Regression coverage for the detached Box/Party workspaces. The same existing ViewModel must
-/// drive both the embedded and modeless views so selection, drag payloads, refreshes, and save
-/// lifetime all remain shared.
+/// Independent box navigation with shared mutations and save-session lifetime.
 /// </summary>
 public sealed class DetachedWorkspaceTests
 {
+    [AvaloniaFact]
+    public void DetachedBoxesNavigateIndependentlyAndSwapCopyDeleteUndoRefreshBothWindows()
+    {
+        using var app = new HeadlessAppFixture();
+        var save = new SAV6XY();
+        save.SetBoxSlotAtIndex(new PK6 { Species = 25 }, 0, 0);
+        save.SetBoxSlotAtIndex(new PK6 { Species = 1 }, 1, 0);
+        app.LoadSaveInstance(save);
+        var embedded = app.BoxViewer!;
+        embedded.OpenDetachedToolCommand.Execute(null);
+        var detached = Assert.IsType<BoxViewerViewModel>(app.Windows.ShownTools.Single().ViewModel);
+        detached.NextBoxCommand.Execute(null);
+        detached.SelectedIndex = 2;
+        Assert.Equal(0, embedded.CurrentBox);
+        Assert.Equal(0, save.CurrentBox);
+        Assert.Equal(0, embedded.SelectedIndex);
+        detached.RequestMoveCommand.Execute((embedded.CreateDragData(0), detached.Slots[0], false));
+        app.Pump();
+        Assert.Equal(1, embedded.Slots[0].Species);
+        Assert.Equal(25, detached.Slots[0].Species);
+        Assert.Equal(1, detached.CurrentBox);
+        Assert.Equal(2, detached.SelectedIndex);
+        embedded.RequestMoveCommand.Execute((detached.CreateDragData(0), embedded.Slots[1], true));
+        app.Pump();
+        Assert.Equal(25, embedded.Slots[1].Species);
+        Assert.Equal(25, detached.Slots[0].Species);
+        app.ViewModel.UndoCommand.Execute(null); app.Pump();
+        Assert.Equal(0, embedded.Slots[1].Species);
+        Assert.Equal(25, detached.Slots[0].Species);
+        app.ViewModel.UndoCommand.Execute(null); app.Pump();
+        Assert.Equal(25, embedded.Slots[0].Species);
+        Assert.Equal(1, detached.Slots[0].Species);
+        app.ViewModel.OpenBoxWorkspaceCommand.Execute(null);
+        Assert.Same(detached, app.Windows.FocusedTools.Last());
+        Assert.Equal(1, detached.CurrentBox);
+        var payload = detached.CreateDragData(0);
+        app.LoadSaveInstance(new SAV6XY());
+        Assert.NotEqual(detached.SessionId, app.BoxViewer!.SessionId);
+        var shown = app.Windows.ShownTools.Count;
+        detached.OpenDetachedToolCommand.Execute(null);
+        Assert.Equal(shown, app.Windows.ShownTools.Count);
+        app.BoxViewer.RequestMoveCommand.Execute((payload, app.BoxViewer.Slots[0], false));
+        Assert.Equal(0, app.BoxViewer.Slots[0].Species);
+    }
     [AvaloniaFact]
     public void ViewLocator_Resolves_BoxAndPartyViewerViews()
     {
@@ -139,7 +181,7 @@ public sealed class DetachedWorkspaceTests
     }
 
     [AvaloniaFact]
-    public void DetachedCommands_UseExistingViewModels_AndSaveSwitchInvalidatesThem()
+    public void DetachedCommands_UseIndependentBoxViewModel_AndSaveSwitchInvalidatesThem()
     {
         using var app = new HeadlessAppFixture();
         var firstSave = new SAV6XY();
@@ -160,9 +202,10 @@ public sealed class DetachedWorkspaceTests
         Assert.Equal(2, app.Windows.ActiveToolCount);
         Assert.Equal(2, app.Windows.ShownTools.Count);
         Assert.Equal(2, app.Windows.FocusedTools.Count);
-        Assert.Contains(app.Windows.ShownTools, tool => ReferenceEquals(tool.ViewModel, oldBox));
+        var detached = Assert.IsType<BoxViewerViewModel>(app.Windows.ShownTools[0].ViewModel);
+        Assert.NotSame(oldBox, detached);
         Assert.Contains(app.Windows.ShownTools, tool => ReferenceEquals(tool.ViewModel, oldParty));
-        Assert.Same(oldBox, app.Windows.FocusedTools[0]);
+        Assert.Same(detached, app.Windows.FocusedTools[0]);
         Assert.Same(oldParty, app.Windows.FocusedTools[1]);
         Assert.Same(oldParty, app.Windows.ShownTools[^1].ViewModel);
         Assert.Equal(LocalizedStrings.Instance["Tab_Box"], app.Windows.ShownTools[0].Title);

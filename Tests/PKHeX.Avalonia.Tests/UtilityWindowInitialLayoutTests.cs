@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Moq;
 using PKHeX.Avalonia.Services;
 using PKHeX.Avalonia.Tests.Harness;
@@ -13,6 +14,38 @@ namespace PKHeX.Avalonia.Tests;
 
 public class UtilityWindowInitialLayoutTests
 {
+    [AvaloniaFact]
+    public async Task AboutHeightAdjustsToUpdateStatusAndKeepsBothActionsVisible()
+    {
+        using var app = new HeadlessAppFixture();
+        var vm = new AboutViewModel(UpdateTestDoubles.Coordinator());
+        var view = new AboutView { DataContext = vm };
+        var window = new Window { Content = view, MaxWidth = 900, MaxHeight = 800 };
+        WindowService.SetMeasuredInitialBounds(window);
+        WindowService.ConfigureAboutAutoSize(window);
+        window.Show();
+        try
+        {
+            await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+            var initialHeight = window.ClientSize.Height;
+            foreach (var text in new[] { "Checking for updates…", "You're up to date (v1.87.1)", string.Join(" ", Enumerable.Repeat("Update service unavailable.", 12)), "" })
+            {
+                vm.UpdateCheckStatus = text;
+                await PKHeX.Testing.HeadlessRenderSettling.Settle(window);
+                // The headless font metrics can fit a short status within the view's minimum
+                // height. Long status must grow; actual short-status growth is also Skia-tested.
+                Assert.True(window.ClientSize.Height >= initialHeight);
+                if (text.Length > 100) Assert.True(window.ClientSize.Height > initialHeight);
+                foreach (var button in view.GetVisualDescendants().OfType<Button>())
+                {
+                    var end = button.TranslatePoint(new Point(0, button.Bounds.Height), window)!.Value;
+                    Assert.InRange(end.Y, 1, window.ClientSize.Height);
+                }
+            }
+            Assert.Equal(initialHeight, window.ClientSize.Height);
+        }
+        finally { window.Close(); }
+    }
     [AvaloniaTheory]
     [InlineData(false, 480, 240)] [InlineData(true, 620, 440)]
     public void CompactUtilitySizeIsSetBeforeShowingEvenWhenWindowStartedLarge(bool legality, int width, int height)

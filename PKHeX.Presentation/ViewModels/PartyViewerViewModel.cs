@@ -85,12 +85,14 @@ public partial class PartyViewerViewModel : ViewModelBase
             try { pk = _sav.GetPartySlotAtIndex(i); }
             catch { pk = _sav.BlankPKM; }
             var isEmpty = pk.Species == 0 || i >= partyCount;
+            var state = isEmpty ? default : PKHeX.Application.Models.SpriteSlotState.Create(pk, _sav, StorageSlotType.Party, (StorageSlotSource)((int)StorageSlotSource.Party1 << i), _haXMode);
             
             Slots.Add(new PartySlotData
             {
                 Slot = i,
                 Species = pk.Species,
-                Sprite = _spriteRenderer.GetSprite(pk),
+                Sprite = isEmpty ? _spriteRenderer.GetEmptySlot() : _spriteRenderer.GetSlotSprite(pk, state),
+                SemanticSummary = isEmpty ? string.Empty : SpriteStateDescription.Describe(pk, state),
                 IsEmpty = isEmpty,
                 IsShiny = !isEmpty && pk.IsShiny,
                 Nickname = isEmpty ? string.Empty : pk.Nickname,
@@ -103,7 +105,7 @@ public partial class PartyViewerViewModel : ViewModelBase
                 CurrentHp = (ushort)pk.Stat_HPCurrent,
                 MaxHp = (ushort)pk.Stat_HPMax,
                 ShowdownSummary = isEmpty ? string.Empty : new ShowdownSet(pk).Text,
-                IsLegal = _haXMode || isEmpty || new LegalityAnalysis(pk).Valid,
+                IsLegal = !state.Illegal,
                 IsSelected = false
             });
         }

@@ -3494,5 +3494,15 @@
   "SvDex_Heard": "Bekannt",
   "SvDex_Viewed": "Angesehen",
   "BdspTrainer_Badge": "Orden {0}",
-  "BdspTrainer_Height": "Höhe"
+  "BdspTrainer_Height": "Höhe",
+  "SlotState_Alpha": "Alpha",
+  "SlotState_Gigantamax": "Gigadynamax",
+  "SlotState_Egg": "Ei",
+  "SlotState_Shiny": "Schillernd",
+  "SlotState_Illegal": "Legalitätswarnung",
+  "SlotState_MoveHint": "Hinweis auf nicht verfügbare Attacke",
+  "SlotState_Team": "Kampfteam",
+  "SlotState_Locked": "Gesperrt",
+  "SlotState_Party": "Teamplatz {0}",
+  "SlotState_Starter": "Starter"
 }
