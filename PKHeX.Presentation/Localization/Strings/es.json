@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "Todos los contadores de investigación guardados",
   "DexLA_CounterSlot": "casilla de contador {0}",
   "DexLA_Unavailable": "Los datos de la misión no están disponibles en esta partida.",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Noroteo",
+  "SvDex_Region3": "Arándano",
+  "SvDex_Obtained": "Obtenido",
+  "SvDex_Seen": "Visto",
+  "SvDex_Heard": "Conocido",
+  "SvDex_Viewed": "Consultado",
   "BdspTrainer_Badge": "Medalla {0}",
   "BdspTrainer_Height": "Altura"
 }

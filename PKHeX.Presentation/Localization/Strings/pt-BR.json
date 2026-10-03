@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "All stored research counters",
   "DexLA_CounterSlot": "counter slot {0}",
   "DexLA_Unavailable": "Quest data is unavailable in this save.",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Kitakami",
+  "SvDex_Region3": "Blueberry",
+  "SvDex_Obtained": "Obtained",
+  "SvDex_Seen": "Seen",
+  "SvDex_Heard": "Heard of",
+  "SvDex_Viewed": "Viewed",
   "BdspTrainer_Badge": "Badge {0}",
   "BdspTrainer_Height": "Height"
 }

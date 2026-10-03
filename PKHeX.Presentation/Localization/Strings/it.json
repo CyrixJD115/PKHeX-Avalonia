@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "Tutti i contatori di ricerca salvati",
   "DexLA_CounterSlot": "posizione del contatore {0}",
   "DexLA_Unavailable": "I dati della missione non sono disponibili in questo salvataggio.",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Nordivia",
+  "SvDex_Region3": "Mirtillo",
+  "SvDex_Obtained": "Ottenuto",
+  "SvDex_Seen": "Visto",
+  "SvDex_Heard": "Conosciuto",
+  "SvDex_Viewed": "Visualizzato",
   "BdspTrainer_Badge": "Medaglia {0}",
   "BdspTrainer_Height": "Altezza"
 }

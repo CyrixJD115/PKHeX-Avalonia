@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "所有已保存的研究计数",
   "DexLA_CounterSlot": "计数位置 {0}",
   "DexLA_Unavailable": "此存档中无法使用任务数据。",
+  "SvDex_Region1": "帕底亚",
+  "SvDex_Region2": "北上",
+  "SvDex_Region3": "蓝莓",
+  "SvDex_Obtained": "获得",
+  "SvDex_Seen": "见过",
+  "SvDex_Heard": "已知",
+  "SvDex_Viewed": "已查看",
   "BdspTrainer_Badge": "徽章 {0}",
   "BdspTrainer_Height": "高度"
 }

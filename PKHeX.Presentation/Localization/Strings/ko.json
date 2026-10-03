@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "저장된 모든 연구 횟수",
   "DexLA_CounterSlot": "횟수 슬롯 {0}",
   "DexLA_Unavailable": "이 저장 데이터에서 의뢰 데이터를 사용할 수 없습니다.",
+  "SvDex_Region1": "팔데아",
+  "SvDex_Region2": "북신",
+  "SvDex_Region3": "블루베리",
+  "SvDex_Obtained": "입수",
+  "SvDex_Seen": "발견",
+  "SvDex_Heard": "알려짐",
+  "SvDex_Viewed": "확인함",
   "BdspTrainer_Badge": "배지 {0}",
   "BdspTrainer_Height": "높이"
 }

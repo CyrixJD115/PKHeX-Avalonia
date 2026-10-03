@@ -3486,6 +3486,13 @@
   "DexLA_AllCounters": "保存済みの全研究回数",
   "DexLA_CounterSlot": "回数スロット {0}",
   "DexLA_Unavailable": "このセーブデータでは依頼データを利用できません。",
+  "SvDex_Region1": "パルデア",
+  "SvDex_Region2": "キタカミ",
+  "SvDex_Region3": "ブルーベリー",
+  "SvDex_Obtained": "入手",
+  "SvDex_Seen": "見た",
+  "SvDex_Heard": "知られている",
+  "SvDex_Viewed": "確認済み",
   "BdspTrainer_Badge": "バッジ {0}",
   "BdspTrainer_Height": "高さ"
 }
