@@ -3484,5 +3484,6 @@
   "DexLA_ClearTasks": "Clear editable tasks",
   "DexLA_TaskScopeHelp": "Task actions change editable counters for the current entry, or the entire Pokédex when selected. Forms and quest states stay unchanged. Reporting is a separate action.",
   "DexLA_AllCounters": "All stored research counters",
-  "DexLA_CounterSlot": "counter slot {0}"
+  "DexLA_CounterSlot": "counter slot {0}",
+  "DexLA_Unavailable": "Quest data is unavailable in this save."
 }

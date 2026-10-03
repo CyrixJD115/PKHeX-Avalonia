@@ -3484,5 +3484,6 @@
   "DexLA_ClearTasks": "Azzera attività modificabili",
   "DexLA_TaskScopeHelp": "Le azioni cambiano i contatori modificabili della voce attuale o dell’intero Pokédex se selezionato. Forme e missioni restano invariate. La segnalazione è separata.",
   "DexLA_AllCounters": "Tutti i contatori di ricerca salvati",
-  "DexLA_CounterSlot": "posizione del contatore {0}"
+  "DexLA_CounterSlot": "posizione del contatore {0}",
+  "DexLA_Unavailable": "I dati della missione non sono disponibili in questo salvataggio."
 }

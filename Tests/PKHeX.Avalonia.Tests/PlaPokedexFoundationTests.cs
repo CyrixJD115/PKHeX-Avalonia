@@ -8,6 +8,25 @@ namespace PKHeX.Avalonia.Tests;
 
 public class PlaPokedexFoundationTests
 {
+    [Theory] [InlineData(25)] [InlineData(722)] [InlineData(201)]
+    public void AllEightGenderAlphaShinyFlagsRoundtripThroughTheNormalSaveParser(int species)
+    {
+        var save = LoadSave(); using var vm = new PokedexLAEditorViewModel(save);
+        var entry = vm.SpeciesList.Single(entry => entry.Species == species); var form = entry.Forms[0];
+        form.Seen0 = form.Seen1 = form.Seen2 = form.Seen3 = form.Seen4 = form.Seen5 = form.Seen6 = form.Seen7 = true;
+        form.Obtained0 = form.Obtained1 = form.Obtained2 = form.Obtained3 = form.Obtained4 = form.Obtained5 = form.Obtained6 = form.Obtained7 = true;
+        form.Caught0 = form.Caught1 = form.Caught2 = form.Caught3 = form.Caught4 = form.Caught5 = form.Caught6 = form.Caught7 = true;
+        entry.DisplayForm = form.Form; entry.DisplayAlpha = true; entry.DisplayShiny = true; entry.DisplayFemale = true;
+        var expected = (SAV8LA)save.Clone(); var dex = expected.Blocks.PokedexSave;
+        dex.SetPokeSeenInWildFlags((ushort)species, (byte)form.Form, 255); dex.SetPokeObtainFlags((ushort)species, (byte)form.Form, 255);
+        dex.SetPokeCaughtInWildFlags((ushort)species, (byte)form.Form, 255); dex.SetSelectedGenderForm((ushort)species, (byte)form.Form, true, true, true);
+        vm.SaveCommand.Execute(null); Assert.Empty(vm.Error);
+        var reopened = Assert.IsType<SAV8LA>(SaveUtil.GetSaveFile(save.Write())); var actual = reopened.Blocks.PokedexSave;
+        Assert.Equal(255, actual.GetPokeSeenInWildFlags((ushort)species, (byte)form.Form));
+        Assert.Equal(255, actual.GetPokeObtainFlags((ushort)species, (byte)form.Form)); Assert.Equal(255, actual.GetPokeCaughtInWildFlags((ushort)species, (byte)form.Form));
+        Assert.Equal(dex.GetSelectedGender1((ushort)species), actual.GetSelectedGender1((ushort)species));
+        Assert.True(actual.GetSelectedAlpha((ushort)species)); Assert.True(actual.GetSelectedShiny((ushort)species));
+    }
     [Theory] [InlineData(false)] [InlineData(true)]
     public async Task ConfirmedTaskScopeStagesOnlyEditableCountersAndUndoRestoresDrafts(bool whole)
     {

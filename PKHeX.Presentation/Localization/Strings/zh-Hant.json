@@ -3484,5 +3484,6 @@
   "DexLA_ClearTasks": "清空可編輯課題",
   "DexLA_TaskScopeHelp": "課題操作會更改目前條目或所選整個圖鑑的可編輯計數。形態和任務狀態保持不變。報告是獨立操作。",
   "DexLA_AllCounters": "所有已儲存的研究計數",
-  "DexLA_CounterSlot": "計數位置 {0}"
+  "DexLA_CounterSlot": "計數位置 {0}",
+  "DexLA_Unavailable": "此存檔中無法使用任務資料。"
 }

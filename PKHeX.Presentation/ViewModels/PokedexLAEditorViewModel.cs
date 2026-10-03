@@ -21,6 +21,7 @@ public partial class PokedexLAEditorViewModel : ViewModelBase, IDisposable
     private readonly IDialogService? _dialogs;
     [ObservableProperty] private bool _entirePokedex;
     public bool CanUndo => !_closed && _session.CanUndo;
+    public bool CanReport => _entries.All(entry => entry.Tasks.All(task => task.IsAvailable));
     [ObservableProperty] private string _error = string.Empty;
     public bool HasError => Error.Length != 0;
     partial void OnErrorChanged(string value) => OnPropertyChanged(nameof(HasError));
@@ -89,8 +90,8 @@ public partial class PokedexLAEditorViewModel : ViewModelBase, IDisposable
     }
 
     [RelayCommand]
-    private Task ReportAll() => RunScopedAsync(LocalizedStrings.Instance["PokedexLAEditor_ReportAll"], true, null, () => _dex.UpdateAllReportPoke());
-    private Task ReportCurrentAsync(ushort species) => RunScopedAsync(LocalizedStrings.Instance["PokedexLAEditor_ReportCurrentSpecies"], false, species, () => _dex.UpdateSpecificReportPoke(species));
+    private Task ReportAll() => RunScopedAsync(LocalizedStrings.Instance["PokedexLAEditor_ReportAll"], true, null, () => _dex.UpdateAllReportPoke(), requiresReportingData: true);
+    private Task ReportCurrentAsync(ushort species) => RunScopedAsync(LocalizedStrings.Instance["PokedexLAEditor_ReportCurrentSpecies"], false, species, () => _dex.UpdateSpecificReportPoke(species), requiresReportingData: true);
     [RelayCommand] private Task CompleteTasks() => EditTasksAsync(true);
     [RelayCommand] private Task ClearTasks() => EditTasksAsync(false);
     private Task EditTasksAsync(bool complete)
@@ -106,9 +107,9 @@ public partial class PokedexLAEditorViewModel : ViewModelBase, IDisposable
             }
         }, () => EntirePokedex == whole);
     }
-    private async Task RunScopedAsync(string title, bool whole, ushort? species, Action action, Func<bool>? validScope = null)
+    private async Task RunScopedAsync(string title, bool whole, ushort? species, Action action, Func<bool>? validScope = null, bool requiresReportingData = false)
     {
-        if (_closed || _dialogs is null || _entries.Any(entry => !entry.IsValid)) return;
+        if (_closed || _dialogs is null || requiresReportingData && !CanReport || _entries.Any(entry => !entry.IsValid)) return;
         int epoch = _epoch;
         string scope = whole ? LocalizedStrings.Instance["Dex9a_WholeDex"] : _entries.Single(entry => entry.Species == species).DisplayName;
         if (!await _dialogs.ShowConfirmationAsync(title, LocalizedStrings.Instance.Format("Dex9a_Confirm", scope), LocalizedStrings.Instance["Dex9a_Apply"], LocalizedStrings.Instance["Common_Cancel"])) return;
@@ -124,6 +125,7 @@ public partial class PokedexLAEditorViewModel : ViewModelBase, IDisposable
         LoadSpecies(); Error = string.Empty;
         SelectedSpecies = SpeciesList.FirstOrDefault(entry => entry.Species == selected) ?? SelectedSpecies;
         OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(CanReport));
     }
     [RelayCommand] private void Reset() { if (_closed) return; _epoch++; _session.Reset(); Reload(); }
     [RelayCommand] private void Undo() { if (_closed) return; _epoch++; _session.Undo(); Reload(); }
@@ -249,7 +251,6 @@ public partial class LASpeciesEntryViewModel : ViewModelBase
         DisplayShiny = _dex.GetSelectedShiny(_species); DisplayFemale = _dex.GetSelectedGender1(_species);
         _originalDisplay = (DisplayForm, DisplayAlpha, DisplayShiny, DisplayFemale);
         IsComplete = _dex.IsComplete(_species);
-        IsPerfect = _dex.IsPerfect(_species);
         IsSolitudeComplete = _dex.GetSolitudeComplete(_species);
         
         ReportedResearchLevel = _dex.GetPokeResearchRate(_species);
@@ -270,13 +271,15 @@ public partial class LASpeciesEntryViewModel : ViewModelBase
             form.Load();
         }
 
+        IsPerfect = Tasks.All(task => task.IsAvailable) && _dex.IsPerfect(_species);
+
         LoadAllCounters(); UpdateUnreportedLevel();
     }
 
     private void UpdateUnreportedLevel()
     {
         int unreported = ReportedResearchLevel;
-        foreach (var task in Tasks)
+        foreach (var task in Tasks.Where(task => task.IsAvailable))
         {
             int unreportedLevels = _dex.GetResearchTaskLevel(_species, task.Index, out _, out _, out _);
             unreported += unreportedLevels * task.PointsPerLevel;
@@ -448,14 +451,20 @@ public partial class LAResearchTaskViewModel : ViewModelBase
         _dex = dex;
         _changed = changed;
 
-        _dex.GetResearchTaskLevel(species, taskIndex, out _, out var value, out _);
-        _currentValue = _originalValue = value;
+        try
+        {
+            _dex.GetResearchTaskLevel(species, taskIndex, out _, out var value, out _);
+            _currentValue = _originalValue = value;
+        }
+        catch (ArgumentOutOfRangeException error) when (error.ParamName == "type" && !task.Task.CanSetCurrentValue())
+        { IsAvailable = false; }
     }
 
     public int Index { get; }
     public string Description => _task.GetTaskLabelString(Util.GetStringList("tasks8a", GameInfo.CurrentLanguage),
         Util.GetStringList("time_tasks8a", GameInfo.CurrentLanguage), Util.GetStringList("species_tasks8a", GameInfo.CurrentLanguage));
     public bool CanEdit => _task.Task.CanSetCurrentValue();
+    public bool IsAvailable { get; } = true;
     public bool HasBonus => _task.PointsBonus != 0;
     public string BonusText => LocalizedStrings.Instance.Format("DexLA_Bonus", _task.PointsBonus);
     public bool IsRequired => _task.RequiredForCompletion;
@@ -471,13 +480,13 @@ public partial class LAResearchTaskViewModel : ViewModelBase
     }
     internal void RefreshValue()
     {
-        if (!IsValid) return;
+        if (!IsValid || !IsAvailable) return;
         _dex.GetResearchTaskLevel(_species, Index, out _, out var value, out _);
         _refreshing = true;
         try { CurrentValue = value; } finally { _refreshing = false; }
         OnPropertyChanged(nameof(ThresholdProgress));
     }
-    public string ThresholdProgress => LocalizedStrings.Instance.Format("DexLA_ThresholdProgress", string.Join(" / ", Thresholds), AchievedThresholds, Thresholds.Count, ReportedThresholds);
+    public string ThresholdProgress => !IsAvailable ? LocalizedStrings.Instance["DexLA_Unavailable"] : LocalizedStrings.Instance.Format("DexLA_ThresholdProgress", string.Join(" / ", Thresholds), AchievedThresholds, Thresholds.Count, ReportedThresholds);
     public int PointsPerLevel => _task.PointsSingle + _task.PointsBonus;
 
     [ObservableProperty]

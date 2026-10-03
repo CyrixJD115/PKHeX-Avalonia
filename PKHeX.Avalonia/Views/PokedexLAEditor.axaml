@@ -4,7 +4,7 @@
             <DockPanel Classes="save-editor-header" DockPanel.Dock="Top" Margin="0,0,0,8">
                 <TextBlock Text="{loc:Loc PokedexLAEditor_Title}" Classes="view-title" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Content="{loc:Loc PokedexLAEditor_ReportAll}" Command="{Binding ReportAllCommand}" />
+                    <Button Content="{loc:Loc PokedexLAEditor_ReportAll}" Command="{Binding ReportAllCommand}" IsEnabled="{Binding CanReport}" />
                     <Button Content="{loc:Loc PokedexLAEditor_SaveAll}" Command="{Binding SaveCommand}" Classes="accent" />
                 </StackPanel>
             </DockPanel>
@@ -195,7 +195,7 @@
                                                     <TextBlock Text="{Binding BonusText}" IsVisible="{Binding HasBonus}" TextWrapping="Wrap" />
                                                     <TextBlock Text="{loc:Loc DexLA_Required}" IsVisible="{Binding IsRequired}" TextWrapping="Wrap" FontWeight="SemiBold" />
                                                 </StackPanel>
-                                                <NumericUpDown Grid.Column="1" Value="{Binding CurrentValue}" Minimum="{Binding DisplayMinimum}" Maximum="{Binding DisplayMaximum}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="{Binding Description}" ShowButtonSpinner="False" />
+                                                <NumericUpDown Grid.Column="1" Value="{Binding CurrentValue}" Minimum="{Binding DisplayMinimum}" Maximum="{Binding DisplayMaximum}" IsVisible="{Binding IsAvailable}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="{Binding Description}" ShowButtonSpinner="False" />
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

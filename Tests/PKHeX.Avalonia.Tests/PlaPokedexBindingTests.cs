@@ -15,6 +15,19 @@ namespace PKHeX.Avalonia.Tests;
 public class PlaPokedexBindingTests
 {
     [AvaloniaFact]
+    public void UnknownDisplayedFormAndNaNSizePayloadSurviveARealizedNoOp()
+    {
+        var save = PlaPokedexFoundationTests.LoadSave(); var dex = save.Blocks.PokedexSave;
+        dex.SetSelectedGenderForm(201, 63, false, false, false);
+        float payload = BitConverter.Int32BitsToSingle(unchecked((int)0x7fc01234)); dex.SetSizeStatistics(201, 0, true, payload, payload, 1, 2);
+        var before = save.AllBlocks.ToDictionary(block => block.Key, block => block.Data.ToArray());
+        using var vm = new PokedexLAEditorViewModel(save); vm.SelectedSpecies = vm.SpeciesList.Single(entry => entry.Species == 201);
+        var view = new PokedexLAEditor { DataContext = vm }; var window = new Window { Content = view, Width = 620, Height = 420 };
+        using var lifetime = new HeadlessWindowLifetime(window); window.Show(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+        Assert.Equal(63, vm.SelectedSpecies.DisplayForm); vm.SaveCommand.Execute(null); Assert.Empty(vm.Error);
+        foreach (var block in save.AllBlocks) Assert.Equal(before[block.Key], block.Data.ToArray());
+    }
+    [AvaloniaFact]
     public void LanguageSwitchRetainsPendingSizesTaskCountsAndDisplayedForm()
     {
         var previous = LocalizedStrings.Instance.CurrentLanguage;
