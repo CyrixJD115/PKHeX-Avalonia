@@ -6,6 +6,33 @@ namespace PKHeX.Avalonia.Tests;
 public class BdspTrainerFoundationTests
 {
     [Fact]
+    public void InvalidDateNaNGeometryAndRivalTrashSurviveNoOpWhileInvalidEditsRejectAllWrites()
+    {
+        var save = LoadSave(); save.System.TicksStart = -1; save.System.TicksLatest = 0;
+        save.MyStatus.Height = BitConverter.Int32BitsToSingle(unchecked((int)0x7fc01234));
+        save.RivalNameTrash[^1] = 0x7f;
+        var before = save.Data.ToArray(); using var vm = new BdspTrainerEditorViewModel(save);
+        Assert.Null(vm.StartedDate); Assert.Null(vm.LastSavedDate); Assert.True(float.IsNaN(vm.Y));
+        vm.SaveCommand.Execute(null); Assert.Empty(vm.Error); Assert.Equal(before, save.Data.ToArray());
+        vm.YText = "invalid"; vm.RivalName = "Blocked"; vm.SaveCommand.Execute(null); Assert.NotEmpty(vm.Error); Assert.Equal(before, save.Data.ToArray());
+        vm.ResetCommand.Execute(null); Assert.True(vm.CanSave);
+    }
+    [Fact]
+    public void ConcurrentHighByteCoordinateChangeRejectsTheWholeTransaction()
+    {
+        var save = LoadSave(); using var vm = new BdspTrainerEditorViewModel(save);
+        vm.X = save.MyStatus.X + 1; vm.RivalName = "Pending"; save.MyStatus.X += 256;
+        var live = save.Data.ToArray(); vm.SaveCommand.Execute(null); Assert.NotEmpty(vm.Error); Assert.Equal(live, save.Data.ToArray());
+    }
+    [Fact]
+    public void DeliberateVersionChangeRoundtripsWithoutTouchingUneditedIdentity()
+    {
+        var save = LoadSave(); var nameTrash = save.MyStatus.OriginalTrainerTrash.ToArray();
+        using var vm = new BdspTrainerEditorViewModel(save); vm.Version = GameVersion.SP; vm.SaveCommand.Execute(null); Assert.Empty(vm.Error);
+        var reopened = Assert.IsType<SAV8BS>(SaveUtil.GetSaveFile(save.Write())); Assert.Equal(GameVersion.SP, reopened.Version);
+        Assert.Equal(nameTrash, reopened.MyStatus.OriginalTrainerTrash.ToArray());
+    }
+    [Fact]
     public void DatesPreserveSubSecondFiletimeTicksAndRecordsRoundtrip()
     {
         var save = LoadSave(); save.System.TicksStart += 12345; save.System.TicksLatest += 23456;

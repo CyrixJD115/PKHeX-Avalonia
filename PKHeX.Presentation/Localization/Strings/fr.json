@@ -3485,5 +3485,7 @@
   "DexLA_TaskScopeHelp": "Les actions changent les compteurs modifiables de l’entrée actuelle ou du Pokédex entier si sélectionné. Les formes et quêtes sont conservées. Le rapport est une action distincte.",
   "DexLA_AllCounters": "Tous les compteurs de recherche enregistrés",
   "DexLA_CounterSlot": "emplacement du compteur {0}",
-  "DexLA_Unavailable": "Les données de quête ne sont pas disponibles dans cette sauvegarde."
+  "DexLA_Unavailable": "Les données de quête ne sont pas disponibles dans cette sauvegarde.",
+  "BdspTrainer_Badge": "Badge {0}",
+  "BdspTrainer_Height": "Hauteur"
 }

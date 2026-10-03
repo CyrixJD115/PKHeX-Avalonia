@@ -3485,5 +3485,7 @@
   "DexLA_TaskScopeHelp": "과제 작업은 현재 항목 또는 선택 시 도감 전체의 편집 가능한 횟수를 변경합니다. 폼과 의뢰 상태는 유지됩니다. 보고는 별도 작업입니다.",
   "DexLA_AllCounters": "저장된 모든 연구 횟수",
   "DexLA_CounterSlot": "횟수 슬롯 {0}",
-  "DexLA_Unavailable": "이 저장 데이터에서 의뢰 데이터를 사용할 수 없습니다."
+  "DexLA_Unavailable": "이 저장 데이터에서 의뢰 데이터를 사용할 수 없습니다.",
+  "BdspTrainer_Badge": "배지 {0}",
+  "BdspTrainer_Height": "높이"
 }

@@ -22,7 +22,7 @@ public partial class BdspTrainerEditorViewModel
     }
     private static DateTimeOffset? LocalDate(DateTime? value) => value is { } date ? new DateTimeOffset(date.Date) : null;
     private static DateTime? Combine(DateTimeOffset? date, TimeSpan? time, int seconds, long originalTicks) =>
-        date is { } d && time is { } t ? DateTime.SpecifyKind(d.Date.AddHours(t.Hours).AddMinutes(t.Minutes).AddSeconds(seconds).AddTicks(originalTicks % TimeSpan.TicksPerSecond), DateTimeKind.Local) : null;
+        date is { } d && time is { } t ? DateTime.SpecifyKind(d.Date.AddHours(t.Hours).AddMinutes(t.Minutes).AddSeconds(seconds).AddTicks(ReadLocal(originalTicks) is null ? 0 : originalTicks % TimeSpan.TicksPerSecond), DateTimeKind.Local) : null;
     private void LoadTimeRecords()
     {
         var save = _session.Staged; Bp = save.BattleTower.BP;

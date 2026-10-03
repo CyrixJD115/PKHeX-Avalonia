@@ -3485,5 +3485,7 @@
   "DexLA_TaskScopeHelp": "タスク操作は現在の項目、または選択した場合は図鑑全体の編集可能な回数を変更します。フォルムと依頼の状態は維持されます。報告は別の操作です。",
   "DexLA_AllCounters": "保存済みの全研究回数",
   "DexLA_CounterSlot": "回数スロット {0}",
-  "DexLA_Unavailable": "このセーブデータでは依頼データを利用できません。"
+  "DexLA_Unavailable": "このセーブデータでは依頼データを利用できません。",
+  "BdspTrainer_Badge": "バッジ {0}",
+  "BdspTrainer_Height": "高さ"
 }
