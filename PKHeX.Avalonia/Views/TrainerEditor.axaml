@@ -9,6 +9,7 @@
     <Grid>
     <Grid IsVisible="{Binding IsGen7}"><views:Misc7Editor DataContext="{Binding Gen7Editor}" /></Grid>
     <Grid IsVisible="{Binding IsSWSH}"><views:Misc8Editor DataContext="{Binding SwshEditor}" /></Grid>
+    <Grid IsVisible="{Binding IsPLA}"><views:Misc8aEditor DataContext="{Binding PlaEditor}" /></Grid>
     <views:TrainerZaWorkspace IsVisible="{Binding IsZA}" />
     <Grid IsVisible="{Binding IsLGPE}"><views:Misc7bEditor DataContext="{Binding LgpeEditor}" /></Grid>
     <Border Classes="view-container" IsVisible="{Binding !HasDedicatedTrainerWorkspace}">

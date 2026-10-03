@@ -17,9 +17,12 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     public Misc8EditorViewModel? SwshEditor { get; }
     private SAV8SWSH? _swshParentBaseline;
     public bool IsSWSH => SwshEditor is not null;
+    public Misc8aEditorViewModel? PlaEditor { get; }
+    private SAV8LA? _plaParentBaseline;
+    public bool IsPLA => PlaEditor is not null;
     public bool IsGen7 => Gen7Editor is not null;
     public bool IsLGPE => LgpeEditor is not null;
-    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7 || IsSWSH;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7 || IsSWSH || IsPLA;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -33,6 +36,8 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _gen7ParentBaseline = sav is SAV7 baseline7 ? (SAV7)baseline7.Clone() : null;
         SwshEditor = sav is SAV8SWSH swsh ? new Misc8EditorViewModel(swsh, dialogs) : null;
         _swshParentBaseline = sav is SAV8SWSH swshBaseline ? (SAV8SWSH)swshBaseline.Clone() : null;
+        PlaEditor = sav is SAV8LA pla ? new Misc8aEditorViewModel(pla) : null;
+        _plaParentBaseline = sav is SAV8LA plaBaseline ? (SAV8LA)plaBaseline.Clone() : null;
         LoadFromSave();
     }
 
@@ -437,6 +442,23 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (PlaEditor is not null && _plaParentBaseline is { } plaBaseline)
+        {
+            if (TrainerName != plaBaseline.OT) PlaEditor.TrainerName = TrainerName;
+            if (Gender != plaBaseline.Gender) PlaEditor.Gender = Gender;
+            if (plaBaseline.Blocks.GetBlock(SaveBlockAccessor8LA.KMoney).Type == SCTypeCode.UInt32 && Money != plaBaseline.Money) PlaEditor.Money = Money;
+            if (Language != plaBaseline.Language) PlaEditor.Language = Language;
+            if (PlayedHours != plaBaseline.PlayedHours) PlaEditor.PlayedHours = PlayedHours;
+            if (PlayedMinutes != plaBaseline.PlayedMinutes) PlaEditor.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != plaBaseline.PlayedSeconds) PlaEditor.PlayedSeconds = PlayedSeconds;
+            if (DisplayTid != plaBaseline.DisplayTID) PlaEditor.DisplayTid = DisplayTid;
+            if (DisplaySid != plaBaseline.DisplaySID) PlaEditor.DisplaySid = DisplaySid;
+            if (HasMeritPoints && plaBaseline.Blocks.GetBlock(SaveBlockAccessor8LA.KMeritCurrent).Type == SCTypeCode.UInt32 && MeritPoints != (uint)plaBaseline.Blocks.GetBlockValue(SaveBlockAccessor8LA.KMeritCurrent)) PlaEditor.MeritCurrent = MeritPoints;
+            if (HasMeritEarned && plaBaseline.Blocks.GetBlock(SaveBlockAccessor8LA.KMeritEarnedTotal).Type == SCTypeCode.UInt32 && MeritEarned != (uint)plaBaseline.Blocks.GetBlockValue(SaveBlockAccessor8LA.KMeritEarnedTotal)) PlaEditor.MeritEarned = MeritEarned;
+            PlaEditor.SaveCommand.Execute(null);
+            if (!PlaEditor.HasError) { _plaParentBaseline = (SAV8LA)_sav.Clone(); LoadFromSave(); }
+            return;
+        }
         if (SwshEditor is not null && _swshParentBaseline is { } swshBaseline)
         {
             if (TrainerName != swshBaseline.OT) SwshEditor.TrainerName = TrainerName;
@@ -668,6 +690,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (PlaEditor is not null) { PlaEditor.ResetCommand.Execute(null); _plaParentBaseline = (SAV8LA)_sav.Clone(); LoadFromSave(); return; }
         if (SwshEditor is not null) { SwshEditor.ResetCommand.Execute(null); _swshParentBaseline = (SAV8SWSH)_sav.Clone(); LoadFromSave(); return; }
         if (Gen7Editor is not null) { Gen7Editor.ResetCommand.Execute(null); _gen7ParentBaseline = (SAV7)_sav.Clone(); LoadFromSave(); return; }
         if (LgpeEditor is not null) { LgpeEditor.ResetCommand.Execute(null); _lgpeParentBaseline = (SAV7b)_sav.Clone(); LoadFromSave(); return; }
@@ -680,6 +703,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     {
         LgpeEditor?.RefreshLanguage();
         SwshEditor?.RefreshLanguage();
+        PlaEditor?.RefreshLanguage();
         LanguageList = GameInfo.Sources.LanguageDataSource(_sav.Generation, _sav.Context);
         OnPropertyChanged(nameof(GenderList));
         if (_sav is SAV9ZA za) LoadZaImages(za);
