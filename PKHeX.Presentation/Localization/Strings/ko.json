@@ -3492,5 +3492,7 @@
   "SvDex_Obtained": "입수",
   "SvDex_Seen": "발견",
   "SvDex_Heard": "알려짐",
-  "SvDex_Viewed": "확인함"
+  "SvDex_Viewed": "확인함",
+  "BdspTrainer_Badge": "배지 {0}",
+  "BdspTrainer_Height": "높이"
 }

@@ -3492,5 +3492,7 @@
   "SvDex_Obtained": "Obtenido",
   "SvDex_Seen": "Visto",
   "SvDex_Heard": "Conocido",
-  "SvDex_Viewed": "Consultado"
+  "SvDex_Viewed": "Consultado",
+  "BdspTrainer_Badge": "Medalla {0}",
+  "BdspTrainer_Height": "Altura"
 }

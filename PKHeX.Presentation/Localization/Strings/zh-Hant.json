@@ -3492,5 +3492,7 @@
   "SvDex_Obtained": "獲得",
   "SvDex_Seen": "見過",
   "SvDex_Heard": "已知",
-  "SvDex_Viewed": "已查看"
+  "SvDex_Viewed": "已查看",
+  "BdspTrainer_Badge": "徽章 {0}",
+  "BdspTrainer_Height": "高度"
 }

@@ -193,6 +193,7 @@ public partial class TrainerEditorViewModel
 
     public void Dispose()
     {
+        BdspEditor?.Dispose();
         PlaEditor?.Dispose();
         LgpeEditor?.Dispose();
         Gen7Editor?.Dispose();

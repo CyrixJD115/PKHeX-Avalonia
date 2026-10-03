@@ -20,9 +20,12 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     public Misc8aEditorViewModel? PlaEditor { get; }
     private SAV8LA? _plaParentBaseline;
     public bool IsPLA => PlaEditor is not null;
+    public BdspTrainerEditorViewModel? BdspEditor { get; }
+    private SAV8BS? _bdspParentBaseline;
+    public bool IsBDSP => BdspEditor is not null;
     public bool IsGen7 => Gen7Editor is not null;
     public bool IsLGPE => LgpeEditor is not null;
-    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7 || IsSWSH || IsPLA;
+    public bool HasDedicatedTrainerWorkspace => IsZA || IsLGPE || IsGen7 || IsSWSH || IsPLA || IsBDSP;
 
     public TrainerEditorViewModel(SaveFile sav, IDialogService? dialogs = null, IImageCodec? imageCodec = null)
     {
@@ -38,6 +41,8 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
         _swshParentBaseline = sav is SAV8SWSH swshBaseline ? (SAV8SWSH)swshBaseline.Clone() : null;
         PlaEditor = sav is SAV8LA pla ? new Misc8aEditorViewModel(pla) : null;
         _plaParentBaseline = sav is SAV8LA plaBaseline ? (SAV8LA)plaBaseline.Clone() : null;
+        BdspEditor = sav is SAV8BS bdsp ? new BdspTrainerEditorViewModel(bdsp) : null;
+        _bdspParentBaseline = sav is SAV8BS bdspBaseline ? (SAV8BS)bdspBaseline.Clone() : null;
         LoadFromSave();
     }
 
@@ -442,6 +447,22 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
+        if (BdspEditor is not null && _bdspParentBaseline is { } bdspBaseline)
+        {
+            if (TrainerName != bdspBaseline.OT) BdspEditor.TrainerName = TrainerName;
+            if (Gender != bdspBaseline.Gender) BdspEditor.Gender = Gender;
+            if (Language != bdspBaseline.Language) BdspEditor.Language = Language;
+            if (Money != bdspBaseline.Money) BdspEditor.Money = Money;
+            if (DisplayTid != bdspBaseline.DisplayTID) BdspEditor.DisplayTid = DisplayTid;
+            if (DisplaySid != bdspBaseline.DisplaySID) BdspEditor.DisplaySid = DisplaySid;
+            if (PlayedHours != bdspBaseline.PlayedHours) BdspEditor.PlayedHours = PlayedHours;
+            if (PlayedMinutes != bdspBaseline.PlayedMinutes) BdspEditor.PlayedMinutes = PlayedMinutes;
+            if (PlayedSeconds != bdspBaseline.PlayedSeconds) BdspEditor.PlayedSeconds = PlayedSeconds;
+            if (HasBP && BP != bdspBaseline.BattleTower.BP) BdspEditor.Bp = BP;
+            BdspEditor.SaveCommand.Execute(null);
+            if (!BdspEditor.HasError) { _bdspParentBaseline = (SAV8BS)_sav.Clone(); LoadFromSave(); }
+            return;
+        }
         if (PlaEditor is not null && _plaParentBaseline is { } plaBaseline)
         {
             if (TrainerName != plaBaseline.OT) PlaEditor.TrainerName = TrainerName;
@@ -690,6 +711,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Reset()
     {
+        if (BdspEditor is not null) { BdspEditor.ResetCommand.Execute(null); _bdspParentBaseline = (SAV8BS)_sav.Clone(); LoadFromSave(); return; }
         if (PlaEditor is not null) { PlaEditor.ResetCommand.Execute(null); _plaParentBaseline = (SAV8LA)_sav.Clone(); LoadFromSave(); return; }
         if (SwshEditor is not null) { SwshEditor.ResetCommand.Execute(null); _swshParentBaseline = (SAV8SWSH)_sav.Clone(); LoadFromSave(); return; }
         if (Gen7Editor is not null) { Gen7Editor.ResetCommand.Execute(null); _gen7ParentBaseline = (SAV7)_sav.Clone(); LoadFromSave(); return; }
@@ -701,6 +723,7 @@ public partial class TrainerEditorViewModel : ViewModelBase, IDisposable
 
     public void RefreshLanguage()
     {
+        BdspEditor?.RefreshLanguage();
         LgpeEditor?.RefreshLanguage();
         SwshEditor?.RefreshLanguage();
         PlaEditor?.RefreshLanguage();

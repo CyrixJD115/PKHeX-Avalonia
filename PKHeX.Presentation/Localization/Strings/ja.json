@@ -3492,5 +3492,7 @@
   "SvDex_Obtained": "入手",
   "SvDex_Seen": "見た",
   "SvDex_Heard": "知られている",
-  "SvDex_Viewed": "確認済み"
+  "SvDex_Viewed": "確認済み",
+  "BdspTrainer_Badge": "バッジ {0}",
+  "BdspTrainer_Height": "高さ"
 }
