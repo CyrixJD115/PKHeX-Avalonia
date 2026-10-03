@@ -3485,5 +3485,12 @@
   "DexLA_TaskScopeHelp": "Aufgabenaktionen ändern bearbeitbare Zähler des aktuellen Eintrags oder des gesamten Pokédex, wenn ausgewählt. Formen und Questzustände bleiben erhalten. Melden ist eine eigene Aktion.",
   "DexLA_AllCounters": "Alle gespeicherten Forschungszähler",
   "DexLA_CounterSlot": "Zählerplatz {0}",
-  "DexLA_Unavailable": "Questdaten sind in diesem Spielstand nicht verfügbar."
+  "DexLA_Unavailable": "Questdaten sind in diesem Spielstand nicht verfügbar.",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Kitakami",
+  "SvDex_Region3": "Blaubeer",
+  "SvDex_Obtained": "Erhalten",
+  "SvDex_Seen": "Gesehen",
+  "SvDex_Heard": "Bekannt",
+  "SvDex_Viewed": "Angesehen"
 }

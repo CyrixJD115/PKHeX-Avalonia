@@ -3485,5 +3485,12 @@
   "DexLA_TaskScopeHelp": "Las acciones cambian los contadores editables de la entrada actual o de toda la Pokédex si se selecciona. Las formas y misiones se conservan. Informar es una acción aparte.",
   "DexLA_AllCounters": "Todos los contadores de investigación guardados",
   "DexLA_CounterSlot": "casilla de contador {0}",
-  "DexLA_Unavailable": "Los datos de la misión no están disponibles en esta partida."
+  "DexLA_Unavailable": "Los datos de la misión no están disponibles en esta partida.",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Noroteo",
+  "SvDex_Region3": "Arándano",
+  "SvDex_Obtained": "Obtenido",
+  "SvDex_Seen": "Visto",
+  "SvDex_Heard": "Conocido",
+  "SvDex_Viewed": "Consultado"
 }

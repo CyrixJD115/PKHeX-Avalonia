@@ -265,7 +265,8 @@ public class PokedexTests
     public void Pokedex9_LoadAndSave_VerifyFlags()
     {
         // Arrange
-        var sav = new SAV9SV();
+        var sav = Assert.IsType<SAV9SV>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, "gen9_scarlet.main")));
+        Assert.Equal(0, sav.SaveRevision);
         GameInfo.FilteredSources = new FilteredGameDataSource(sav, GameInfo.Sources);
         var zukan = sav.Blocks.Zukan;
         ushort sprigatito = 906;
