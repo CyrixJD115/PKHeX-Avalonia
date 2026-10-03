@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "Kampfturm-Doppelsiege",
   "Trainer8_Record_49": "Aktuelles Geld",
   "Trainer8_Record_50": "Urglmator-Nutzungen",
-  "Trainer8_Record_51": "Abgeschlossene Eingeschränkte-Sparring-Typen"
+  "Trainer8_Record_51": "Abgeschlossene Eingeschränkte-Sparring-Typen",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Kitakami",
+  "SvDex_Region3": "Blaubeer",
+  "SvDex_Obtained": "Erhalten",
+  "SvDex_Seen": "Gesehen",
+  "SvDex_Heard": "Bekannt",
+  "SvDex_Viewed": "Angesehen"
 }

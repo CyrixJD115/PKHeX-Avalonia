@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "Vittorie in Doppio alla Torre Lotta",
   "Trainer8_Record_49": "Denaro attuale",
   "Trainer8_Record_50": "Usi del CramoBot",
-  "Trainer8_Record_51": "Tipi completati nelle Lotte Limitate"
+  "Trainer8_Record_51": "Tipi completati nelle Lotte Limitate",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Nordivia",
+  "SvDex_Region3": "Mirtillo",
+  "SvDex_Obtained": "Ottenuto",
+  "SvDex_Seen": "Visto",
+  "SvDex_Heard": "Conosciuto",
+  "SvDex_Viewed": "Visualizzato"
 }

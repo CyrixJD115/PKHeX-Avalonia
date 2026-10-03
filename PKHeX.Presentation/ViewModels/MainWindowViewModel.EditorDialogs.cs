@@ -383,7 +383,7 @@ public partial class MainWindowViewModel
         (object view, string title) = CurrentSave switch
         {
             SAV9ZA s    => ((object)new Pokedex9aEditorViewModel(s, _dialogService), T("Dex9a_Title")),
-            SAV9SV s    => ((object)new PokedexGen9EditorViewModel(s),   T("Dialog_PokedexEditorGen9SV")),
+            SAV9SV s    => ((object)new PokedexGen9EditorViewModel(s, _dialogService), T("Dialog_PokedexEditorGen9SV")),
             SAV8SWSH s  => (new Pokedex8EditorViewModel(s),                T("Dialog_PokedexEditorGen8SwSh")),
             SAV8BS s    => (new Pokedex8bEditorViewModel(s),               T("Dialog_PokedexEditorGen8BDSP")),
             SAV8LA s    => (new PokedexLAEditorViewModel(s),               T("Dialog_PokedexEditorPLA")),

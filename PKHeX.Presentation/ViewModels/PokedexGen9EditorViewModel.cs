@@ -14,10 +14,37 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
     private Zukan9 _zukan => _sav.Blocks.Zukan;
     private ushort _loadedSpecies;
     private bool _closed;
+    private int _generation;
+    private int _epoch;
+    private readonly IDialogService? _dialogs;
+    [ObservableProperty] private bool _entirePokedex;
+    [ObservableProperty] private bool _includeShiny;
+    public bool CanUndo => !_closed && _session.CanUndo;
     private LegacySnapshot? _baseline;
     [ObservableProperty] private string _error = string.Empty;
     public bool UsesDlcFormat => _session.UsesDlcFormat;
     public bool UsesLegacyFormat => !UsesDlcFormat;
+    public bool HasError => Error.Length != 0;
+    partial void OnErrorChanged(string value) => OnPropertyChanged(nameof(HasError));
+    public bool CanSave => !_closed && RegionalDisplays.All(display => display.IsValid) && (_baseline is null ||
+        (DisplayGender == _baseline.Gender || DisplayGender is >= 0 and <= 2) &&
+        (DisplayForm == _baseline.Form || DisplayForm >= 0 && DisplayForm < Forms.Count));
+    public IReadOnlyList<ComboItem> GenderChoices => GenderOptions(DisplayGender);
+    internal static IReadOnlyList<ComboItem> GenderOptions(int selected)
+    {
+        var result = new List<ComboItem> { new(Localization.LocalizedStrings.Instance["PokedexGen9Editor_Male"], 0), new(Localization.LocalizedStrings.Instance["PokedexGen9Editor_Female"], 1), new(Localization.LocalizedStrings.Instance["PokedexGen9Editor_Genderless"], 2) };
+        if (selected is < 0 or > 2) result.Add(new(Localization.LocalizedStrings.Instance.Format("RaidSession_UnknownType", selected), selected));
+        return result;
+    }
+    public IReadOnlyList<ComboItem> FormChoices
+    {
+        get
+        {
+            var result = Forms.Select((name, index) => new ComboItem(name.Length == 0 ? Localization.LocalizedStrings.Instance["Dex9a_BaseForm"] : name, index)).ToList();
+            if (result.All(item => item.Value != DisplayForm)) result.Add(new(Localization.LocalizedStrings.Instance.Format("RaidSession_UnknownType", unchecked((uint)DisplayForm)), DisplayForm));
+            return result;
+        }
+    }
     
     public ObservableCollection<ComboItem> SpeciesList { get; } = [];
     public ObservableCollection<ComboItem> FilteredSpeciesList { get; private set; } = [];
@@ -39,6 +66,8 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
         get => _selectedSpecies;
         set
         {
+            if (_selectedSpecies is not null && _selectedSpecies != value && !CanSave)
+            { Error = Localization.LocalizedStrings.Instance["Trainer7_InvalidValues"]; OnPropertyChanged(nameof(SelectedSpecies)); return; }
             if (_selectedSpecies is not null && _selectedSpecies != value) FlushLegacy();
             if (SetProperty(ref _selectedSpecies, value))
                 LoadEntry();
@@ -70,9 +99,10 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
 
     public ObservableCollection<string> Forms { get; } = [];
     
-    public PokedexGen9EditorViewModel(SAV9SV sav)
+    public PokedexGen9EditorViewModel(SAV9SV sav, IDialogService? dialogs = null)
     {
         _session = new(sav);
+        _dialogs = dialogs;
         
         LoadSpeciesList();
     }
@@ -108,6 +138,7 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
     private void LoadEntry()
     {
         if (SelectedSpecies is null) return;
+        _generation++;
         
         ushort species = (ushort)SelectedSpecies.Value;
         _loadedSpecies = species;
@@ -144,19 +175,22 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
         LangCHS = entry.GetLanguageFlag((int)LanguageID.ChineseS);
         LangCHT = entry.GetLanguageFlag((int)LanguageID.ChineseT);
         _baseline = CaptureLegacy();
+        OnPropertyChanged(nameof(FormChoices)); OnPropertyChanged(nameof(GenderChoices));
     }
 
     [RelayCommand]
     private void SaveCurrent()
     {
-        if (_closed) return;
+        if (!CanSave) { Error = Localization.LocalizedStrings.Instance["Trainer7_InvalidValues"]; return; }
+        _epoch++;
         FlushLegacy();
         if (!_session.TryCommit()) { Error = Localization.LocalizedStrings.Instance["LgpeTrainer_Conflict"]; return; }
         Error = string.Empty; LoadEntry();
     }
     private void FlushLegacy()
     {
-        if (UsesDlcFormat || _loadedSpecies == 0 || _baseline is null) return;
+        if (_loadedSpecies == 0 || _baseline is null) return;
+        if (UsesDlcFormat) { FlushDlcShared(); return; }
         var old = _baseline;
         ushort species = _loadedSpecies;
         var entry = _zukan.DexPaldea.Get(species);
@@ -180,32 +214,55 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
     // Typically WinForms has "Seen None/All" for CURRENT species, and "Modify All" menu for entire dex.
     
     [RelayCommand]
-    private void SeenAll()
-    {
-        if (SelectedSpecies is null) return;
-        if (UsesDlcFormat)
-        {
-            foreach (var form in FormStates) { form.Seen = true; form.Heard = true; }
-        }
-        else
-        {
-            FlushLegacy(); var entry = _zukan.DexPaldea.Get((ushort)SelectedSpecies.Value); entry.SetSeen(true);
-        }
-        LoadEntry();
-    }
+    private Task SeenAll() => BulkAsync(false);
     
     [RelayCommand]
-    private void CaughtAll() // Actually Caught implies Seen
+    private Task CaughtAll() => BulkAsync(true);
+    private async Task BulkAsync(bool caught)
     {
-        if (SelectedSpecies is null) return;
-        if (UsesDlcFormat) foreach (var form in FormStates) { form.Obtained = true; form.Seen = true; form.Heard = true; }
-        else { FlushLegacy(); _session.WriteLegacyCaught((ushort)SelectedSpecies.Value, true); }
-        LoadEntry();
+        if (_closed || !CanSave || _dialogs is null || SelectedSpecies is null) return;
+        int epoch = _epoch, species = SelectedSpecies.Value; bool whole = EntirePokedex, shiny = IncludeShiny;
+        string scope = whole ? Localization.LocalizedStrings.Instance["Dex9a_WholeDex"] : SelectedSpecies.Text;
+        if (!await _dialogs.ShowConfirmationAsync(Localization.LocalizedStrings.Instance[caught ? "Dex9a_ActionCaughtAll" : "Dex9a_ActionSeenAll"],
+            Localization.LocalizedStrings.Instance.Format("Dex9a_Confirm", scope), Localization.LocalizedStrings.Instance["Dex9a_Apply"], Localization.LocalizedStrings.Instance["Common_Cancel"])) return;
+        if (_closed || epoch != _epoch || whole != EntirePokedex || shiny != IncludeShiny || !whole && SelectedSpecies?.Value != species || !CanSave) return;
+        FlushLegacy();
+        _session.ApplyAction(save =>
+        {
+            foreach (ushort target in _session.Species().Where(target => whole || target == species))
+            {
+                int count = Math.Max(1, (int)save.Personal[target].FormCount);
+                for (byte form = 0; form < Math.Min(count, 32); form++)
+                {
+                    if (!_session.IsFormSupported(target, form)) continue;
+                    var state = _session.ReadForm(target, form);
+                    if (UsesDlcFormat) _session.WriteForm(target, form, caught || state.Obtained, true, true, state.Viewed);
+                    else save.Blocks.Zukan.DexPaldea.Get(target).SetIsFormSeen(form, true);
+                }
+                if (!UsesDlcFormat)
+                {
+                    var entry = save.Blocks.Zukan.DexPaldea.Get(target); entry.SetSeen(true);
+                    if (caught) entry.SetCaught(true);
+                    if (shiny) entry.SetSeenIsShiny(true);
+                }
+                else if (shiny) save.Blocks.Zukan.DexKitakami.Get(target).SetIsModelSeen(true, true);
+                byte genderRatio = save.Personal[target].Gender;
+                foreach (byte gender in new byte[] { 0, 1, 2 })
+                {
+                    bool supported = genderRatio == 255 ? gender == 2 : genderRatio == 0 ? gender == 0 : genderRatio == 254 ? gender == 1 : gender < 2;
+                    if (!supported) continue;
+                    if (UsesDlcFormat) save.Blocks.Zukan.DexKitakami.Get(target).SetIsGenderSeen(gender, true);
+                    else save.Blocks.Zukan.DexPaldea.Get(target).SetIsGenderSeen(gender, true);
+                }
+            }
+        });
+        _epoch++; LoadEntry(); OnPropertyChanged(nameof(CanUndo));
     }
     private LegacySnapshot CaptureLegacy() => new(IsCaught, IsNew, IsSeenMale, IsSeenFemale, IsSeenGenderless, IsSeenShiny,
         DisplayGender, DisplayShiny, DisplayGenderDiff, DisplayForm, [LangJPN, LangENG, LangFRE, LangITA, LangGER, LangSPA, LangKOR, LangCHS, LangCHT]);
     private sealed record LegacySnapshot(bool Caught, bool New, bool Male, bool Female, bool Genderless, bool SeenShiny,
         int Gender, bool Shiny, bool Different, int Form, bool[] Languages);
-    [RelayCommand] private void Reset() { if (_closed) return; _session.Reset(); _baseline = null; _loadedSpecies = 0; LoadEntry(); Error = string.Empty; }
-    public void Dispose() => _closed = true;
+    [RelayCommand] private void Reset() { if (_closed) return; _epoch++; _session.Reset(); _baseline = null; _loadedSpecies = 0; LoadEntry(); Error = string.Empty; OnPropertyChanged(nameof(CanUndo)); }
+    [RelayCommand] private void Undo() { if (_closed) return; _epoch++; _session.Undo(); LoadEntry(); OnPropertyChanged(nameof(CanUndo)); }
+    public void Dispose() { _closed = true; _epoch++; _generation++; }
 }

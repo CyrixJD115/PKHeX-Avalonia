@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "對戰塔雙打勝利數",
   "Trainer8_Record_49": "目前持有金額",
   "Trainer8_Record_50": "機器鵜使用數",
-  "Trainer8_Record_51": "限制對戰完成屬性數"
+  "Trainer8_Record_51": "限制對戰完成屬性數",
+  "SvDex_Region1": "帕底亞",
+  "SvDex_Region2": "北上",
+  "SvDex_Region3": "藍莓",
+  "SvDex_Obtained": "獲得",
+  "SvDex_Seen": "見過",
+  "SvDex_Heard": "已知",
+  "SvDex_Viewed": "已查看"
 }

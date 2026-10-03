@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "Victoires Duo à la Tour de Combat",
   "Trainer8_Record_49": "Argent actuel",
   "Trainer8_Record_50": "Utilisations du NigoMix",
-  "Trainer8_Record_51": "Types réussis au Dojo en Combat Spécialisé"
+  "Trainer8_Record_51": "Types réussis au Dojo en Combat Spécialisé",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Septentria",
+  "SvDex_Region3": "Myrtille",
+  "SvDex_Obtained": "Obtenu",
+  "SvDex_Seen": "Vu",
+  "SvDex_Heard": "Connu",
+  "SvDex_Viewed": "Consulté"
 }

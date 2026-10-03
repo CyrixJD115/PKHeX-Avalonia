@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "バトルタワーダブル勝利数",
   "Trainer8_Record_49": "現在の所持金",
   "Trainer8_Record_50": "ウッウロボ使用数",
-  "Trainer8_Record_51": "しばり組手の達成タイプ数"
+  "Trainer8_Record_51": "しばり組手の達成タイプ数",
+  "SvDex_Region1": "パルデア",
+  "SvDex_Region2": "キタカミ",
+  "SvDex_Region3": "ブルーベリー",
+  "SvDex_Obtained": "入手",
+  "SvDex_Seen": "見た",
+  "SvDex_Heard": "知られている",
+  "SvDex_Viewed": "確認済み"
 }

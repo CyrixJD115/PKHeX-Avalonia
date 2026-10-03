@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "对战塔双打胜利数",
   "Trainer8_Record_49": "当前持有金额",
   "Trainer8_Record_50": "机器鹕使用数",
-  "Trainer8_Record_51": "限制对战完成属性数"
+  "Trainer8_Record_51": "限制对战完成属性数",
+  "SvDex_Region1": "帕底亚",
+  "SvDex_Region2": "北上",
+  "SvDex_Region3": "蓝莓",
+  "SvDex_Obtained": "获得",
+  "SvDex_Seen": "见过",
+  "SvDex_Heard": "已知",
+  "SvDex_Viewed": "已查看"
 }

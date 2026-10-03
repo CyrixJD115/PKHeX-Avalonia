@@ -3475,5 +3475,12 @@
   "Trainer8_Record_48": "Victorias dobles de la Torre Batalla",
   "Trainer8_Record_49": "Dinero actual",
   "Trainer8_Record_50": "Usos del Cramobot",
-  "Trainer8_Record_51": "Tipos superados en Práctica Restringida"
+  "Trainer8_Record_51": "Tipos superados en Práctica Restringida",
+  "SvDex_Region1": "Paldea",
+  "SvDex_Region2": "Noroteo",
+  "SvDex_Region3": "Arándano",
+  "SvDex_Obtained": "Obtenido",
+  "SvDex_Seen": "Visto",
+  "SvDex_Heard": "Conocido",
+  "SvDex_Viewed": "Consultado"
 }
