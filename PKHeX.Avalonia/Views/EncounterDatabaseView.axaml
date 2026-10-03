@@ -7,11 +7,13 @@
              x:DataType="vm:EncounterDatabaseViewModel"
              x:Name="Root"
              MinWidth="650" MinHeight="500" MaxHeight="700">
-    <DockPanel Classes="tool-surface" Margin="12">
-        <TextBlock DockPanel.Dock="Top" Text="{loc:Loc EncounterDatabaseView_Title}" Classes="view-title" Margin="0,0,0,8" />
+    <DockPanel Classes="tool-surface">
+        <Border DockPanel.Dock="Top" Classes="tool-header">
+            <TextBlock Text="{loc:Loc EncounterDatabaseView_Title}" Classes="tool-header-title" />
+        </Border>
 
         <!-- Search Controls -->
-        <Border DockPanel.Dock="Top" Classes="tool-search-surface" Margin="0,0,0,8">
+        <Border DockPanel.Dock="Top" Classes="tool-search-surface" Margin="12,8,12,8">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Spacing="3">
                     <TextBlock Text="{loc:Loc EncounterDatabaseView_Species}" Classes="tool-field-label" />
@@ -28,7 +30,7 @@
 
         <!-- Results Grid — min height so the scroll area is always visible;
              the view's MaxHeight ensures this never grows beyond the screen -->
-        <Border Classes="database-results-surface" MinHeight="200">
+        <Border Classes="database-results-surface" MinHeight="200" Margin="12,0,12,12">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Results}">
                     <ItemsControl.ItemsPanel>

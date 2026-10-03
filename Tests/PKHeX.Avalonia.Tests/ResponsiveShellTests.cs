@@ -649,7 +649,7 @@ public sealed class ResponsiveShellTests
         }
 
         var settings = ReadSourceFile("Views", "SettingsView.axaml");
-        Assert.Contains("RowDefinitions=\"70,*,54\"", settings);
+        Assert.Contains("RowDefinitions=\"Auto,*,54\"", settings);
         Assert.Contains("Command=\"{Binding SaveCommand}\"", settings);
 
         var theme = ReadSourceFile("Styles", "Theme.axaml");

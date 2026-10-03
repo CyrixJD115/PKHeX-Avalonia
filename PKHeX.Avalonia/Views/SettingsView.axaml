@@ -13,8 +13,8 @@
         <conv:AppDensityLabelConverter x:Key="AppDensityLabel"/>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="70,*,54" Background="{DynamicResource ThemeBackgroundBaseBrush}">
-        <Border Grid.Row="0" Background="{DynamicResource ThemeBackgroundCardBrush}" BorderBrush="{DynamicResource ThemeBorderMutedBrush}" BorderThickness="0,0,0,1" Padding="20,14">
+    <Grid RowDefinitions="Auto,*,54" Background="{DynamicResource ThemeBackgroundBaseBrush}">
+        <Border x:Name="SettingsHeader" Grid.Row="0" Background="{DynamicResource ThemeBackgroundCardBrush}" BorderBrush="{DynamicResource ThemeBorderMutedBrush}" BorderThickness="0,0,0,1" Padding="20,10">
             <StackPanel Spacing="4">
                 <TextBlock Text="{loc:Loc Settings_Title}" FontSize="20" FontWeight="SemiBold" />
 
