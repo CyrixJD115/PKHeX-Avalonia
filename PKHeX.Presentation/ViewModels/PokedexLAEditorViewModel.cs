@@ -5,17 +5,23 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PKHeX.Core;
+using PKHeX.Presentation.Localization;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class PokedexLAEditorViewModel : ViewModelBase
+public partial class PokedexLAEditorViewModel : ViewModelBase, IDisposable
 {
-    private readonly SAV8LA _sav;
-    private readonly PokedexSave8a _dex;
+    private SAV8LA _sav;
+    private PokedexSave8a _dex;
+    private readonly TrainerScBlockDataSession<SAV8LA> _session;
+    private IReadOnlyList<LASpeciesEntryViewModel> _entries = [];
+    private bool _closed;
+    [ObservableProperty] private string _error = string.Empty;
 
     public PokedexLAEditorViewModel(SaveFile sav)
     {
-        _sav = (SAV8LA)sav;
+        _session = new((SAV8LA)sav);
+        _sav = _session.Staged;
         _dex = _sav.Blocks.PokedexSave;
         
         LoadSpecies();
@@ -44,42 +50,64 @@ public partial class PokedexLAEditorViewModel : ViewModelBase
             list.Add(new LASpeciesEntryViewModel(s, hisuiDex, speciesNames[s], _dex, _sav));
         }
 
-        SpeciesList = new ObservableCollection<LASpeciesEntryViewModel>(list.OrderBy(z => z.DexIndex));
-        if (SpeciesList.Count > 0)
-            SelectedSpecies = SpeciesList[0];
+        _entries = list.OrderBy(z => z.DexIndex).ToArray();
+        ApplyFilter();
     }
 
     private void ApplyFilter()
     {
-        // Simple filter for now. In a real app we'd use a CollectionView or similar.
-        // For brevity, I'll just skip complex filtering logic here and assume the user selects from the list.
+        var selected = SelectedSpecies;
+        string query = SearchText.Trim();
+        SpeciesList = new(_entries.Where(entry => query.Length == 0 || entry.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+            entry.DexIndex.ToString().Contains(query, StringComparison.Ordinal)));
+        SelectedSpecies = selected is not null && SpeciesList.Contains(selected) ? selected : SpeciesList.FirstOrDefault();
     }
 
     [RelayCommand]
     private void Save()
     {
-        foreach (var entry in SpeciesList)
+        if (_closed) return;
+        if (!_session.TryCommit(_ => { foreach (var entry in _entries) entry.Save(); }))
         {
-            entry.Save();
+            _sav = _session.Staged; _dex = _sav.Blocks.PokedexSave;
+            foreach (var entry in _entries) entry.Rebind(_dex, _sav);
+            Error = LocalizedStrings.Instance["LgpeTrainer_Conflict"]; return;
         }
+        Reload();
     }
 
     [RelayCommand]
     private void ReportAll()
     {
+        if (_closed) return;
+        foreach (var entry in _entries) entry.Save();
         _dex.UpdateAllReportPoke();
-        foreach (var entry in SpeciesList)
+        foreach (var entry in _entries)
         {
             entry.Load();
         }
     }
+
+    private void Reload()
+    {
+        _sav = _session.Staged; _dex = _sav.Blocks.PokedexSave;
+        LoadSpecies(); Error = string.Empty;
+    }
+    [RelayCommand] private void Reset() { if (_closed) return; _session.Reset(); Reload(); }
+    public void Dispose() => _closed = true;
 }
 
 public partial class LASpeciesEntryViewModel : ViewModelBase
 {
     private readonly ushort _species;
-    private readonly PokedexSave8a _dex;
-    private readonly SAV8LA _sav;
+    private PokedexSave8a _dex;
+    private SAV8LA _sav;
+    internal void Rebind(PokedexSave8a dex, SAV8LA save)
+    {
+        _dex = dex; _sav = save;
+        foreach (var form in Forms) form.Rebind(dex);
+        foreach (var task in Tasks) task.Rebind(dex);
+    }
 
     public LASpeciesEntryViewModel(ushort species, int dexIndex, string name, PokedexSave8a dex, SAV8LA sav)
     {
@@ -126,14 +154,15 @@ public partial class LASpeciesEntryViewModel : ViewModelBase
         Forms.Clear();
         var personal = _sav.Personal[_species];
         var formCount = personal.FormCount;
-        var formNames = GameInfo.Strings.forms;
+        var formNames = FormConverter.GetFormList(_species, GameInfo.Strings.Types, GameInfo.Strings.forms, GameInfo.GenderSymbolASCII, EntityContext.Gen8a);
 
         for (byte f = 0; f < formCount; f++)
         {
             if (!_dex.HasFormStorage(_species, f) || _dex.IsBlacklisted(_species, f))
                 continue;
 
-            Forms.Add(new LAFormEntryViewModel(_species, f, formNames[f], _dex));
+            string name = f < formNames.Length ? formNames[f] : string.Empty;
+            Forms.Add(new LAFormEntryViewModel(_species, f, name.Length == 0 ? LocalizedStrings.Instance["Dex9a_BaseForm"] : name, _dex));
         }
         
         if (Forms.Count > 0)
@@ -175,7 +204,7 @@ public partial class LASpeciesEntryViewModel : ViewModelBase
         int unreported = ReportedResearchLevel;
         foreach (var task in Tasks)
         {
-            _dex.GetResearchTaskLevel(_species, task.Index, out _, out var taskValue, out var unreportedLevels);
+            int unreportedLevels = _dex.GetResearchTaskLevel(_species, task.Index, out _, out _, out _);
             unreported += unreportedLevels * task.PointsPerLevel;
         }
         UnreportedResearchLevel = unreported;
@@ -197,6 +226,7 @@ public partial class LASpeciesEntryViewModel : ViewModelBase
     [RelayCommand]
     private void ReportSpecies()
     {
+        Save();
         _dex.UpdateSpecificReportPoke(_species);
         Load();
     }
@@ -206,7 +236,8 @@ public partial class LAFormEntryViewModel : ViewModelBase
 {
     private readonly ushort _species;
     private readonly byte _form;
-    private readonly PokedexSave8a _dex;
+    private PokedexSave8a _dex;
+    internal void Rebind(PokedexSave8a dex) => _dex = dex;
 
     public LAFormEntryViewModel(ushort species, byte form, string name, PokedexSave8a dex)
     {
@@ -284,7 +315,8 @@ public partial class LAResearchTaskViewModel : ViewModelBase
 {
     private readonly ushort _species;
     private readonly PokedexResearchTask8a _task;
-    private readonly PokedexSave8a _dex;
+    private PokedexSave8a _dex;
+    internal void Rebind(PokedexSave8a dex) => _dex = dex;
 
     public LAResearchTaskViewModel(ushort species, int taskIndex, PokedexResearchTask8a task, PokedexSave8a dex)
     {
