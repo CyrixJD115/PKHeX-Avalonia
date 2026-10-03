@@ -7,10 +7,17 @@ using PKHeX.Core;
 
 namespace PKHeX.Presentation.ViewModels;
 
-public partial class PokedexGen9EditorViewModel : ViewModelBase
+public partial class PokedexGen9EditorViewModel : ViewModelBase, IDisposable
 {
-    private readonly SAV9SV _sav;
-    private readonly Zukan9 _zukan;
+    private readonly SvPokedexDataSession _session;
+    private SAV9SV _sav => _session.Staged;
+    private Zukan9 _zukan => _sav.Blocks.Zukan;
+    private ushort _loadedSpecies;
+    private bool _closed;
+    private LegacySnapshot? _baseline;
+    [ObservableProperty] private string _error = string.Empty;
+    public bool UsesDlcFormat => _session.UsesDlcFormat;
+    public bool UsesLegacyFormat => !UsesDlcFormat;
     
     public ObservableCollection<ComboItem> SpeciesList { get; } = [];
     public ObservableCollection<ComboItem> FilteredSpeciesList { get; private set; } = [];
@@ -32,6 +39,7 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
         get => _selectedSpecies;
         set
         {
+            if (_selectedSpecies is not null && _selectedSpecies != value) FlushLegacy();
             if (SetProperty(ref _selectedSpecies, value))
                 LoadEntry();
         }
@@ -64,8 +72,7 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
     
     public PokedexGen9EditorViewModel(SAV9SV sav)
     {
-        _sav = sav;
-        _zukan = sav.Blocks.Zukan;
+        _session = new(sav);
         
         LoadSpeciesList();
     }
@@ -73,12 +80,11 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
     private void LoadSpeciesList()
     {
         SpeciesList.Clear();
-        var species = GameInfo.FilteredSources.Species
-            .Where(z => z.Value <= (int)Species.IronLeaves) // Limit to Gen 9 max? GameInfo usually has correct limits
-            .ToList();
-
-        foreach (var s in species)
-            SpeciesList.Add(s);
+        foreach (ushort species in _session.Species().OrderBy(species => _session.Identifiers(species).Paldea == 0 ? 10000 + species : _session.Identifiers(species).Paldea))
+        {
+            var ids = _session.Identifiers(species);
+            SpeciesList.Add(new ComboItem($"{GameInfo.Strings.Species[species]}  P:{ids.Paldea} K:{ids.Kitakami} B:{ids.Blueberry}", species));
+        }
             
         FilterList();
         if (FilteredSpeciesList.Count > 0)
@@ -104,10 +110,8 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
         if (SelectedSpecies is null) return;
         
         ushort species = (ushort)SelectedSpecies.Value;
-        // Paldea Dex is primary? Or check which dex it is in?
-        // Zukan9 usually abstracts accessing the correct "Dex" via Get?
-        // Actually SAV_PokedexSV uses `SAV.Zukan.DexPaldea.Get(species)` directly.
-        // It seems most data is in DexPaldea even for DLC mons in SV?
+        _loadedSpecies = species;
+        if (UsesDlcFormat) { LoadDlc(species); return; }
         
         var entry = _zukan.DexPaldea.Get(species);
         
@@ -118,6 +122,7 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
         
         // Properties
         IsNew = entry.GetDisplayIsNew();
+        IsCaught = entry.IsCaught;
         IsSeenMale = entry.GetIsGenderSeen(0);
         IsSeenFemale = entry.GetIsGenderSeen(1);
         IsSeenGenderless = entry.GetIsGenderSeen(2);
@@ -126,8 +131,7 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
         DisplayGender = (int)entry.GetDisplayGender();
         DisplayShiny = entry.GetDisplayIsShiny();
         DisplayGenderDiff = entry.GetDisplayGenderIsDifferent();
-        DisplayForm = (int)entry.GetDisplayForm();
-        if (DisplayForm >= Forms.Count) DisplayForm = 0;
+        DisplayForm = unchecked((int)entry.GetDisplayForm());
 
         // Languages
         LangJPN = entry.GetLanguageFlag((int)LanguageID.Japanese);
@@ -139,37 +143,37 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
         LangKOR = entry.GetLanguageFlag((int)LanguageID.Korean);
         LangCHS = entry.GetLanguageFlag((int)LanguageID.ChineseS);
         LangCHT = entry.GetLanguageFlag((int)LanguageID.ChineseT);
+        _baseline = CaptureLegacy();
     }
 
     [RelayCommand]
     private void SaveCurrent()
     {
-        if (SelectedSpecies is null) return;
-        ushort species = (ushort)SelectedSpecies.Value;
+        if (_closed) return;
+        FlushLegacy();
+        if (!_session.TryCommit()) { Error = Localization.LocalizedStrings.Instance["LgpeTrainer_Conflict"]; return; }
+        Error = string.Empty; LoadEntry();
+    }
+    private void FlushLegacy()
+    {
+        if (UsesDlcFormat || _loadedSpecies == 0 || _baseline is null) return;
+        var old = _baseline;
+        ushort species = _loadedSpecies;
         var entry = _zukan.DexPaldea.Get(species);
-
-        entry.SetDisplayIsNew(IsNew);
-        entry.SetIsGenderSeen(0, IsSeenMale);
-        entry.SetIsGenderSeen(1, IsSeenFemale);
-        entry.SetIsGenderSeen(2, IsSeenGenderless);
-        entry.SetSeenIsShiny(IsSeenShiny);
-        
-        entry.SetDisplayGender(DisplayGender);
-        entry.SetDisplayIsShiny(DisplayShiny);
-        entry.SetDisplayGenderIsDifferent(DisplayGenderDiff);
-        entry.SetDisplayForm((uint)DisplayForm);
-        
-        entry.SetLanguageFlag((int)LanguageID.Japanese, LangJPN);
-        entry.SetLanguageFlag((int)LanguageID.English, LangENG);
-        entry.SetLanguageFlag((int)LanguageID.French, LangFRE);
-        entry.SetLanguageFlag((int)LanguageID.Italian, LangITA);
-        entry.SetLanguageFlag((int)LanguageID.German, LangGER);
-        entry.SetLanguageFlag((int)LanguageID.Spanish, LangSPA);
-        entry.SetLanguageFlag((int)LanguageID.Korean, LangKOR);
-        entry.SetLanguageFlag((int)LanguageID.ChineseS, LangCHS);
-        entry.SetLanguageFlag((int)LanguageID.ChineseT, LangCHT);
-        
-        _sav.State.Edited = true;
+        if (IsCaught != old.Caught) entry.SetCaught(IsCaught);
+        if (IsNew != old.New) entry.SetDisplayIsNew(IsNew);
+        if (IsSeenMale != old.Male) entry.SetIsGenderSeen(0, IsSeenMale);
+        if (IsSeenFemale != old.Female) entry.SetIsGenderSeen(1, IsSeenFemale);
+        if (IsSeenGenderless != old.Genderless) entry.SetIsGenderSeen(2, IsSeenGenderless);
+        if (IsSeenShiny != old.SeenShiny) entry.SetSeenIsShiny(IsSeenShiny);
+        if (DisplayGender != old.Gender) entry.SetDisplayGender(DisplayGender);
+        if (DisplayShiny != old.Shiny) entry.SetDisplayIsShiny(DisplayShiny);
+        if (DisplayGenderDiff != old.Different) entry.SetDisplayGenderIsDifferent(DisplayGenderDiff);
+        if (DisplayForm != old.Form) entry.SetDisplayForm(unchecked((uint)DisplayForm));
+        bool[] languages = [LangJPN, LangENG, LangFRE, LangITA, LangGER, LangSPA, LangKOR, LangCHS, LangCHT];
+        int[] ids = [1, 2, 3, 4, 5, 7, 8, 9, 10];
+        for (int i = 0; i < ids.Length; i++) if (languages[i] != old.Languages[i]) entry.SetLanguageFlag(ids[i], languages[i]);
+        _baseline = CaptureLegacy();
     }
 
     // Batch commands (Apply to current only, or all?)
@@ -179,15 +183,29 @@ public partial class PokedexGen9EditorViewModel : ViewModelBase
     private void SeenAll()
     {
         if (SelectedSpecies is null) return;
-        _zukan.SetDexEntryAll((ushort)SelectedSpecies.Value, false);
+        if (UsesDlcFormat)
+        {
+            foreach (var form in FormStates) { form.Seen = true; form.Heard = true; }
+        }
+        else
+        {
+            FlushLegacy(); var entry = _zukan.DexPaldea.Get((ushort)SelectedSpecies.Value); entry.SetSeen(true);
+        }
         LoadEntry();
     }
     
     [RelayCommand]
     private void CaughtAll() // Actually Caught implies Seen
     {
-        // ... Zukan9Helper?
-        // WinForms uses Dex.CaughtAll(shiny) for ALL species.
-        // For single species, it sets flags manually.
+        if (SelectedSpecies is null) return;
+        if (UsesDlcFormat) foreach (var form in FormStates) { form.Obtained = true; form.Seen = true; form.Heard = true; }
+        else { FlushLegacy(); _session.WriteLegacyCaught((ushort)SelectedSpecies.Value, true); }
+        LoadEntry();
     }
+    private LegacySnapshot CaptureLegacy() => new(IsCaught, IsNew, IsSeenMale, IsSeenFemale, IsSeenGenderless, IsSeenShiny,
+        DisplayGender, DisplayShiny, DisplayGenderDiff, DisplayForm, [LangJPN, LangENG, LangFRE, LangITA, LangGER, LangSPA, LangKOR, LangCHS, LangCHT]);
+    private sealed record LegacySnapshot(bool Caught, bool New, bool Male, bool Female, bool Genderless, bool SeenShiny,
+        int Gender, bool Shiny, bool Different, int Form, bool[] Languages);
+    [RelayCommand] private void Reset() { if (_closed) return; _session.Reset(); _baseline = null; _loadedSpecies = 0; LoadEntry(); Error = string.Empty; }
+    public void Dispose() => _closed = true;
 }
