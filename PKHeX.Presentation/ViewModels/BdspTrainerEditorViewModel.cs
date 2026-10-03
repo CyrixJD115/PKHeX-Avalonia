@@ -40,8 +40,9 @@ public partial class BdspTrainerEditorViewModel : ViewModelBase, IDisposable
         ZoneId = save.ZoneID; X = save.MyStatus.X; Y = save.MyStatus.Height; Height = save.MyStatus.Y; Rotation = save.MyStatus.Rotation;
         Version = save.Version; Badges.Clear();
         for (int i = 0; i < 8; i++) Badges.Add(new(i, save.FlagWork.GetSystemFlag(124 + i)));
+        LoadTimeRecords();
     }
-    public bool CanSave => !_closed && TrainerName.Length <= _baseline.MaxStringLengthTrainer && RivalName.Length <= _baseline.MaxStringLengthTrainer &&
+    public bool CanSave => !_closed && ValidTimeRecords && TrainerName.Length <= _baseline.MaxStringLengthTrainer && RivalName.Length <= _baseline.MaxStringLengthTrainer &&
         (Gender == _baseline.Gender || Gender is 0 or 1) && (Language == _baseline.Language || Language is >= 1 and <= 10 && Language != 6) &&
         DisplayTid <= 999999 && (ulong)DisplaySid * 1000000 + DisplayTid <= uint.MaxValue &&
         (Money == _baseline.Money || Money <= _baseline.MaxMoney) && PlayedHours is >= 0 and <= ushort.MaxValue &&
@@ -69,6 +70,7 @@ public partial class BdspTrainerEditorViewModel : ViewModelBase, IDisposable
         if (Version != _baseline.Version) save.Version = Version;
         foreach (var badge in Badges) if (badge.Value != _baseline.FlagWork.GetSystemFlag(124 + badge.Index)) save.FlagWork.SetSystemFlag(124 + badge.Index, badge.Value);
         if (identity && save.HasFirstSaveFileExpansion) save.RecordAdd.ReplaceOT(_baseline, save);
+        ApplyTimeRecords(save);
     }
     [RelayCommand] private void Save()
     {

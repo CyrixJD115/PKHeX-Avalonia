@@ -5,6 +5,20 @@ namespace PKHeX.Avalonia.Tests;
 
 public class BdspTrainerFoundationTests
 {
+    [Fact]
+    public void DatesPreserveSubSecondFiletimeTicksAndRecordsRoundtrip()
+    {
+        var save = LoadSave(); save.System.TicksStart += 12345; save.System.TicksLatest += 23456;
+        long startFraction = save.System.TicksStart % TimeSpan.TicksPerSecond, lastFraction = save.System.TicksLatest % TimeSpan.TicksPerSecond;
+        var before = save.Data.ToArray(); using var vm = new BdspTrainerEditorViewModel(save);
+        Assert.Equal(20211111, vm.TrainerRecords.Single(record => record.Id == 0).Value);
+        vm.SaveCommand.Execute(null); Assert.Empty(vm.Error); Assert.Equal(before, save.Data.ToArray());
+        vm.StartedSeconds = (vm.StartedSeconds + 1) % 60; vm.LastSavedSeconds = (vm.LastSavedSeconds + 1) % 60;
+        vm.Bp = 123; vm.TrainerRecords.Single(record => record.Id == 0).Value = 20260101;
+        vm.SaveCommand.Execute(null); Assert.Empty(vm.Error);
+        Assert.Equal(startFraction, save.System.TicksStart % TimeSpan.TicksPerSecond); Assert.Equal(lastFraction, save.System.TicksLatest % TimeSpan.TicksPerSecond);
+        var reopened = Assert.IsType<SAV8BS>(SaveUtil.GetSaveFile(save.Write())); Assert.Equal(123u, reopened.BattleTower.BP); Assert.Equal(20260101, reopened.GetRecord(0));
+    }
     private static SAV8BS LoadSave() => Assert.IsType<SAV8BS>(Fixtures.SaveFileFixture.LoadSave(Path.Combine(Fixtures.SaveFileFixture.FindSaveFilesPath()!, "gen8b_brilliantdiamond.bin")));
     [Fact]
     public void NativeFixtureIdentityBadgesAndMapValuesLoadAndNoOpPreservesBytes()

@@ -27,6 +27,7 @@ public sealed class BdspTrainerDataSession
                 !Compatible(_baseline.FlagWork.Data, Staged.FlagWork.Data, _source.FlagWork.Data) ||
                 !Compatible(_baseline.System.Data, Staged.System.Data, _source.System.Data) ||
                 !Compatible(_baseline.Records.Data, Staged.Records.Data, _source.Records.Data) ||
+                !Compatible(_baseline.BattleTower.Data, Staged.BattleTower.Data, _source.BattleTower.Data) ||
                 !Compatible(_baseline.RivalNameTrash, Staged.RivalNameTrash, _source.RivalNameTrash) ||
                 Staged.ZoneID != _baseline.ZoneID && _source.ZoneID != _baseline.ZoneID && _source.ZoneID != Staged.ZoneID ||
                 Staged.HasFirstSaveFileExpansion && !Compatible(_baseline.RecordAdd.Data, Staged.RecordAdd.Data, _source.RecordAdd.Data))
