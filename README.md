@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/screenshots/pokemon-editor-dark.png"><img src="docs/screenshots/pokemon-editor-dark.png" alt="Compact Pokémon editor in dark theme with a populated box and party strip" width="600"></a>
+  <a href="docs/screenshots/pokemon-editor-dark.png"><img src="docs/screenshots/pokemon-editor-dark.png" alt="Compact Pokémon editor in dark theme with Shiny Alpha Machamp, combined state markers, a populated box and party strip" width="600"></a>
 </p>
 
 <p align="center">
@@ -63,6 +63,7 @@ Pokémon-file import requires a compatible save to be open. Available fields and
 - Edit species, forms, abilities, held items, stats, IVs/EVs, moves, met data, trainer identities, ribbons, and memories where the format supports them.
 - Live legality reports, derived characteristics alongside stats, numeric Met Location tooltips, and generation-aware trainer IDs.
 - Box and party navigation, slot moves/copies, file drag-and-drop, and detached Box/Party windows. Undo/redo covers supported slot operations.
+- Alpha, Shiny, Gigantamax, held-item, egg, legality, and storage markers where supported. Multiple states can appear together; the separate Box Viewer keeps its own box and selection.
 - Pokémon-file and Showdown import/export, with format conversion where Core supports it.
 - Trainer, inventory, Pokédex, batch, Hall of Fame, Secret Base, and other game-specific editors.
 - Received Switch Mystery Gift records for Sword/Shield, BDSP, Legends: Arceus, and Scarlet/Violet. This edits save-side gift history; it does not deliver or redeem BCAT gifts.
@@ -95,20 +96,20 @@ Expand any section to browse the app, then click its heading again to collapse i
 <details>
 <summary><strong>Pokémon editor — dark and light themes</strong></summary>
 
-The compact editor keeps Pokémon fields, box navigation, and the party together.
+The compact editor keeps Pokémon fields, box navigation, and the party together. The selected Machamp shows Alpha and Shiny markers together in the box and editor preview.
 
-![Pokémon editor in dark theme](docs/screenshots/pokemon-editor-dark.png)
-![Pokémon editor in light theme](docs/screenshots/pokemon-editor-light.png)
+![Dark Pokémon editor with combined Alpha and Shiny markers](docs/screenshots/pokemon-editor-dark.png)
+![Light Pokémon editor with combined Alpha and Shiny markers](docs/screenshots/pokemon-editor-light.png)
 
 </details>
 
 <details>
 <summary><strong>Save editing — Trainer and Inventory</strong></summary>
 
-Trainer identity, currencies, and play time, followed by the inventory's item pouches and quantities.
+Trainer identity and staged actions, followed by Z-A key items with their individual artwork.
 
 ![Trainer editor for Legends Z-A](docs/screenshots/gallery-trainer.png)
-![Inventory editor with medicine items and counts](docs/screenshots/gallery-inventory.png)
+![Z-A key-item inventory with Shiny Charm, Elevator Key, Prison Bottle, Zygarde Cube and Rotom Catalog artwork](docs/screenshots/gallery-inventory.png)
 
 </details>
 
@@ -141,7 +142,7 @@ Inspect record flags, current moves, and permission indicators, with staged bulk
 
 </details>
 
-These are headless renders of the real Avalonia views, using synthetic Pokémon and checked-in test saves. The populated Pokémon editor's legality warnings are intentional. No private save data was used.
+These are headless renders of the real Avalonia views, captured on 2026-10-03. The lead frames use a copy of the checked-in Z-A save, with its Alpha Machamp made Shiny in memory for the demonstration. Core legality checks remain enabled and pass. Auxiliary editors use synthetic data. No private save data was used.
 
 The [screenshot guide](docs/screenshots/README.md) explains how to regenerate the images without opening a desktop window.
 
