@@ -7,9 +7,11 @@ namespace PKHeX.Infrastructure.Updating;
 
 /// <summary>
 /// Linux install strategy. AppImage: the new AppImage file is already a complete, self-contained
-/// executable, so installing it is just chmod +x and an atomic move over the current AppImage path
-/// (via a detached shell helper that waits for our process to exit). Portable (extracted-zip) install:
-/// same staging + swap dance as the Windows portable path, using a POSIX shell helper instead of cmd.
+/// executable, so installing it is just chmod +x and an atomic move into place via a detached shell
+/// helper that waits for our process to exit — landing on the canonical stable file name
+/// (<see cref="LinuxAppImage.CanonicalFileName"/>) in the same directory, so the version no longer
+/// sticks to whatever file name the user first downloaded. Portable (extracted-zip) install: same
+/// staging + swap dance as the Windows portable path, using a POSIX shell helper instead of cmd.
 /// </summary>
 internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
 {
@@ -29,13 +31,39 @@ internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
 
         MakeExecutable(newAppImagePath);
 
-        var targetPath = location.Root;
-        var backupPath = targetPath + ".bak";
-        var logPath = Path.Combine(Path.GetTempPath(), "pkhex-update-helper.log");
-        var pid = Environment.ProcessId;
+        var lines = BuildAppImageSwapScript(newAppImagePath, location.Root,
+            Path.Combine(Path.GetTempPath(), "pkhex-update-helper.log"));
 
-        var lines = new[]
-        {
+        var scriptPath = WriteScript(lines);
+        StartDetached("/bin/sh", $"\"{scriptPath}\" {Environment.ProcessId}");
+
+        progress.Report(new UpdateProgress(UpdatePhase.Relaunching, 0, null));
+        return Task.FromResult(new UpdateInstallResult(true, true, (string?)null));
+    }
+
+    /// <summary>
+    /// Builds the detached swap script for the AppImage path. The new AppImage always lands on the
+    /// canonical stable file name (<see cref="LinuxAppImage.CanonicalFileName"/>) in the same
+    /// directory, so after the first self-update the file name stops tracking whatever version was
+    /// originally downloaded and menu entries created against the stable name keep working. The old
+    /// file (moved aside as the <c>.bak</c> recovery copy) is removed once the swap succeeds and is
+    /// restored untouched when it fails.
+    /// </summary>
+    internal static string[] BuildAppImageSwapScript(
+        string newAppImagePath, string currentAppImagePath, string logPath)
+    {
+        var directory = Path.GetDirectoryName(currentAppImagePath);
+        var stablePath = string.IsNullOrEmpty(directory)
+            ? LinuxAppImage.CanonicalFileName
+            : Path.Combine(directory, LinuxAppImage.CanonicalFileName);
+
+        // Already canonical (e.g. installed via desktop integration): plain in-place swap.
+        var isCanonical = string.Equals(currentAppImagePath, stablePath, StringComparison.Ordinal);
+        var targetPath = isCanonical ? currentAppImagePath : stablePath;
+        var backupPath = currentAppImagePath + ".bak";
+
+        return
+        [
             "#!/bin/sh",
             "PID=\"$1\"",
             $"LOG=\"{logPath}\"",
@@ -43,7 +71,7 @@ internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
             "while kill -0 \"$PID\" 2>/dev/null; do sleep 0.5; done",
             "echo \"$(date) swapping AppImage\" >> \"$LOG\"",
             $"rm -f \"{backupPath}\"",
-            $"mv \"{targetPath}\" \"{backupPath}\" 2>>\"$LOG\"",
+            $"mv \"{currentAppImagePath}\" \"{backupPath}\" 2>>\"$LOG\"",
             $"if mv \"{newAppImagePath}\" \"{targetPath}\" 2>>\"$LOG\"; then",
             $"  chmod +x \"{targetPath}\"",
             $"  rm -f \"{backupPath}\"",
@@ -51,16 +79,10 @@ internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
             $"  \"{targetPath}\" &",
             "else",
             "  echo \"$(date) swap failed, restoring backup\" >> \"$LOG\"",
-            $"  mv \"{backupPath}\" \"{targetPath}\" 2>>\"$LOG\"",
-            $"  \"{targetPath}\" &",
+            $"  mv \"{backupPath}\" \"{currentAppImagePath}\" 2>>\"$LOG\"",
+            $"  \"{currentAppImagePath}\" &",
             "fi",
-        };
-
-        var scriptPath = WriteScript(lines);
-        StartDetached("/bin/sh", $"\"{scriptPath}\" {pid}");
-
-        progress.Report(new UpdateProgress(UpdatePhase.Relaunching, 0, null));
-        return Task.FromResult(new UpdateInstallResult(true, true, (string?)null));
+        ];
     }
 
     private static async Task<UpdateInstallResult> SwapPortableAsync(

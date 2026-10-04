@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PKHeX.Application.Abstractions;
 using PKHeX.Application.Services;
 using PKHeX.Core;
 using PKHeX.Presentation.Localization;
@@ -16,6 +17,7 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
     private readonly IUiDensityService _uiDensityService;
     private readonly LanguageService _languageService;
     private readonly UpdateCheckCoordinator _updateCoordinator;
+    private readonly ILinuxDesktopIntegrationService? _linuxDesktopIntegration;
     private bool _isLoading;
 
     public Action? CloseRequested { get; set; }
@@ -29,7 +31,8 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
         IThemeService themeService,
         IUiDensityService uiDensityService,
         LanguageService languageService,
-        UpdateCheckCoordinator updateCoordinator)
+        UpdateCheckCoordinator updateCoordinator,
+        ILinuxDesktopIntegrationService? linuxDesktopIntegration = null)
     {
         _settings = settings;
         _settingsStore = settingsStore;
@@ -37,7 +40,9 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
         _uiDensityService = uiDensityService;
         _languageService = languageService;
         _updateCoordinator = updateCoordinator;
+        _linuxDesktopIntegration = linuxDesktopIntegration;
         Load();
+        RefreshLinuxIntegrationState();
     }
 
     /// <summary>Status line for the manual "Check for Updates" button; empty until a check runs.</summary>
@@ -66,10 +71,88 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Linux desktop integration (AppImage only — the section is hidden everywhere else)
+    // ---------------------------------------------------------------------------------------------
+
+    /// <summary>Whether the Linux desktop-integration section should be shown at all.</summary>
+    public bool ShowLinuxIntegration => _linuxDesktopIntegration?.IsSupported == true;
+
+    /// <summary>Disables the buttons while a registration/removal is in flight.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddToApplicationMenuCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveFromApplicationMenuCommand))]
+    private bool _isLinuxIntegrationBusy;
+
+    /// <summary>Whether the app is currently present in the user's application menu.</summary>
+    [ObservableProperty] private bool _linuxIntegrationRegistered;
+
+    /// <summary>Status line under the integration buttons (installed path, progress, or error).</summary>
+    [ObservableProperty] private string _linuxIntegrationStatus = string.Empty;
+
+    private bool CanRunLinuxIntegration => !IsLinuxIntegrationBusy;
+
+    [RelayCommand(CanExecute = nameof(CanRunLinuxIntegration))]
+    private async Task AddToApplicationMenuAsync()
+    {
+        if (_linuxDesktopIntegration is not { } integration)
+            return;
+
+        IsLinuxIntegrationBusy = true;
+        LinuxIntegrationStatus = LocalizedStrings.Instance["Settings_LinuxIntegration_Working"];
+        try
+        {
+            var result = await integration.RegisterAsync();
+            LinuxIntegrationStatus = result.Outcome == DesktopIntegrationOutcome.Success
+                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", result.InstalledPath ?? string.Empty)
+                : LocalizedStrings.Instance[result.MessageKey ?? "LinuxIntegration_Error_Generic"];
+        }
+        finally
+        {
+            IsLinuxIntegrationBusy = false;
+            RefreshLinuxIntegrationState();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRunLinuxIntegration))]
+    private async Task RemoveFromApplicationMenuAsync()
+    {
+        if (_linuxDesktopIntegration is not { } integration)
+            return;
+
+        IsLinuxIntegrationBusy = true;
+        LinuxIntegrationStatus = LocalizedStrings.Instance["Settings_LinuxIntegration_Working"];
+        try
+        {
+            var result = await integration.UnregisterAsync();
+            LinuxIntegrationStatus = result.Outcome == DesktopIntegrationOutcome.Success
+                ? LocalizedStrings.Instance["Settings_LinuxIntegration_Removed"]
+                : LocalizedStrings.Instance[result.MessageKey ?? "LinuxIntegration_Error_Generic"];
+        }
+        finally
+        {
+            IsLinuxIntegrationBusy = false;
+            RefreshLinuxIntegrationState();
+        }
+    }
+
+    private void RefreshLinuxIntegrationState()
+    {
+        if (_linuxDesktopIntegration is not { } integration)
+            return;
+
+        LinuxIntegrationRegistered = integration.IsRegistered;
+        if (string.IsNullOrEmpty(LinuxIntegrationStatus))
+        {
+            LinuxIntegrationStatus = integration.InstalledAppImagePath is { } installed
+                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", installed)
+                : LocalizedStrings.Instance["Settings_LinuxIntegration_NotInstalled"];
+        }
+    }
+
     // Startup
     [ObservableProperty] private GameVersion _defaultSaveVersion;
     public IReadOnlyList<GameVersion> GameVersions { get; } = Enum.GetValues<GameVersion>();
-
     [ObservableProperty] private SaveFileLoadSetting _autoLoadMode;
     public IReadOnlyList<SaveFileLoadSetting> LoadModes { get; } = Enum.GetValues<SaveFileLoadSetting>();
 

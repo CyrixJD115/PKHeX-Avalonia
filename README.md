@@ -41,6 +41,16 @@ These filenames match v1.49.12. Signing suffixes may change; always check the re
 - **macOS:** open the DMG and copy the app to Applications, or extract the ZIP. A self-signed build is not Apple-notarized and may require first-launch approval.
 - **Linux:** extract the ZIP, or make the downloaded AppImage executable with `chmod +x PKHeX-Avalonia-*-x86_64.AppImage` and launch it. Its companion `.AppImage.zsync` release file enables updates through AppImageUpdate.
 
+#### Linux one-command install
+
+Instead of a manual download, install the latest AppImage into your user directories and add it to your application menu (works the same on every distro, no root required):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash
+```
+
+The script downloads the latest release, verifies its published SHA-256 checksum, installs it to `~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage`, and registers a menu entry plus icon in `~/.local/share`. Run it with `--version <x.y.z>` to pin a release, or `--uninstall` to remove the app, menu entry, and icon. The same integration is available later from inside the app under **Settings → Linux desktop integration**, and the in-app self-updater swaps the installed file in place, so the menu entry keeps working across updates.
+
 See the [packaging guide](docs/packaging.md) for signing details and platform troubleshooting. The Homebrew and winget files under `packaging/` are distribution templates; they do not establish that a public package-manager listing is available.
 
 The app checks GitHub Releases for updates and can display release notes. A manual **Check for Updates** action is available in **Help → About**.
@@ -88,6 +98,7 @@ Use **Tools**, or **Ctrl+K** to search the tool launcher. The tool catalog refle
 - Compact and comfortable density settings, a resizable shell, and Pokémon, Save, and Reports workspaces.
 - Keyboard navigation, contextual accessible control names, and visible focus. See [accessibility and shortcuts](docs/accessibility.md).
 - Platform-specific settings/data directories, update notifications, and release notes.
+- Drag-and-drop save and Pokémon files anywhere onto the window (or directly onto a box/party slot) to open or import them. This works on Windows and macOS; on Linux, desktop drag-and-drop into the app is not currently supported under Wayland sessions (KDE Plasma, GNOME, …) — use **File → Open** there instead.
 
 ## Screenshots
 

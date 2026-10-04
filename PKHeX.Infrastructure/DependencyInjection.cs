@@ -4,6 +4,7 @@ using PKHeX.Application.Abstractions.LiveHex;
 using PKHeX.Application.Abstractions.GiftRecords;
 using PKHeX.Infrastructure.AutoLegality;
 using PKHeX.Infrastructure.Configuration;
+using PKHeX.Infrastructure.Desktop;
 using PKHeX.Infrastructure.GiftRecords;
 using PKHeX.Infrastructure.LiveHex;
 
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddSingleton<ISaveBackupService, SaveBackupService>();
         services.AddSingleton<IGiftRecordProvider, GiftRecordProvider>();
         services.AddSingleton<ISlotService, SlotService>();
+        services.AddSingleton<ILinuxDesktopIntegrationService, LinuxDesktopIntegrationService>();
         return services;
     }
 }
