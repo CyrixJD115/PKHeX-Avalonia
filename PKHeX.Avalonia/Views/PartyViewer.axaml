@@ -203,6 +203,13 @@
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Top"
                                                Margin="5,4,0,0" />
+                                    <Path Data="M 6,0 L 12,11 L 0,11 Z M 6.5,9.5 H 5.5 V 8.5 H 6.5 V 9.5 Z M 6.5,7.5 H 5.5 V 3.5 H 6.5 V 7.5 Z"
+                                          Fill="{DynamicResource ThemeShinyBrush}"
+                                          HorizontalAlignment="Right"
+                                          VerticalAlignment="Top"
+                                          IsVisible="{Binding !IsLegal}"
+                                          Margin="0,2,2,0"
+                                          Width="12" Height="11" />
                                 </Panel>
                             </Button>
                         </DataTemplate>
