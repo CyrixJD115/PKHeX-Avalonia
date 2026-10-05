@@ -249,3 +249,6 @@ docs/superpowers/
 #############
 
 .playwright-mcp/
+
+# Flatpak builder download/cache/staging state (never application source).
+.flatpak-builder/

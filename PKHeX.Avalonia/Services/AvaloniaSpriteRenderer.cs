@@ -64,7 +64,9 @@ public sealed class AvaloniaSpriteRenderer : ISpriteRenderer
         using var bitmap = empty ? new SKBitmap(SpriteWidth, SpriteHeight) : CreateSprite(pk);
         using var canvas = new SKCanvas(bitmap);
         if (empty) { canvas.Clear(SKColors.Transparent); state = state with { Illegal = false, MoveHint = false }; }
-        if (state.Illegal || state.MoveHint) DrawOverlay(canvas, _loader.GetLegalityOverlay(state.Illegal), 0, 44);
+        // Slot views own the upper-right illegal indicator; baking it into the sprite duplicates it.
+        // The distinct move hint has no view-level counterpart, so keep its lower-left lane.
+        if (!state.Illegal && state.MoveHint) DrawOverlay(canvas, _loader.GetLegalityOverlay(false), 0, 44);
         if (state.Storage.IsBattleTeam() >= 0) DrawOverlay(canvas, _loader.GetSlotOverlay("team"), 0, 30);
         if (state.Storage.HasFlag(StorageSlotSource.Locked)) DrawOverlay(canvas, _loader.GetSlotOverlay("locked"), 14, 30);
         var party = state.Storage.IsParty();

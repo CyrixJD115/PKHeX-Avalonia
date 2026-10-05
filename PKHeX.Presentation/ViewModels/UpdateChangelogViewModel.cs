@@ -23,6 +23,8 @@ public partial class UpdateChangelogViewModel : ViewModelBase, ICloseableDialog
 
     public string LatestVersion { get; }
     public string LatestReleaseUrl { get; }
+    public bool CanDownload => _updateInstaller.CurrentInstallKind != InstallKind.LinuxFlatpak;
+    public bool IsFlatpak => !CanDownload;
 
     public UpdateChangelogViewModel(
         IReadOnlyList<ReleaseInfo> releasesNewestFirst, IUpdateInstaller updateInstaller, IWindowService windowService, IAppLifetime appLifetime)
@@ -47,7 +49,7 @@ public partial class UpdateChangelogViewModel : ViewModelBase, ICloseableDialog
         OpenUrl(LatestReleaseUrl);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task Download()
     {
         await UpdateDownloadLauncher.DownloadAsync(_releasesNewestFirst, _updateInstaller, _windowService, _appLifetime);

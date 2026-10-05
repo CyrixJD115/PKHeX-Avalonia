@@ -2431,6 +2431,7 @@
   "Update_Extracting": "正在准备更新…",
   "Update_Installing": "正在安装…",
   "Update_Relaunching": "正在重启 PKHeX…",
+  "Update_FlatpakManaged": "此安装由 Flatpak 管理。请通过软件管理器或 Flatpak 更新。",
   "Update_InstallButton": "下载并安装",
   "Update_InstallPrompt": "下载 v{0} 并重启以安装？",
   "Update_Error_Checksum": "下载未通过验证，已被丢弃。",

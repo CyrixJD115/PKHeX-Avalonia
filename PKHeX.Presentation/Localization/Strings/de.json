@@ -2431,6 +2431,7 @@
   "Update_Extracting": "Update wird vorbereitet…",
   "Update_Installing": "Wird installiert…",
   "Update_Relaunching": "PKHeX wird neu gestartet…",
+  "Update_FlatpakManaged": "Diese Installation wird von Flatpak verwaltet. Aktualisiere sie über deine Softwareverwaltung oder Flatpak.",
   "Update_InstallButton": "Herunterladen & Installieren",
   "Update_InstallPrompt": "v{0} herunterladen und zum Installieren neu starten?",
   "Update_Error_Checksum": "Der Download hat die Überprüfung nicht bestanden und wurde verworfen.",

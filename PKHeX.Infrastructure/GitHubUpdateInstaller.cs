@@ -51,6 +51,11 @@ public sealed class GitHubUpdateInstaller : IUpdateInstaller
     public bool CanSelfUpdate(out string? reason)
     {
         var location = _resolveLocation();
+        if (location.Kind == InstallKind.LinuxFlatpak)
+        {
+            reason = "Update_FlatpakManaged";
+            return false;
+        }
         if (location.Kind == InstallKind.Unknown || !_strategies.ContainsKey(location.Kind))
         {
             reason = "Update_Error_Generic";
@@ -64,6 +69,8 @@ public sealed class GitHubUpdateInstaller : IUpdateInstaller
     public async Task<UpdateInstallResult> DownloadAndInstallAsync(ReleaseAsset asset, IProgress<UpdateProgress> progress, CancellationToken ct)
     {
         var location = _resolveLocation();
+        if (location.Kind == InstallKind.LinuxFlatpak)
+            return new UpdateInstallResult(false, false, "Update_FlatpakManaged");
         if (!_strategies.TryGetValue(location.Kind, out var strategy))
             return new UpdateInstallResult(false, false, "Update_Error_Generic");
 

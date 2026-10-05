@@ -23,6 +23,7 @@ public partial class UpdateNotificationViewModel : ViewModelBase
 
     public string LatestVersion { get; }
     public string Message => LocalizedStrings.Instance.Format("UpdateNotification_UpdateAvailable", LatestVersion);
+    public bool CanDownload => _updateInstaller.CurrentInstallKind != InstallKind.LinuxFlatpak;
 
     /// <summary>Raised when the notification should be removed from the status bar (dismissed or skipped).</summary>
     public event Action? Dismissed;
@@ -47,7 +48,7 @@ public partial class UpdateNotificationViewModel : ViewModelBase
         await _windowService.ShowDialogAsync(changelog, LocalizedStrings.Instance["UpdateNotification_WhatsNewTitle"]);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task Download()
     {
         await UpdateDownloadLauncher.DownloadAsync(_releasesNewestFirst, _updateInstaller, _windowService, _appLifetime);

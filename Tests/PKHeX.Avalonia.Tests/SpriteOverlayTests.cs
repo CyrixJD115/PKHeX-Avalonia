@@ -81,7 +81,8 @@ public class SpriteOverlayTests
         using var plain = SKBitmap.Decode(renderer.GetSprite(pk)!);
         using var marked = SKBitmap.Decode(renderer.GetSlotSprite(pk, state)!);
         var lanes = new[] { SKRectI.Create(0, 44, 12, 12), SKRectI.Create(0, 30, 12, 12), SKRectI.Create(14, 30, 12, 12), SKRectI.Create(14, 44, 12, 12), SKRectI.Create(28, 44, 12, 12) };
-        foreach (var lane in lanes) Assert.NotEqual(Pixels(plain, lane), Pixels(marked, lane));
+        Assert.Equal(Pixels(plain, lanes[0]), Pixels(marked, lanes[0])); // Illegal status belongs to the slot view.
+        foreach (var lane in lanes.Skip(1)) Assert.NotEqual(Pixels(plain, lane), Pixels(marked, lane));
         Assert.Equal(Pixels(plain, SKRectI.Create(42, 32, 26, 24)), Pixels(marked, SKRectI.Create(42, 32, 26, 24)));
         var description = SpriteStateDescription.Describe(pk, state);
         foreach (var key in new[] { "Alpha", "Egg", "Shiny", "Illegal", "Team", "Locked", "Starter" }) Assert.Contains(LocalizedStrings.Instance["SlotState_" + key], description);
@@ -93,6 +94,7 @@ public class SpriteOverlayTests
         foreach (var lane in lanes.Skip(1)) Assert.Contains(Pixels(empty, lane), p => p.Alpha > 0);
         using var hint = SKBitmap.Decode(renderer.GetSlotSprite(pk, state with { Illegal = false, MoveHint = true })!);
         Assert.NotEqual(Pixels(marked, lanes[0]), Pixels(hint, lanes[0]));
+        Assert.Equal(renderer.GetSlotSprite(pk, state), renderer.GetSlotSprite(pk, state with { MoveHint = true }));
     }
 
     private static SKColor[] Pixels(SKBitmap bitmap, SKRectI rect) =>

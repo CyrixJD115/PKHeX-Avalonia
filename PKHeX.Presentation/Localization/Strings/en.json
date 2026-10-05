@@ -2431,6 +2431,7 @@
   "Update_Extracting": "Preparing update…",
   "Update_Installing": "Installing…",
   "Update_Relaunching": "Restarting PKHeX…",
+  "Update_FlatpakManaged": "This installation is managed by Flatpak. Update it using your software manager or Flatpak.",
   "Update_InstallButton": "Download & Install",
   "Update_InstallPrompt": "Download v{0} and restart to install?",
   "Update_Error_Checksum": "The download failed verification and was discarded.",
