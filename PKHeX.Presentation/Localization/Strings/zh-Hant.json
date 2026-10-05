@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "更新後顯示更新日誌",
   "Settings_ShowChangelog_Desc": "首次啟動新版本時自動顯示「更新內容」對話框。",
   "Settings_LinuxIntegration": "Linux 桌面整合",
-  "Settings_LinuxIntegration_Desc": "將此 AppImage 複製到主目錄下的固定位置，並把 PKHeX-Avalonia 加入應用程式選單。適用於所有發行版，無需管理員密碼；應用程式內的更新器會讓選單項目持續可用。",
+  "Settings_LinuxIntegration_Desc": "將此 AppImage 加入應用程式選單，無需管理員密碼。",
   "Settings_LinuxIntegration_Add": "加入到應用程式選單",
   "Settings_LinuxIntegration_Remove": "從應用程式選單移除",
   "Settings_LinuxIntegration_Working": "處理中…",

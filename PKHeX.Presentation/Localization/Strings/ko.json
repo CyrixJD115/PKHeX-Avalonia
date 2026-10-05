@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "업데이트 후 변경 사항 표시",
   "Settings_ShowChangelog_Desc": "새 버전을 처음 실행할 때 '새로운 소식' 대화상자를 자동으로 표시합니다.",
   "Settings_LinuxIntegration": "Linux 데스크톱 통합",
-  "Settings_LinuxIntegration_Desc": "이 AppImage를 홈 디렉터리의 고정 위치에 복사하고 PKHeX-Avalonia를 애플리케이션 메뉴에 추가합니다. 모든 배포판에서 동작하며 관리자 비밀번호가 필요 없고, 앱 내 업데이터가 메뉴 항목을 계속 작동하게 유지합니다.",
+  "Settings_LinuxIntegration_Desc": "이 AppImage를 애플리케이션 메뉴에 추가합니다. 관리자 권한이 필요 없습니다.",
   "Settings_LinuxIntegration_Add": "애플리케이션 메뉴에 추가",
   "Settings_LinuxIntegration_Remove": "애플리케이션 메뉴에서 제거",
   "Settings_LinuxIntegration_Working": "처리 중…",

@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "Mostra registro modifiche dopo l'aggiornamento",
   "Settings_ShowChangelog_Desc": "Mostra automaticamente la finestra 'Novità' la prima volta che avvii una versione più recente.",
   "Settings_LinuxIntegration": "Integrazione con il desktop Linux",
-  "Settings_LinuxIntegration_Desc": "Copia questa AppImage in una posizione stabile nella tua cartella home e aggiunge PKHeX-Avalonia al menu delle applicazioni. Funziona su ogni distribuzione, non richiede la password di amministratore, e l'aggiornamento integrato mantiene funzionante la voce del menu.",
+  "Settings_LinuxIntegration_Desc": "Aggiunge questa AppImage al menu delle applicazioni, senza password di amministratore.",
   "Settings_LinuxIntegration_Add": "Aggiungi al menu delle applicazioni",
   "Settings_LinuxIntegration_Remove": "Rimuovi dal menu delle applicazioni",
   "Settings_LinuxIntegration_Working": "Elaborazione…",

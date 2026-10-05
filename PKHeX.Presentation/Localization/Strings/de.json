@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "Änderungsprotokoll nach Update anzeigen",
   "Settings_ShowChangelog_Desc": "Zeigt beim ersten Start einer neueren Version automatisch den Dialog 'Was ist neu' an.",
   "Settings_LinuxIntegration": "Linux-Desktop-Integration",
-  "Settings_LinuxIntegration_Desc": "Kopiert dieses AppImage an einen festen Ort in deinem Home-Verzeichnis und fügt PKHeX-Avalonia zum Anwendungsmenü hinzu. Funktioniert auf jeder Distribution, benötigt kein Administrator-Passwort, und das In-App-Update hält den Menüeintrag funktionsfähig.",
+  "Settings_LinuxIntegration_Desc": "Fügt dieses AppImage zum Anwendungsmenü hinzu — ohne Administratorrechte.",
   "Settings_LinuxIntegration_Add": "Zum Anwendungsmenü hinzufügen",
   "Settings_LinuxIntegration_Remove": "Aus dem Anwendungsmenü entfernen",
   "Settings_LinuxIntegration_Working": "Wird ausgeführt…",

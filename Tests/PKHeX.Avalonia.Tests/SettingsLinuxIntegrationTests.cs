@@ -179,6 +179,15 @@ public class SettingsLinuxIntegrationViewTests
         var addButton = view.GetVisualDescendants().OfType<Button>()
             .FirstOrDefault(b => b.Command == vm.AddToApplicationMenuCommand);
         Assert.NotNull(addButton);
+
+        // The buttons must size to their content (Auto column), not sit in the fixed 150px
+        // toggle column the other rows use — longer localized labels clipped there.
+        var buttonGrid = addButton!.GetVisualAncestors().OfType<Grid>()
+            .First(g => g.ColumnDefinitions.Count == 2);
+        Assert.True(buttonGrid.ColumnDefinitions[0].Width.IsStar);
+        Assert.True(buttonGrid.ColumnDefinitions[1].Width.IsAuto);
+        Assert.True(addButton.Bounds.Width > 100,
+            $"Add button rendered at {addButton.Bounds.Width}px — label is clipped.");
     }
 
     [AvaloniaFact]

@@ -95,10 +95,12 @@
                     <StackPanel Spacing="{DynamicResource UiDensityViewStackSpacing}">
                         <TextBlock Text="{loc:Loc Settings_LinuxIntegration}" FontSize="13" FontWeight="SemiBold" />
                         <TextBlock Text="{loc:Loc Settings_LinuxIntegration_Desc}" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="Wrap" />
-                        <Grid ColumnDefinitions="*,150" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="10">
-                            <TextBlock Grid.Row="0" Text="{Binding LinuxIntegrationStatus}" FontSize="11" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                            <Button Grid.Row="0" Grid.Column="1" Content="{loc:Loc Settings_LinuxIntegration_Add}" Command="{Binding AddToApplicationMenuCommand}" ToolTip.Tip="{loc:Loc Settings_LinuxIntegration_Desc}" />
-                            <Button Grid.Row="1" Grid.Column="1" Content="{loc:Loc Settings_LinuxIntegration_Remove}" Command="{Binding RemoveFromApplicationMenuCommand}" IsVisible="{Binding LinuxIntegrationRegistered}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Grid.Column="0" Text="{Binding LinuxIntegrationStatus}" FontSize="11" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                                <Button Content="{loc:Loc Settings_LinuxIntegration_Add}" Command="{Binding AddToApplicationMenuCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="{loc:Loc Settings_LinuxIntegration_Desc}" />
+                                <Button Content="{loc:Loc Settings_LinuxIntegration_Remove}" Command="{Binding RemoveFromApplicationMenuCommand}" IsVisible="{Binding LinuxIntegrationRegistered}" HorizontalAlignment="Stretch" />
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>

@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "更新後に変更履歴を表示",
   "Settings_ShowChangelog_Desc": "新しいバージョンを初めて起動したときに「更新情報」ダイアログを自動的に表示します。",
   "Settings_LinuxIntegration": "Linux デスクトップ統合",
-  "Settings_LinuxIntegration_Desc": "この AppImage をホームディレクトリ内の固定の場所にコピーし、PKHeX-Avalonia をアプリケーションメニューに追加します。どのディストリビューションでも動作し、管理者パスワードは不要です。アプリ内アップデーターによりメニュー項目は更新後も機能し続けます。",
+  "Settings_LinuxIntegration_Desc": "この AppImage をアプリケーションメニューに追加します。管理者権限は不要です。",
   "Settings_LinuxIntegration_Add": "アプリケーションメニューに追加",
   "Settings_LinuxIntegration_Remove": "アプリケーションメニューから削除",
   "Settings_LinuxIntegration_Working": "処理中…",

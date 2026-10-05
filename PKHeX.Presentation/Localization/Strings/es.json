@@ -308,7 +308,7 @@
   "Settings_ShowChangelog": "Mostrar novedades tras actualizar",
   "Settings_ShowChangelog_Desc": "Muestra automáticamente el diálogo de 'Novedades' la primera vez que inicias una versión más nueva.",
   "Settings_LinuxIntegration": "Integración con el escritorio de Linux",
-  "Settings_LinuxIntegration_Desc": "Copia este AppImage a una ubicación estable en tu carpeta personal y añade PKHeX-Avalonia al menú de aplicaciones. Funciona en cualquier distribución, no necesita contraseña de administrador, y el actualizador integrado mantiene funcionando la entrada del menú.",
+  "Settings_LinuxIntegration_Desc": "Añade este AppImage al menú de aplicaciones, sin contraseña de administrador.",
   "Settings_LinuxIntegration_Add": "Añadir al menú de aplicaciones",
   "Settings_LinuxIntegration_Remove": "Quitar del menú de aplicaciones",
   "Settings_LinuxIntegration_Working": "Trabajando…",
