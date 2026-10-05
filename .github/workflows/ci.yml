@@ -87,5 +87,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}
-          path: '**/TestResults/*.trx'
+          path: |
+            **/TestResults/*.trx
+            **/TestResults/stat-experience-*.png
+            **/TestResults/stat-experience-*.txt
           retention-days: 14

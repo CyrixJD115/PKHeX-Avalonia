@@ -348,6 +348,8 @@ public partial class PokemonEditorViewModel : ViewModelBase
         _isLoading = true;
         try
         {
+            // Set input limits before assigning values so bindings preserve Gen 1/2 stat experience.
+            OnPropertyChanged(nameof(MaxEV));
             Species = _pk.Species;
             Form = _pk.Form;
 
