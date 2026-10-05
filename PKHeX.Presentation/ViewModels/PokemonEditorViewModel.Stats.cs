@@ -116,7 +116,8 @@ public partial class PokemonEditorViewModel
     public int Base_SPE => _pk.PersonalInfo.SPE;
 
     public int IVTotal => IvHP + IvATK + IvDEF + IvSPA + IvSPD + IvSPE;
-    public int EVTotal => EvHP + EvATK + EvDEF + EvSPA + EvSPD + EvSPE;
+    public int MaxEV => _pk.MaxEV;
+    public int EVTotal => EvHP + EvATK + EvDEF + EvSPA + EvSPE + (_pk is GBPKM ? 0 : EvSPD);
 
     public bool HasCharacteristic => _pk.Characteristic >= 0 && _pk.Characteristic < GameInfo.Strings.characteristics.Length;
     public string CharacteristicText => HasCharacteristic ? GameInfo.Strings.characteristics[_pk.Characteristic] : string.Empty;
@@ -223,8 +224,21 @@ public partial class PokemonEditorViewModel
     partial void OnEvHPChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
     partial void OnEvATKChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
     partial void OnEvDEFChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
-    partial void OnEvSPAChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
-    partial void OnEvSPDChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
+    partial void OnEvSPAChanged(int value)
+    {
+        if (_isLoading) return;
+        // Gen 1/2 store one Special effort value; both displayed stats must edit that value.
+        if (_pk is GBPKM && EvSPD != value) { EvSPD = value; return; }
+        RecalculateStats();
+        Validate();
+    }
+    partial void OnEvSPDChanged(int value)
+    {
+        if (_isLoading) return;
+        if (_pk is GBPKM && EvSPA != value) { EvSPA = value; return; }
+        RecalculateStats();
+        Validate();
+    }
     partial void OnEvSPEChanged(int value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
     partial void OnHyperTrainedHPChanged(bool value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
     partial void OnHyperTrainedATKChanged(bool value) { if (!_isLoading) { RecalculateStats(); Validate(); } }
