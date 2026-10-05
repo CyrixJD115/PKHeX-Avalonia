@@ -19,9 +19,11 @@ namespace PKHeX.Avalonia.Render.Tests;
 public class StatExperienceRenderTests
 {
     [AvaloniaTheory]
-    [InlineData(GameVersion.RD, false)]
-    [InlineData(GameVersion.C, true)]
-    public async Task FiveDigitStatExperienceFitsCompactStatsTable(GameVersion version, bool dark)
+    [InlineData(GameVersion.RD, false, 300)]
+    [InlineData(GameVersion.RD, false, 360)]
+    [InlineData(GameVersion.C, true, 300)]
+    [InlineData(GameVersion.C, true, 360)]
+    public async Task FiveDigitStatExperienceFitsCompactStatsTable(GameVersion version, bool dark, int width)
     {
         var application = global::Avalonia.Application.Current!;
         var previousTheme = application.RequestedThemeVariant;
@@ -37,7 +39,7 @@ public class StatExperienceRenderTests
         var vm = new PokemonEditorViewModel(pokemon, save, renderer, Mock.Of<IDialogService>(), Mock.Of<IWindowService>());
         vm.SelectEditorSectionCommand.Execute("1");
         var view = new PokemonEditor { DataContext = vm };
-        var window = new Window { Content = view, Width = 360, Height = 700 };
+        var window = new Window { Content = view, Width = width, Height = 700 };
         try
         {
             application.RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light;
@@ -58,12 +60,12 @@ public class StatExperienceRenderTests
                 Assert.InRange(position.X + input.Bounds.Width, 0, window.ClientSize.Width);
             }
             Assert.Equal(327675, vm.EVTotal);
-            using var frame = new RenderTargetBitmap(new PixelSize(360, 700));
+            using var frame = new RenderTargetBitmap(new PixelSize(width, 700));
             frame.Render(window);
             if (Environment.GetEnvironmentVariable("PKHEX_HEADLESS_CAPTURE_DIR") is { } directory)
             {
                 Directory.CreateDirectory(directory);
-                frame.Save(Path.Combine(directory, $"stat-experience-{version}-{(dark ? "dark" : "light")}.png"));
+                frame.Save(Path.Combine(directory, $"stat-experience-{version}-{width}-{(dark ? "dark" : "light")}.png"));
             }
         }
         finally
