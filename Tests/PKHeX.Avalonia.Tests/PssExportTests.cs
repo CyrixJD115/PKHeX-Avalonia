@@ -39,6 +39,21 @@ public sealed class PssExportTests
     }
 
     [Fact]
+    public void UpstreamParserIncludesEveryStructuredContactWithoutMutation()
+    {
+        var save = MakeMultiRecordSave();
+        var before = save.Data.ToArray();
+        var groups = new ExportPss6UseCase().Execute(save);
+
+        var trainerLines = PSS6.GetPSSParse(save)
+            .Where(line => line.StartsWith("OT: ", StringComparison.Ordinal));
+
+        Assert.Equal(groups.SelectMany(group => group.Contacts).Select(contact => $"OT: {contact.Trainer}"),
+            trainerLines);
+        Assert.Equal(before, save.Data.ToArray());
+    }
+
+    [Fact]
     public void ParserPreservesMultipleRecordsAndGroupOrderWithoutMutation()
     {
         var save = MakeMultiRecordSave();

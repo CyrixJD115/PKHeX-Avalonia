@@ -11,10 +11,9 @@ public sealed record PssContact(
 public sealed record PssGroup(PssGroupKind Kind, IReadOnlyList<PssContact> Contacts);
 
 /// <summary>
-/// Reads the three Gen 6 PSS contact blocks without modifying the save. Core's current
-/// PSS6.GetPSSParse stops after the first populated record in each group because its
-/// ReadTrainer returns false after adding a record; this consumer parser keeps walking until
-/// a zero ID or the 100-record group limit. Core remains an unchanged upstream mirror.
+/// Reads the three Gen 6 PSS contact blocks without modifying the save. Structured records
+/// let the preview localize its labels without parsing Core's formatted English report.
+/// Like PSS6.GetPSSParse, each group ends at a zero ID or the 100-record group limit.
 /// </summary>
 public sealed class ExportPss6UseCase
 {
