@@ -160,19 +160,13 @@ trust for a given cert. An EV certificate (or Azure Trusted Signing) avoids
 the warning from day one. Either kind of certificate works with the signing
 steps above; only the secret contents change.
 
-## Linux: why AppImage, not Flatpak/Flathub
+## Linux distribution
 
-The AppImage build uses `appimagetool`. Flathub distribution is a separate effort:
-
-- Flathub requires a manifest-driven build from source inside a Flatpak
-  sandbox (no bundling a self-contained `dotnet publish` output directly),
-  plus a review/approval process on their side — this is a separate,
-  larger effort than an additive CI step, and the issue explicitly scopes
-  Flathub as a stretch goal alongside Homebrew/winget rather than a hard
-  CI requirement.
-- AppImage requires no external approval and works today, so it remains the
-  primary Linux distribution channel until a Flatpak manifest is built as
-  follow-up work.
+GitHub releases provide portable ZIPs, AppImages built with `appimagetool`, and
+Flatpak bundles built from source inside the SDK sandbox. Choose the package
+that fits your desktop; [Flatpak installation and maintenance](#linux-flatpak)
+are documented below. A Flathub listing still requires an independent human
+submission and reviewer acceptance under its current policies.
 
 ### AppImage catalog metadata and updates
 
