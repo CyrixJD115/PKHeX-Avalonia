@@ -17,7 +17,7 @@ workflow signs when it can and clearly labels artifacts as unsigned when it can'
 | Platform | Artifact(s) | Notes |
 |---|---|---|
 | Windows x64 | `PKHeX-Avalonia-win-x64.zip` (unchanged) + `PKHeX-Avalonia-Setup.exe` (or `PKHeX-Avalonia-Setup-unsigned.exe`) | Installer built with Inno Setup via chocolatey |
-| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` + `PKHeX-Avalonia-<version>-x86_64.AppImage` + `.AppImage.zsync` | AppImageUpdate metadata and AppStream catalog screenshots included |
+| Linux x64 | `PKHeX-Avalonia-linux-x64.zip` + `PKHeX-Avalonia-<version>-x86_64.AppImage` + `.AppImage.zsync` + `PKHeX-Avalonia-linux-x86_64.flatpak` | Flatpak uses the Freedesktop 25.08 runtime; AppImageUpdate and AppStream metadata are included |
 | macOS arm64 / x64 | `PKHeX-Avalonia-osx-{arm64,x64}.zip` (unchanged, ad-hoc signed as before) + `PKHeX-Avalonia-osx-{arm64,x64}.dmg` or `-unsigned.dmg` | `.dmg` contains the `.app` bundle plus an `Applications` symlink |
 
 The ZIP naming stays stable. AppImages use the catalog's application/version/architecture
@@ -160,19 +160,13 @@ trust for a given cert. An EV certificate (or Azure Trusted Signing) avoids
 the warning from day one. Either kind of certificate works with the signing
 steps above; only the secret contents change.
 
-## Linux: why AppImage, not Flatpak/Flathub
+## Linux distribution
 
-The AppImage build uses `appimagetool`. Flathub distribution is a separate effort:
-
-- Flathub requires a manifest-driven build from source inside a Flatpak
-  sandbox (no bundling a self-contained `dotnet publish` output directly),
-  plus a review/approval process on their side — this is a separate,
-  larger effort than an additive CI step, and the issue explicitly scopes
-  Flathub as a stretch goal alongside Homebrew/winget rather than a hard
-  CI requirement.
-- AppImage requires no external approval and works today, so it remains the
-  primary Linux distribution channel until a Flatpak manifest is built as
-  follow-up work.
+GitHub releases provide portable ZIPs, AppImages built with `appimagetool`, and
+Flatpak bundles built from source inside the SDK sandbox. Choose the package
+that fits your desktop; [Flatpak installation and maintenance](#linux-flatpak)
+are documented below. A Flathub listing still requires an independent human
+submission and reviewer acceptance under its current policies.
 
 ### AppImage catalog metadata and updates
 
@@ -255,7 +249,7 @@ review is far more likely to reject them.
 ## Summary: what's automatic vs. gated vs. manual
 
 - **Fully automatic, every release:** zip artifacts (all platforms),
-  AppImage, `.dmg` (signed, self-signed, or unsigned), Windows installer
+  AppImage, Flatpak bundle, `.dmg` (signed, self-signed, or unsigned), Windows installer
   (signed or unsigned), GitHub Release creation and asset upload.
 - **Gated on secrets (automatic once configured):** Developer ID codesigning
   + notarization/stapling for macOS (tier 1), stable self-signed identity
@@ -263,5 +257,89 @@ review is far more likely to reject them.
   needed), code signing for the Windows installer and exe.
 - **Manual, one-time-per-version, by design (cannot be automated without
   publishing into third-party repos on the maintainer's behalf):**
-  submitting the Homebrew cask and winget manifest PRs. Flathub packaging is
-  left as future work.
+  submitting the Homebrew cask and winget manifest PRs. Flathub listing requires
+  an independently human-authored manifest and a human-owned submission; see below.
+
+## Linux Flatpak
+
+GitHub releases include an x86_64 Flatpak bundle built from the exact tagged source,
+using the Freedesktop 25.08 runtime and .NET 10 SDK extension. The bundle does not
+require a system-wide .NET installation. Install it on a Linux desktop with Flatpak
+and an XDG desktop portal backend:
+
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user ./PKHeX-Avalonia-linux-x86_64.flatpak
+flatpak run io.github.realgarit.PKHeX-Avalonia
+```
+
+The Flathub remote supplies the runtime dependencies; PKHeX-Avalonia itself is not
+listed on Flathub. A standalone GitHub bundle has no application update remote:
+install the newer release bundle with the same `flatpak install --user` command
+to update it. The app keeps release notes available, explains that Flatpak owns
+updates, and hides the portable download/install actions. It never replaces `/app`
+or starts an update helper inside the sandbox.
+
+File and folder pickers use Avalonia's XDG portal backend. No home, host, or
+removable-drive filesystem permission is granted: select individual saves or a
+folder through the picker. Persistent portal grants allow reopening selected files;
+dragging a host file into the app may require opening it through the picker first.
+Use File > Save As to choose a new destination. Settings, backups and other private
+data live under `~/.var/app/io.github.realgarit.PKHeX-Avalonia/`. The current Avalonia
+11 backend uses X11, including XWayland on Wayland desktops. Network access supports
+legality resources, mystery gifts, and release notes; DRI access supports rendering.
+
+### Rebuild and maintain
+
+The [Flatpak workflow](../.github/workflows/flatpak.yml) compiles the committed
+source inside the SDK sandbox without build-time network access, exports a bundle,
+installs that bundle and launches the native application under Xvfb. It records
+the sandbox permissions, runtime log and screenshot as CI artifacts.
+
+On Linux, install `flatpak-builder`, `appstream`, `desktop-file-utils`, Python 3,
+and the three runtimes, then build a committed revision:
+
+```bash
+flatpak install --user flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.freedesktop.Sdk.Extension.dotnet10//25.08
+python3 .github/scripts/prepare-flatpak.py tmp/flatpak
+flatpak-builder --user --force-clean --repo=tmp/flatpak/repo tmp/flatpak/build tmp/flatpak/io.github.realgarit.PKHeX-Avalonia.json
+flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo tmp/flatpak/repo tmp/flatpak/PKHeX-Avalonia-linux-x86_64.flatpak io.github.realgarit.PKHeX-Avalonia
+```
+
+The preparation script reads version, date, packaging and source files from the
+same Git commit and pins the local source archive by SHA-256. It refuses to overlay
+an existing destination. Uncommitted edits do not enter the build. Dependencies
+come from the checked-in `packaging/flatpak/nuget-sources.json`; each package has a
+public NuGet URL and a SHA-512 digest. After changing package versions, run
+`python3 .github/scripts/update-flatpak-nuget.py` with the .NET 10 SDK installed,
+review the package changes, and commit the refreshed list. Dependency generation
+uses the network; the actual Flatpak build does not. NuGet vulnerability auditing
+is disabled only for the offline publish; normal application CI retains it.
+
+### Official Flathub route
+
+The requested visibility on Flathub is a separate publication step. Its current
+[requirements](https://docs.flathub.org/docs/for-app-authors/requirements#generative-ai-policy)
+prohibit AI-generated or AI-assisted manifests and AI agents opening or automating
+submission PRs, commit messages, descriptions or review interactions. This
+repository's Flatpak packaging was AI-assisted and must not be submitted as an
+eligible Flathub manifest. The application's AI assistance is disclosed in this
+repository; Flathub also requires disclosure of its affected parts and extent.
+
+A human maintainer must independently author and maintain the Flathub manifest,
+check the current requirements, use a stable source release, perform the required
+offline build, runtime and linter checks, and personally follow the
+[submission process](https://docs.flathub.org/docs/for-app-authors/submission)
+against `flathub/flathub`'s `new-pr` branch. Reviewers decide acceptance; neither a
+local bundle nor a submitted PR establishes a listing. The GitHub-based ID
+`io.github.realgarit.PKHeX-Avalonia` matches this repository and permits later
+[owner verification](https://docs.flathub.org/docs/for-app-authors/verification)
+after acceptance and collaborator access.
+
+The application is GPL-3.0-only with GPL-compatible vendored AutoMod code and
+separately attributed assets. Existing third-party sprite/artwork provenance and
+the original 64px app icon are retained in the package; this work does not certify
+third-party artwork redistribution or trademark approval. Flathub requires a
+distinct compliant name/icon and prefers a scalable icon or at least a 256px PNG.
+Those publication requirements need the maintainer's independent review before
+submission; the installed repository bundle is not described as Flathub-ready.

@@ -4,6 +4,19 @@ namespace PKHeX.Avalonia.Tests;
 
 public class InstallLocationResolverTests
 {
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("/app/lib/pkhex-avalonia/PKHeX.Avalonia", null)]
+    [InlineData("/app/lib/pkhex-avalonia/PKHeX.Avalonia", "/home/user/inherited.AppImage")]
+    public void Flatpak_is_package_managed_even_with_inherited_appimage(string? processPath, string? appImagePath)
+    {
+        var result = InstallLocationResolver.Resolve(processPath, appImagePath,
+            _ => throw new InvalidOperationException("A Flatpak must not probe host writability"),
+            "io.github.realgarit.PKHeX-Avalonia");
+        Assert.Equal(InstallKind.LinuxFlatpak, result.Kind);
+        Assert.Equal("/app", result.Root);
+    }
+
     // APPIMAGE takes priority over everything else, and doesn't depend on the running OS branch,
     // so it's the one case this suite can assert unconditionally on any CI platform.
     [Fact]

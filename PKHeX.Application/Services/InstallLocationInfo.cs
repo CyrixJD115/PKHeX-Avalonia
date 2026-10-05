@@ -23,6 +23,9 @@ public enum InstallKind
 
     /// <summary>Could not be classified — self-update is not attempted.</summary>
     Unknown,
+
+    /// <summary>Linux Flatpak; updates are owned by Flatpak, never by the application.</summary>
+    LinuxFlatpak,
 }
 
 /// <summary>
