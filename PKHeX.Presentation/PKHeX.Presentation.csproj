@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="PKHeX.Avalonia.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <!-- UI localization string tables (issue #132). English is the source of truth; the other
          eight files provide first-pass translations with English fallback at runtime. -->
     <EmbeddedResource Include="Localization\Strings\*.json" />

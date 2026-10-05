@@ -132,6 +132,24 @@ public class SettingsLinuxIntegrationTests
         service.Verify(s => s.UnregisterAsync(It.IsAny<CancellationToken>()), Times.Once);
         Assert.False(vm.LinuxIntegrationRegistered);
     }
+
+    [Fact]
+    public void ShortenHomePath_RewritesPathsUnderHome()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        Assert.Equal("~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage",
+            SettingsViewModel.ShortenHomePath(Path.Combine(home, ".local", "opt", "PKHeX-Avalonia", "PKHeX-Avalonia.AppImage")));
+    }
+
+    [Fact]
+    public void ShortenHomePath_LeavesOtherPathsAlone()
+    {
+        Assert.Equal("/usr/share/applications/io.pkhex.avalonia.desktop",
+            SettingsViewModel.ShortenHomePath("/usr/share/applications/io.pkhex.avalonia.desktop"));
+        Assert.Equal("/", SettingsViewModel.ShortenHomePath("/"));
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        Assert.Equal("~", SettingsViewModel.ShortenHomePath(home));
+    }
 }
 
 // Composed-view check: the section's XAML wiring (IsVisible gating + command bindings) realized
@@ -176,18 +194,33 @@ public class SettingsLinuxIntegrationViewTests
             .FirstOrDefault(t => t.Text == PKHeX.Presentation.Localization.LocalizedStrings.Instance["Settings_LinuxIntegration"]);
         Assert.NotNull(header);
         Assert.True(IsEffectivelyVisible(header!));
-        var addButton = view.GetVisualDescendants().OfType<Button>()
-            .FirstOrDefault(b => b.Command == vm.AddToApplicationMenuCommand);
-        Assert.NotNull(addButton);
 
-        // The buttons must size to their content (Auto column), not sit in the fixed 150px
-        // toggle column the other rows use — longer localized labels clipped there.
-        var buttonGrid = addButton!.GetVisualAncestors().OfType<Grid>()
-            .First(g => g.ColumnDefinitions.Count == 2);
-        Assert.True(buttonGrid.ColumnDefinitions[0].Width.IsStar);
-        Assert.True(buttonGrid.ColumnDefinitions[1].Width.IsAuto);
-        Assert.True(addButton.Bounds.Width > 100,
-            $"Add button rendered at {addButton.Bounds.Width}px — label is clipped.");
+        // One state-driven button: Add while unregistered, never both at once.
+        var addButton = view.GetVisualDescendants().OfType<Button>()
+            .First(b => b.Command == vm.AddToApplicationMenuCommand);
+        var removeButton = view.GetVisualDescendants().OfType<Button>()
+            .First(b => b.Command == vm.RemoveFromApplicationMenuCommand);
+        Assert.True(IsEffectivelyVisible(addButton));
+        Assert.False(IsEffectivelyVisible(removeButton));
+    }
+
+    [AvaloniaFact]
+    public void Section_ShowsOnlyRemove_OnceRegistered()
+    {
+        var service = new Mock<ILinuxDesktopIntegrationService>();
+        service.SetupGet(s => s.IsSupported).Returns(true);
+        service.SetupGet(s => s.IsRegistered).Returns(true);
+        service.SetupGet(s => s.InstalledAppImagePath).Returns("/home/user/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage");
+        var vm = CreateViewModel(service);
+
+        var view = CreateView(vm);
+
+        var addButton = view.GetVisualDescendants().OfType<Button>()
+            .First(b => b.Command == vm.AddToApplicationMenuCommand);
+        var removeButton = view.GetVisualDescendants().OfType<Button>()
+            .First(b => b.Command == vm.RemoveFromApplicationMenuCommand);
+        Assert.False(IsEffectivelyVisible(addButton));
+        Assert.True(IsEffectivelyVisible(removeButton));
     }
 
     [AvaloniaFact]

@@ -104,7 +104,7 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
         {
             var result = await integration.RegisterAsync();
             LinuxIntegrationStatus = result.Outcome == DesktopIntegrationOutcome.Success
-                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", result.InstalledPath ?? string.Empty)
+                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", ShortenHomePath(result.InstalledPath ?? string.Empty))
                 : LocalizedStrings.Instance[result.MessageKey ?? "LinuxIntegration_Error_Generic"];
         }
         finally
@@ -145,9 +145,23 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
         if (string.IsNullOrEmpty(LinuxIntegrationStatus))
         {
             LinuxIntegrationStatus = integration.InstalledAppImagePath is { } installed
-                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", installed)
+                ? LocalizedStrings.Instance.Format("Settings_LinuxIntegration_InstalledAt", ShortenHomePath(installed))
                 : LocalizedStrings.Instance["Settings_LinuxIntegration_NotInstalled"];
         }
+    }
+
+    /// <summary>
+    /// Renders an absolute path under the user's home directory as <c>~/…</c> for display;
+    /// paths outside the home directory are shown verbatim.
+    /// </summary>
+    internal static string ShortenHomePath(string path)
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrEmpty(home) || !path.StartsWith(home, StringComparison.Ordinal))
+            return path;
+
+        var rest = path[home.Length..];
+        return rest.Length == 0 ? "~" : $"~{rest}";
     }
 
     // Startup
