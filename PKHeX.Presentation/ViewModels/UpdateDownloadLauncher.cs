@@ -20,6 +20,11 @@ internal static class UpdateDownloadLauncher
         if (releasesNewestFirst.Count == 0)
             return;
 
+        // A Flatpak update must stay within its configured remote. Do not send users to a
+        // portable/AppImage download or launch a self-update helper from the sandbox.
+        if (updateInstaller.CurrentInstallKind == InstallKind.LinuxFlatpak)
+            return;
+
         var latest = releasesNewestFirst[0];
 
         if (updateInstaller.CanSelfUpdate(out _))

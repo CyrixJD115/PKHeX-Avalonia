@@ -11,6 +11,11 @@ internal sealed class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .With(new X11PlatformOptions
+            {
+                WmClass = Environment.GetEnvironmentVariable("FLATPAK_ID") ?? "PKHeX.Avalonia",
+                UseDBusFilePicker = true,
+            })
             .WithInterFont()
             .LogToTrace();
 }

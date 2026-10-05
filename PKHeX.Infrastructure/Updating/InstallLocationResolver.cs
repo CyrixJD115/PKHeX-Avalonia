@@ -11,11 +11,18 @@ namespace PKHeX.Infrastructure.Updating;
 internal static class InstallLocationResolver
 {
     public static InstallLocationInfo Resolve() =>
-        Resolve(Environment.ProcessPath, Environment.GetEnvironmentVariable("APPIMAGE"), DefaultIsWritable);
+        Resolve(Environment.ProcessPath, Environment.GetEnvironmentVariable("APPIMAGE"), DefaultIsWritable,
+            Environment.GetEnvironmentVariable("FLATPAK_ID"));
 
     /// <summary>Testable overload: everything impure is passed in rather than read from the environment.</summary>
-    internal static InstallLocationInfo Resolve(string? processPath, string? appImagePath, Func<string, bool> isWritable)
+    internal static InstallLocationInfo Resolve(string? processPath, string? appImagePath, Func<string, bool> isWritable,
+        string? flatpakId = null)
     {
+        // Flatpak mounts /app read-only. Even an inherited APPIMAGE variable must not select a
+        // host-file swapping strategy from inside the sandbox.
+        if (!string.IsNullOrEmpty(flatpakId))
+            return new InstallLocationInfo(InstallKind.LinuxFlatpak, "/app");
+
         if (!string.IsNullOrEmpty(appImagePath))
             return new InstallLocationInfo(InstallKind.LinuxAppImage, appImagePath);
 

@@ -10,6 +10,24 @@ namespace PKHeX.Avalonia.Tests;
 
 public class GitHubUpdateInstallerTests
 {
+    [Fact]
+    public async Task Flatpak_refuses_self_update_before_downloading_even_if_a_strategy_is_registered()
+    {
+        var handler = new FakeHttpMessageHandler(_ =>
+            throw new InvalidOperationException("Flatpak must never download a portable replacement"));
+        var strategy = new FakeStrategy();
+        var installer = CreateInstaller(handler, strategy, InstallKind.LinuxFlatpak, "/app");
+        Assert.False(installer.CanSelfUpdate(out var reason));
+        Assert.Equal("Update_FlatpakManaged", reason);
+        var result = await installer.DownloadAndInstallAsync(
+            new ReleaseAsset("PKHeX-Avalonia-linux-x64.zip", "https://example.com/portable.zip"),
+            new SyncProgress(), CancellationToken.None);
+        Assert.False(result.Success);
+        Assert.False(result.WillRelaunch);
+        Assert.Equal(reason, result.ErrorKey);
+        Assert.False(strategy.Invoked);
+    }
+
     private sealed class FakeStrategy : IPlatformUpdateStrategy
     {
         public bool Invoked { get; private set; }

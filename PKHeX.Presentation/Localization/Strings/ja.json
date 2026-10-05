@@ -2421,6 +2421,7 @@
   "Update_Extracting": "アップデートを準備中…",
   "Update_Installing": "インストール中…",
   "Update_Relaunching": "PKHeXを再起動しています…",
+  "Update_FlatpakManaged": "このインストールは Flatpak によって管理されています。ソフトウェアマネージャーまたは Flatpak で更新してください。",
   "Update_InstallButton": "ダウンロードしてインストール",
   "Update_InstallPrompt": "v{0} をダウンロードして再起動し、インストールしますか？",
   "Update_Error_Checksum": "ダウンロードの検証に失敗したため破棄されました。",

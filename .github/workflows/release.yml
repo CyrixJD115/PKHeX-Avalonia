@@ -567,9 +567,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 5
 
+  flatpak:
+    needs: version
+    if: needs.version.outputs.proceed == 'true'
+    uses: ./.github/workflows/flatpak.yml
+    with:
+      source_revision: ${{ needs.version.outputs.release_sha }}
+
   release:
     name: Publish release
-    needs: [version, build]
+    needs: [version, build, flatpak]
     runs-on: ubuntu-latest
 
     steps:
@@ -599,6 +606,7 @@ jobs:
             artifacts/**/*.zip
             artifacts/**/*.AppImage
             artifacts/**/*.AppImage.zsync
+            artifacts/**/*.flatpak
             artifacts/**/*.dmg
             artifacts/**/PKHeX-Avalonia-Setup*.exe
           draft: false

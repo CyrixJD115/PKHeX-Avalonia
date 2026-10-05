@@ -2421,6 +2421,7 @@
   "Update_Extracting": "Préparation de la mise à jour…",
   "Update_Installing": "Installation…",
   "Update_Relaunching": "Redémarrage de PKHeX…",
+  "Update_FlatpakManaged": "Cette installation est gérée par Flatpak. Mettez-la à jour avec votre gestionnaire de logiciels ou Flatpak.",
   "Update_InstallButton": "Télécharger et installer",
   "Update_InstallPrompt": "Télécharger la v{0} et redémarrer pour installer ?",
   "Update_Error_Checksum": "Le téléchargement a échoué à la vérification et a été supprimé.",

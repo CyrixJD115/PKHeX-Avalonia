@@ -2407,6 +2407,7 @@
   "Update_Extracting": "Preparando a atualização…",
   "Update_Installing": "Instalando…",
   "Update_Relaunching": "Reiniciando o PKHeX…",
+  "Update_FlatpakManaged": "Esta instalação é gerenciada pelo Flatpak. Atualize pelo gerenciador de software ou pelo Flatpak.",
   "Update_InstallButton": "Baixar e instalar",
   "Update_InstallPrompt": "Baixar a v{0} e reiniciar para instalar?",
   "Update_Error_Checksum": "O download não passou na verificação e foi descartado.",

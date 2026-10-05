@@ -174,7 +174,8 @@
                                    Foreground="{DynamicResource CompactAccentTextBrush}"
                                    FontSize="12" VerticalAlignment="Center" />
                         <Button Content="{loc:Loc Update_WhatsNew}" Command="{Binding ShowChangelogCommand}" Padding="8,2" FontSize="11" />
-                        <Button Content="{loc:Loc Update_Download}" Command="{Binding DownloadCommand}" Padding="8,2" FontSize="11" />
+                        <Button Content="{loc:Loc Update_Download}" Command="{Binding DownloadCommand}"
+                                IsVisible="{Binding CanDownload}" Padding="8,2" FontSize="11" />
                         <Button Content="{loc:Loc Update_Skip}" Command="{Binding SkipCommand}" Padding="8,2" FontSize="11" />
                         <Button Content="✕" Command="{Binding DismissCommand}" Padding="6,2" FontSize="11"
                                 AutomationProperties.Name="Dismiss update notification" />
