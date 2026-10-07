@@ -9,16 +9,79 @@
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash -s -- --uninstall
 #
 # Options:
 #   --version <x.y.z>   install a specific release instead of the latest
-#   --uninstall         remove the installed app, menu entry, and icon
+#   --uninstall         remove the installed app, menu entry, and icon (keeps save files and app data)
 #   -h, --help          show this help
+#
+# Colors are automatic when stdout is a terminal; set NO_COLOR=1 to force plain output.
 set -euo pipefail
 
 REPO="realgarit/PKHeX-Avalonia"
 CANONICAL_NAME="PKHeX-Avalonia.AppImage"
 DESKTOP_ID="io.pkhex.avalonia"
+
+# --- output helpers --------------------------------------------------------------------
+# Plain output when stdout is not a TTY (piped to a log), NO_COLOR is set, or TERM is dumb.
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
+    C_RESET=$'\033[0m'
+    C_BOLD=$'\033[1m'
+    C_DIM=$'\033[2m'
+    C_PKH=$'\033[1;38;5;51m'      # bright cyan
+    C_AVALONIA=$'\033[1;38;5;141m'  # bright violet
+    C_ACCENT=$'\033[38;5;51m'
+    C_OK=$'\033[38;5;114m'
+    C_WARN=$'\033[38;5;215m'
+    C_ERR=$'\033[1;38;5;203m'
+else
+    C_RESET=""; C_BOLD=""; C_DIM=""; C_PKH=""; C_AVALONIA=""
+    C_ACCENT=""; C_OK=""; C_WARN=""; C_ERR=""
+fi
+
+info() { printf '%s\n' "${C_ACCENT}  ▶${C_RESET} $*"; }
+ok()   { printf '%s\n' "${C_OK}  ✓${C_RESET} $*"; }
+warn() { printf '%s\n' "${C_WARN}  !${C_RESET} $*" >&2; }
+die()  { printf '%s\n' "${C_ERR}  ✗ $*${C_RESET}" >&2; exit 1; }
+
+print_banner() {
+    printf '%s' "${C_PKH}"
+    cat <<'BANNER_PKH'
+██████╗ ██╗  ██╗██╗  ██╗███████╗██╗  ██╗
+██╔══██╗██║ ██╔╝██║  ██║██╔════╝╚██╗██╔╝
+██████╔╝█████╔╝ ███████║█████╗   ╚███╔╝     █████╗
+██╔═══╝ ██╔═██╗ ██╔══██║██╔══╝   ██╔██╗     ╚════╝
+██║     ██║  ██╗██║  ██║███████╗██╔╝ ██╗
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+BANNER_PKH
+    printf '%s' "${C_RESET}${C_AVALONIA}"
+    cat <<'BANNER_AVALONIA'
+
+ █████╗ ██╗   ██╗ █████╗ ██╗      ██████╗ ███╗   ██╗██╗ █████╗
+██╔══██╗██║   ██║██╔══██╗██║     ██╔═══██╗████╗  ██║██║██╔══██╗
+███████║██║   ██║███████║██║     ██║   ██║██╔██╗ ██║██║███████║
+██╔══██║╚██╗ ██╔╝██╔══██║██║     ██║   ██║██║╚██╗██║██║██╔══██║
+██║  ██║ ╚████╔╝ ██║  ██║███████╗╚██████╔╝██║ ╚████║██║██║  ██║
+╚═╝  ╚═╝  ╚═══╝  ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
+BANNER_AVALONIA
+    printf '%s\n' "${C_RESET}"
+    printf '%s\n' "${C_DIM}    Pokémon save file editor for Linux. User-local install, no root required.${C_RESET}"
+    printf '\n'
+}
+
+print_summary() {
+    local version="$1"
+    printf '\n'
+    printf '%s\n' "${C_OK}${C_BOLD}  PKHeX-Avalonia ${version} installed${C_RESET}"
+    printf '%s\n' "${C_DIM}  ─────────────────────────────────────────────${C_RESET}"
+    printf '%s\n' "    ${C_BOLD}App        ${C_RESET}${INSTALL_PATH}"
+    printf '%s\n' "    ${C_BOLD}Menu entry ${C_RESET}${DESKTOP_FILE}"
+    printf '%s\n' ""
+    printf '%s\n' "  Launch it from your application menu, or run the AppImage directly."
+    printf '%s\n' "  The in-app updater keeps this copy updated in place."
+    printf '%s\n' "  ${C_DIM}Uninstall any time: re-run this script with${C_RESET} ${C_ACCENT}--uninstall${C_RESET}"
+}
 
 VERSION=""
 UNINSTALL=false
@@ -35,10 +98,17 @@ while [ $# -gt 0 ]; do
 PKHeX-Avalonia Linux installer — installs the AppImage release into your
 user directories (~/.local/...) and adds it to the application menu.
 
+Usage:
+  curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash -s -- --uninstall
+
 Options:
   --version <x.y.z>   install a specific release instead of the latest
   --uninstall         remove the installed app, menu entry, and icon
+                      (save files and app data under ~/.local/share/PKHeX-Avalonia are kept)
   -h, --help          show this help
+
+Set NO_COLOR=1 to disable the colored output.
 HELP
             exit 0
             ;;
@@ -46,7 +116,7 @@ HELP
     esac
 done
 
-command -v curl >/dev/null 2>&1 || { echo "curl is required (pacman/apt/dnf install curl)" >&2; exit 1; }
+command -v curl >/dev/null 2>&1 || die "curl is required (pacman/apt/dnf install curl)"
 
 ARCH="$(uname -m)"
 [ "$ARCH" = "x86_64" ] || {
@@ -73,12 +143,30 @@ refresh_databases() {
 }
 
 if $UNINSTALL; then
-    rm -f "$DESKTOP_FILE" "$INSTALL_PATH" "$ICON_FILE"
+    print_banner
+    info "Uninstalling PKHeX-Avalonia (user-local files only)…"
+    REMOVED=0
+    for target in "$DESKTOP_FILE" "$INSTALL_PATH" "$ICON_FILE"; do
+        if [ -e "$target" ]; then
+            rm -f "$target"
+            ok "Removed $(basename "$target")"
+            REMOVED=$((REMOVED + 1))
+        fi
+    done
     rmdir "$OPT_DIR" 2>/dev/null || true
+    if [ "$REMOVED" -eq 0 ]; then
+        ok "Nothing to uninstall. PKHeX-Avalonia is not installed for this user."
+        exit 0
+    fi
     refresh_databases
-    echo "PKHeX-Avalonia removed from the application menu."
+    printf '%s\n' ""
+    ok "PKHeX-Avalonia removed from the application menu."
+    printf '%s\n' "  Your save files and app data (${DATA_HOME}/PKHeX-Avalonia) are untouched."
     exit 0
 fi
+
+print_banner
+info "Resolving release…"
 
 # --- resolve the release ---------------------------------------------------------------
 RELEASE_JSON="$(mktemp)"
@@ -87,9 +175,9 @@ trap 'rm -f "$RELEASE_JSON"' EXIT
 if [ -n "$VERSION" ]; then
     RELEASE_TAG="v$VERSION"
     if ! curl -fsSL --retry 3 "https://api.github.com/repos/$REPO/releases/tags/$RELEASE_TAG" -o "$RELEASE_JSON"; then
-        echo "Could not find release $RELEASE_TAG on $REPO." >&2
-        exit 1
+        die "Could not find release $RELEASE_TAG on $REPO."
     fi
+    ok "Pinned release: ${C_BOLD}${RELEASE_TAG}${C_RESET}"
 else
     if ! curl -fsSL --retry 3 "https://api.github.com/repos/$REPO/releases/latest" -o "$RELEASE_JSON"; then
         echo "Could not reach the GitHub API (offline, or rate-limited — retry in a bit," >&2
@@ -98,6 +186,7 @@ else
     fi
     RELEASE_TAG="$(sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' "$RELEASE_JSON" | head -n1)"
     VERSION="${RELEASE_TAG#v}"
+    ok "Latest release: ${C_BOLD}${RELEASE_TAG}${C_RESET}"
 fi
 [ -n "$VERSION" ] || { echo "Could not determine the release version from the GitHub response." >&2; exit 1; }
 
@@ -113,20 +202,21 @@ DIGEST="$(grep -A 30 "\"name\": \"$ASSET\"" "$RELEASE_JSON" | sed -n 's/.*"diges
 STAGING="$(mktemp --suffix=.AppImage 2>/dev/null || mktemp)"
 trap 'rm -f "$RELEASE_JSON" "$STAGING"' EXIT
 
-echo "Downloading $DOWNLOAD_URL ..."
+info "Downloading $ASSET …"
 curl -fL --retry 3 -o "$STAGING" "$DOWNLOAD_URL"
 
 if [ -n "$DIGEST" ] && command -v sha256sum >/dev/null 2>&1; then
-    echo "Verifying checksum ..."
+    info "Verifying SHA-256 checksum…"
     echo "${DIGEST}  ${STAGING}" | sha256sum --check --strict - || {
-        echo "Checksum mismatch — the download is corrupt or was tampered with. Aborting." >&2
-        exit 1
+        die "Checksum mismatch — the download is corrupt or was tampered with. Aborting."
     }
+    ok "Checksum verified"
 elif [ -z "$DIGEST" ]; then
-    echo "Note: release has no published checksum; skipping verification." >&2
+    warn "Release has no published checksum; skipping verification."
 fi
 
 # --- install ---------------------------------------------------------------------------
+info "Installing to $OPT_DIR …"
 mkdir -p "$OPT_DIR" "$APPS_DIR" "$ICON_DIR"
 mv -f "$STAGING" "$INSTALL_PATH"
 chmod 755 "$INSTALL_PATH"
@@ -135,7 +225,7 @@ chmod 755 "$INSTALL_PATH"
 ICON_URL_BASE="https://raw.githubusercontent.com/$REPO"
 if ! curl -fsSL --retry 2 -o "$ICON_FILE" "$ICON_URL_BASE/v${VERSION}/PKHeX.Avalonia/Assets/Icons/icon.png"; then
     if ! curl -fsSL --retry 2 -o "$ICON_FILE" "$ICON_URL_BASE/main/PKHeX.Avalonia/Assets/Icons/icon.png"; then
-        echo "Note: could not download the icon; the menu entry will use a generic icon." >&2
+        warn "Could not download the icon; the menu entry will use a generic icon."
         rm -f "$ICON_FILE"
     fi
 fi
@@ -156,12 +246,6 @@ StartupWMClass=PKHeX.Avalonia
 EOF
 
 refresh_databases
+ok "Menu entry registered (${DESKTOP_ID})"
 
-echo ""
-echo "Installed PKHeX-Avalonia ${VERSION}:"
-echo "  App:       $INSTALL_PATH"
-echo "  Menu entry: $DESKTOP_FILE"
-echo ""
-echo "Launch it from your application menu, or run: $INSTALL_PATH"
-echo "The in-app updater keeps this copy updated in place."
-echo "To remove it later: this script with --uninstall, or Settings inside the app."
+print_summary "$VERSION"

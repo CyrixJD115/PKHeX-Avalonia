@@ -50,7 +50,21 @@ Instead of a manual download, install the latest AppImage into your user directo
 curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash
 ```
 
-The script downloads the latest release, verifies its published SHA-256 checksum, installs it to `~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage`, and registers a menu entry plus icon in `~/.local/share`. Run it with `--version <x.y.z>` to pin a release, or `--uninstall` to remove the app, menu entry, and icon. The same integration is available later from inside the app under **Settings → Linux desktop integration**, and the in-app self-updater swaps the installed file in place, so the menu entry keeps working across updates.
+The script downloads the latest release, verifies its published SHA-256 checksum, installs it to `~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage`, and registers a menu entry plus icon in `~/.local/share`. Run it with `--version <x.y.z>` to pin a release. The same integration is available later from inside the app under **Settings → Linux desktop integration**, and the in-app self-updater swaps the installed file in place, so the menu entry keeps working across updates.
+
+#### Uninstalling
+
+Remove the app, menu entry, and icon with:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash -s -- --uninstall
+```
+
+The same removal is available from inside the app under **Settings → Linux desktop integration**, and either way covers both the script install and the in-app registration because they share the same locations. Uninstalling never touches your data: exported save files, backups, and the app's settings under `~/.local/share/PKHeX-Avalonia` are kept. To remove things manually instead, delete these three paths:
+
+- `~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage`
+- `~/.local/share/applications/io.pkhex.avalonia.desktop`
+- `~/.local/share/icons/hicolor/64x64/apps/io.pkhex.avalonia.png`
 
 See the [packaging guide](docs/packaging.md) for signing details and platform troubleshooting. The Homebrew and winget files under `packaging/` are distribution templates; they do not establish that a public package-manager listing is available.
 
