@@ -2,8 +2,8 @@
 # PKHeX-Avalonia — Linux installer.
 #
 # Downloads a PKHeX-Avalonia AppImage release and registers it in the application menu.
-# Everything is installed into the user's own XDG directories (~/.local/...), so the script
-# behaves identically on every distro and never needs root. The AppImage is installed under the
+# Everything is installed into the user's own XDG directories (~/.local/...) without root.
+# A supported x86_64 Linux distribution is required. The AppImage is installed under the
 # stable name PKHeX-Avalonia.AppImage, which is also the path the in-app self-updater swaps in
 # place — the menu entry keeps working across updates.
 #
@@ -136,16 +136,8 @@ HELP
     esac
 done
 
-command -v curl >/dev/null 2>&1 || die "curl is required (pacman/apt/dnf install curl)"
-
-ARCH="$(uname -m)"
-[ "$ARCH" = "x86_64" ] || {
-    echo "The AppImage build is x86_64 only; this machine is ${ARCH}." >&2
-    echo "Use the 'PKHeX-Avalonia-linux-x64.zip' portable build from ${REPO} releases instead." >&2
-    exit 1
-}
-
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+[[ "$DATA_HOME" = /* ]] || DATA_HOME="$HOME/.local/share"
 OPT_DIR="$HOME/.local/opt/PKHeX-Avalonia"
 APPS_DIR="$DATA_HOME/applications"
 ICON_DIR="$DATA_HOME/icons/hicolor/64x64/apps"
@@ -167,8 +159,8 @@ if $UNINSTALL; then
     info "Uninstalling PKHeX-Avalonia (user-local files only)…"
     REMOVED=0
     for target in "$DESKTOP_FILE" "$INSTALL_PATH" "$ICON_FILE"; do
-        if [ -e "$target" ]; then
-            rm -f "$target"
+        if [ -e "$target" ] || [ -L "$target" ]; then
+            rm -f -- "$target"
             ok "Removed $(basename "$target")"
             REMOVED=$((REMOVED + 1))
         fi
@@ -184,6 +176,15 @@ if $UNINSTALL; then
     printf '%s\n' "  Your save files and app data (${DATA_HOME}/PKHeX-Avalonia) are untouched."
     exit 0
 fi
+
+[ "$(uname -s)" = Linux ] || die "This installer requires Linux."
+[ "$(uname -m)" = x86_64 ] || die "Both Linux release packages require x86_64; ARM is not supported."
+for dependency in curl python3 sha256sum; do
+    command -v "$dependency" >/dev/null 2>&1 || die "$dependency is required. Install it with your distribution's package manager."
+done
+[[ "$VERSION" = "" || "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "Use a release version such as 1.88.0."
+[[ "$INSTALL_PATH" != *'='* ]] || die "Desktop entry executable paths cannot contain '='."
+[ ! -d "$INSTALL_PATH" ] && [ ! -L "$INSTALL_PATH" ] || die "The install path is a directory or symlink; leaving it untouched."
 
 print_banner
 info "Resolving release…"
@@ -204,22 +205,38 @@ else
         echo "or pin a version with: install.sh --version 1.87.4)" >&2
         exit 1
     fi
-    RELEASE_TAG="$(sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' "$RELEASE_JSON" | head -n1)"
-    VERSION="${RELEASE_TAG#v}"
-    ok "Latest release: ${C_BOLD}${RELEASE_TAG}${C_RESET}"
 fi
-[ -n "$VERSION" ] || { echo "Could not determine the release version from the GitHub response." >&2; exit 1; }
+
+# Parse the selected asset as JSON; neither field order nor response formatting is an API contract.
+if ! RELEASE_META=$(python3 - "$RELEASE_JSON" <<'PY'
+import json, re, sys
+with open(sys.argv[1], encoding="utf-8") as stream:
+    release = json.load(stream)
+tag = release["tag_name"]
+if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
+    raise SystemExit("Unsupported release tag")
+name = f"PKHeX-Avalonia-{tag[1:]}-x86_64.AppImage"
+assets = [asset for asset in release["assets"] if asset["name"] == name]
+if len(assets) != 1:
+    raise SystemExit("Release does not contain exactly one matching AppImage")
+asset = assets[0]
+digest = asset.get("digest") or ""
+if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+    raise SystemExit("Release has no valid SHA-256 digest; refusing an unverified install")
+print(tag)
+print(digest[7:])
+print(int(asset["size"]))
+PY
+); then die "Could not resolve a verified AppImage from the release metadata."; fi
+mapfile -t RELEASE_FIELDS <<< "$RELEASE_META"
+RELEASE_TAG="${RELEASE_FIELDS[0]}"
+VERSION="${RELEASE_TAG#v}"
+DIGEST="${RELEASE_FIELDS[1]}"
+TOTAL_BYTES="${RELEASE_FIELDS[2]}"
+ok "Release: ${C_BOLD}${RELEASE_TAG}${C_RESET}"
 
 ASSET="PKHeX-Avalonia-${VERSION}-x86_64.AppImage"
 DOWNLOAD_URL="https://github.com/$REPO/releases/download/v${VERSION}/${ASSET}"
-
-# The GitHub API reports a sha256 digest per asset; verify against it when present (same policy
-# as the in-app updater: an absent digest is warned about, not fatal). The digest line follows the
-# asset's "name" line inside the same JSON object (~27 lines), well before the next asset begins.
-ASSET_JSON="$(grep -A 30 "\"name\": \"$ASSET\"" "$RELEASE_JSON")"
-DIGEST="$(sed -n 's/.*"digest": *"sha256:\([0-9a-f]\{64\}\)".*/\1/p' <<<"$ASSET_JSON" | head -n1)"
-TOTAL_BYTES="$(sed -n 's/.*"size": \([0-9]\{1,\}\).*/\1/p' <<<"$ASSET_JSON" | head -n1)"
-[ -n "$TOTAL_BYTES" ] || TOTAL_BYTES=0
 
 # --- download + verify -----------------------------------------------------------------
 STAGING="$(mktemp --suffix=.AppImage 2>/dev/null || mktemp)"
@@ -246,46 +263,69 @@ if ! wait "$CURL_PID"; then
     die "Download failed. Check your connection and try again (or pin a release with --version)."
 fi
 
-if [ -n "$DIGEST" ] && command -v sha256sum >/dev/null 2>&1; then
-    info "Verifying SHA-256 checksum…"
-    if echo "${DIGEST}  ${STAGING}" | sha256sum --check --strict - >/dev/null 2>&1; then
-        ok "Checksum verified (SHA-256 matches the published digest)"
-    else
-        die "Checksum mismatch — the download is corrupt or was tampered with. Aborting."
-    fi
-elif [ -z "$DIGEST" ]; then
-    warn "Release has no published checksum; skipping verification."
+info "Verifying SHA-256 checksum…"
+if [ "$(sha256sum < "$STAGING" | cut -d ' ' -f 1)" = "$DIGEST" ]; then
+    ok "Checksum verified (SHA-256 matches the published digest)"
+else
+    die "Checksum mismatch — the download is corrupt or was tampered with. Aborting."
 fi
 
 # --- install ---------------------------------------------------------------------------
 info "Installing to $OPT_DIR …"
 mkdir -p "$OPT_DIR" "$APPS_DIR" "$ICON_DIR"
-mv -f "$STAGING" "$INSTALL_PATH"
-chmod 755 "$INSTALL_PATH"
+# Prepare on the destination filesystem before the atomic replacement. A failed copy/chmod
+# leaves an existing installation intact, including when /tmp is a different filesystem.
+INSTALL_STAGE="$(mktemp "$OPT_DIR/.install.XXXXXX")"
+trap 'rm -f -- "$RELEASE_JSON" "$STAGING" "$INSTALL_STAGE"' EXIT
+cp -- "$STAGING" "$INSTALL_STAGE"
+chmod 755 "$INSTALL_STAGE"
+mv -fT -- "$INSTALL_STAGE" "$INSTALL_PATH"
 
 # The icon ships in the repository next to the app; prefer the tagged copy, fall back to main.
 ICON_URL_BASE="https://raw.githubusercontent.com/$REPO"
-if ! curl -fsSL --retry 2 -o "$ICON_FILE" "$ICON_URL_BASE/v${VERSION}/PKHeX.Avalonia/Assets/Icons/icon.png"; then
-    if ! curl -fsSL --retry 2 -o "$ICON_FILE" "$ICON_URL_BASE/main/PKHeX.Avalonia/Assets/Icons/icon.png"; then
-        warn "Could not download the icon; the menu entry will use a generic icon."
-        rm -f "$ICON_FILE"
-    fi
+ICON_STAGE="$(mktemp "$ICON_DIR/.pkhex-icon.XXXXXX")"
+trap 'rm -f -- "$RELEASE_JSON" "$STAGING" "$INSTALL_STAGE" "$ICON_STAGE"' EXIT
+if curl -fsSL --retry 2 -o "$ICON_STAGE" "$ICON_URL_BASE/v${VERSION}/PKHeX.Avalonia/Assets/Icons/icon.png" ||
+   curl -fsSL --retry 2 -o "$ICON_STAGE" "$ICON_URL_BASE/main/PKHeX.Avalonia/Assets/Icons/icon.png"; then
+    chmod 644 "$ICON_STAGE"
+    mv -fT -- "$ICON_STAGE" "$ICON_FILE"
+else
+    warn "Could not download the icon; any existing icon is unchanged."
 fi
 
-# Desktop Entry spec: the exec value is double-quoted with $ ` " \ escaped.
-ESCAPED_EXEC="$(printf '%s' "$INSTALL_PATH" | sed 's/["\\$`]/\\&/g')"
-cat > "$DESKTOP_FILE" <<EOF
+# Apply Exec quoting first, then the desktop-entry string escaping layer.
+desktop_value() {
+    local value="$1"
+    value="${value//\\/\\\\}"
+    value="${value//$'\n'/\\n}"
+    value="${value//$'\r'/\\r}"
+    value="${value//$'\t'/\\t}"
+    printf '%s' "$value"
+}
+EXEC_ARGUMENT="$INSTALL_PATH"
+EXEC_ARGUMENT="${EXEC_ARGUMENT//\\/\\\\}"
+EXEC_ARGUMENT="${EXEC_ARGUMENT//\"/\\\"}"
+EXEC_ARGUMENT="${EXEC_ARGUMENT//\$/\\\$}"
+EXEC_ARGUMENT="${EXEC_ARGUMENT//\`/\\\`}"
+EXEC_ARGUMENT="${EXEC_ARGUMENT//%/%%}"
+ESCAPED_EXEC="$(desktop_value "\"$EXEC_ARGUMENT\"")"
+ESCAPED_TRYEXEC="$(desktop_value "$INSTALL_PATH")"
+DESKTOP_STAGE="$(mktemp "$APPS_DIR/.pkhex-desktop.XXXXXX")"
+trap 'rm -f -- "$RELEASE_JSON" "$STAGING" "$INSTALL_STAGE" "$ICON_STAGE" "$DESKTOP_STAGE"' EXIT
+cat > "$DESKTOP_STAGE" <<EOF
 [Desktop Entry]
 Type=Application
 Name=PKHeX-Avalonia
 Comment=Pokémon save file editor
-Exec="$ESCAPED_EXEC"
-TryExec=$INSTALL_PATH
+Exec=/usr/bin/env -- $ESCAPED_EXEC
+TryExec=$ESCAPED_TRYEXEC
 Icon=$DESKTOP_ID
 Categories=Utility;
 Terminal=false
 StartupWMClass=PKHeX.Avalonia
 EOF
+chmod 644 "$DESKTOP_STAGE"
+mv -fT -- "$DESKTOP_STAGE" "$DESKTOP_FILE"
 
 refresh_databases
 ok "Menu entry registered (${DESKTOP_ID})"

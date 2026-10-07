@@ -157,11 +157,14 @@ public partial class SettingsViewModel : ViewModelBase, ICloseableDialog
     internal static string ShortenHomePath(string path)
     {
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (string.IsNullOrEmpty(home) || !path.StartsWith(home, StringComparison.Ordinal))
+        if (string.IsNullOrEmpty(home))
             return path;
-
-        var rest = path[home.Length..];
-        return rest.Length == 0 ? "~" : $"~{rest}";
+        home = Path.TrimEndingDirectorySeparator(home);
+        if (path == home)
+            return "~";
+        if (!path.StartsWith(home + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            return path;
+        return "~/" + path[(home.Length + 1)..].Replace(Path.DirectorySeparatorChar, '/');
     }
 
     // Startup

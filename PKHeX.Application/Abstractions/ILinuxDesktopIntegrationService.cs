@@ -45,7 +45,7 @@ public interface ILinuxDesktopIntegrationService
     /// </summary>
     Task<LinuxDesktopIntegrationResult> RegisterAsync(CancellationToken ct = default);
 
-    /// <summary>Removes the desktop entry, installed copy, and icon. Idempotent.</summary>
+    /// <summary>Removes the desktop entry and icon, preserving the installed AppImage. Idempotent.</summary>
     Task<LinuxDesktopIntegrationResult> UnregisterAsync(CancellationToken ct = default);
 }
 

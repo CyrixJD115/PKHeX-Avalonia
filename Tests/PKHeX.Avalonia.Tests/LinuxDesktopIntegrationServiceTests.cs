@@ -1,5 +1,6 @@
 using PKHeX.Application.Abstractions;
 using PKHeX.Infrastructure.Desktop;
+using System.Diagnostics;
 
 namespace PKHeX.Avalonia.Tests;
 
@@ -66,8 +67,8 @@ public class LinuxDesktopIntegrationServiceTests : IDisposable
         var entry = await File.ReadAllTextAsync(DesktopEntry);
         Assert.Contains("Type=Application", entry);
         Assert.Contains("Name=PKHeX-Avalonia", entry);
-        Assert.Contains($"Exec=\"{InstalledApp}\"", entry);
-        Assert.Contains($"TryExec={InstalledApp}", entry);
+        Assert.Contains($"Exec=/usr/bin/env -- {LinuxDesktopEntry.QuoteExec(InstalledApp)}", entry);
+        Assert.Contains($"TryExec={LinuxDesktopEntry.EscapeValue(InstalledApp)}", entry);
         Assert.Contains("Icon=io.pkhex.avalonia", entry);
         Assert.Contains("Terminal=false", entry);
 
@@ -107,8 +108,8 @@ public class LinuxDesktopIntegrationServiceTests : IDisposable
         var service = CreateService();
         await service.RegisterAsync();
 
-        Assert.False(File.Exists(InstalledApp + ".tmp"));
-        Assert.False(File.Exists(DesktopEntry + ".tmp"));
+        Assert.Empty(Directory.GetFiles(OptDir, "*.tmp"));
+        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(DesktopEntry)!, "*.tmp"));
     }
 
     [Fact]
@@ -135,7 +136,7 @@ public class LinuxDesktopIntegrationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Unregister_RemovesEntryCopyAndIcon()
+    public async Task Unregister_RemovesOnlyEntryAndIcon()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(IconSource)!);
         await File.WriteAllBytesAsync(IconSource, [1, 2, 3, 4]);
@@ -146,11 +147,11 @@ public class LinuxDesktopIntegrationServiceTests : IDisposable
 
         Assert.Equal(DesktopIntegrationOutcome.Success, result.Outcome);
         Assert.False(File.Exists(DesktopEntry));
-        Assert.False(File.Exists(InstalledApp));
+        Assert.True(File.Exists(InstalledApp));
         Assert.False(File.Exists(InstalledIcon));
-        Assert.False(Directory.Exists(OptDir));
+        Assert.True(Directory.Exists(OptDir));
         Assert.False(service.IsRegistered);
-        Assert.Null(service.InstalledAppImagePath);
+        Assert.Equal(InstalledApp, service.InstalledAppImagePath);
 
         // The user's downloaded source AppImage is never touched.
         Assert.True(File.Exists(SourceAppImage));
@@ -164,5 +165,79 @@ public class LinuxDesktopIntegrationServiceTests : IDisposable
         var result = await service.UnregisterAsync();
 
         Assert.Equal(DesktopIntegrationOutcome.Success, result.Outcome);
+    }
+
+    [Fact]
+    public async Task InstalledSource_CanRemoveAndReAddWithoutLosingTheImage()
+    {
+        await CreateService().RegisterAsync();
+        File.Delete(SourceAppImage);
+        var service = CreateService(source: InstalledApp);
+        var before = await File.ReadAllBytesAsync(InstalledApp);
+        Assert.Equal(DesktopIntegrationOutcome.Success, (await service.UnregisterAsync()).Outcome);
+        Assert.True(service.IsSupported);
+        Assert.Equal(before, await File.ReadAllBytesAsync(InstalledApp));
+        Assert.Equal(DesktopIntegrationOutcome.Success, (await service.RegisterAsync()).Outcome);
+        Assert.True(service.IsRegistered);
+        Assert.Equal(before, await File.ReadAllBytesAsync(InstalledApp));
+    }
+
+    [Fact]
+    public async Task Unregister_ReportsRequiredDeletionFailure()
+    {
+        await CreateService().RegisterAsync();
+        File.Delete(DesktopEntry);
+        Directory.CreateDirectory(DesktopEntry);
+        Assert.Equal(DesktopIntegrationOutcome.Failed, (await CreateService().UnregisterAsync()).Outcome);
+        Assert.True(File.Exists(InstalledApp));
+    }
+
+    [Fact]
+    public async Task Flatpak_RejectsEvenAnExistingInheritedAppImage()
+    {
+        var service = new LinuxDesktopIntegrationService(SourceAppImage, AppDir, DataHome, OptDir, true, null, isFlatpak: true);
+        Assert.False(service.IsSupported);
+        Assert.Equal(DesktopIntegrationOutcome.NotSupported, (await service.RegisterAsync()).Outcome);
+        Assert.Equal(DesktopIntegrationOutcome.NotSupported, (await service.UnregisterAsync()).Outcome);
+        Assert.False(Directory.Exists(OptDir));
+    }
+
+    [Theory]
+    [InlineData("/home/a%b/app", "\"/home/a%%b/app\"")]
+    [InlineData("/home/a$b/app", "\"/home/a\\\\$b/app\"")]
+    [InlineData("/home/a`b/app", "\"/home/a\\\\`b/app\"")]
+    [InlineData("/home/a\\b/app", "\"/home/a\\\\\\\\b/app\"")]
+    [InlineData("/home/a\"b/app", "\"/home/a\\\\\"b/app\"")]
+    [InlineData("/home/a b/app", "\"/home/a b/app\"")]
+    public void ExecAppliesBothEscapingLayers(string path, string expected) =>
+        Assert.Equal(expected, LinuxDesktopEntry.QuoteExec(path));
+
+    [LinuxTheory]
+    [InlineData("space name")]
+    [InlineData("percent%name")]
+    [InlineData("dollar$name")]
+    [InlineData("back\\slash")]
+    [InlineData("quote\"name")]
+    [InlineData("tick`name")]
+    [InlineData("apostrophe'name")]
+    public async Task DesktopEntryLaunchesTheExactInstalledPath(string name)
+    {
+        File.WriteAllText(SourceAppImage, "#!/bin/sh\nprintf started > \"$TEST_LAUNCH\"\n");
+        var opt = Path.Combine(_root, name);
+        var service = new LinuxDesktopIntegrationService(SourceAppImage, AppDir, DataHome, opt, true, (_, _) => 0);
+        Assert.Equal(DesktopIntegrationOutcome.Success, (await service.RegisterAsync()).Outcome);
+        var marker = Path.Combine(_root, "launched");
+        var psi = new ProcessStartInfo("/usr/bin/python3") { RedirectStandardError = true, RedirectStandardOutput = true };
+        psi.ArgumentList.Add("-c");
+        psi.ArgumentList.Add("import sys; from gi.repository import Gio; assert Gio.DesktopAppInfo.new_from_filename(sys.argv[1]).launch([], None)");
+        psi.ArgumentList.Add(DesktopEntry);
+        psi.Environment["TEST_LAUNCH"] = marker;
+        using var process = Process.Start(psi)!;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await process.WaitForExitAsync(timeout.Token);
+        Assert.True(process.ExitCode == 0, await process.StandardError.ReadToEndAsync(timeout.Token));
+        for (var i = 0; i < 100 && (!File.Exists(marker) || new FileInfo(marker).Length == 0); i++)
+            await Task.Delay(20, timeout.Token);
+        Assert.Equal("started", File.ReadAllText(marker));
     }
 }

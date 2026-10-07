@@ -1,80 +1,98 @@
-using System.Text.RegularExpressions;
+using System.Diagnostics;
 using PKHeX.Infrastructure.Updating;
 
 namespace PKHeX.Avalonia.Tests;
 
-/// <summary>
-/// The AppImage self-update swap script must land the new file on the canonical stable name
-/// (PKHeX-Avalonia.AppImage) in the same directory, delete the old versioned file only after the
-/// swap succeeds, and restore it untouched when the swap fails. These tests pin the generated
-/// shell script so a regression in that choreography fails the build.
-/// </summary>
 public class LinuxUpdateStrategyTests
 {
-    private const string Log = "/tmp/pkhex-update-helper.log";
-    private const string NewAppImage = "/tmp/PKHeX-Avalonia-1.87.4-x86_64.AppImage";
-    private const string OldVersioned = "/home/user/Downloads/PKHeX-Avalonia-1.87.3-x86_64.AppImage";
-    private const string Stable = "/home/user/Downloads/PKHeX-Avalonia.AppImage";
-
-    private static string ScriptFor(string current) =>
-        string.Join('\n', LinuxUpdateStrategy.BuildAppImageSwapScript(NewAppImage, current, Log));
-
-    [Fact]
-    public void VersionedAppImage_IsRenamedToStableName()
+    [Theory]
+    [InlineData("/home/user/Downloads/old.AppImage", "/home/user/Downloads/PKHeX-Avalonia.AppImage")]
+    [InlineData("/home/user/Downloads/PKHeX-Avalonia.AppImage", "/home/user/Downloads/PKHeX-Avalonia.AppImage")]
+    [InlineData("/old.AppImage", "/PKHeX-Avalonia.AppImage")]
+    public void LinuxPathsAreIndependentOfTheTestHost(string current, string target)
     {
-        var script = ScriptFor(OldVersioned);
-
-        Assert.Contains($"mv \"{OldVersioned}\" \"{OldVersioned}.bak\"", script);
-        Assert.Contains($"if mv \"{NewAppImage}\" \"{Stable}\"", script);
-        Assert.Contains($"chmod +x \"{Stable}\"", script);
-        Assert.Contains($"\"{Stable}\" &", script);
-
-        // The old versioned file must not survive a successful swap (it lives on only as the .bak
-        // recovery copy, which the success branch removes).
-        Assert.Contains($"rm -f \"{OldVersioned}.bak\"", script);
-        Assert.DoesNotContain($"rm -f \"{OldVersioned}\"", script);
+        var script = LinuxUpdateStrategy.BuildAppImageSwapScript("/tmp/new.AppImage", current, "/tmp/update.log");
+        Assert.Contains($"CURRENT='{current}'", script);
+        Assert.Contains($"TARGET='{target}'", script);
     }
 
-    [Fact]
-    public void VersionedAppImage_FailedSwap_RestoresOriginalPath()
+    [LinuxTheory]
+    [InlineData("versioned")]
+    [InlineData("canonical")]
+    [InlineData("missing-download")]
+    [InlineData("existing-file")]
+    [InlineData("existing-directory")]
+    [InlineData("existing-symlink")]
+    [InlineData("failed-copy")]
+    [InlineData("failed-chmod")]
+    [InlineData("failed-rename")]
+    [InlineData("special-path")]
+    public async Task ExecutedScriptPreservesTheOriginalOnFailure(string scenario)
     {
-        var script = ScriptFor(OldVersioned);
-
-        Assert.Contains($"mv \"{OldVersioned}.bak\" \"{OldVersioned}\"", script);
-        Assert.Contains($"\"{OldVersioned}\" &", script);
+        var root = Path.Combine(Path.GetTempPath(), "pkhex-swap-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var directory = Path.Combine(root, scenario == "special-path" ? "space ' $HOME `uname` \\ %path" : "install");
+            Directory.CreateDirectory(directory);
+            var canonical = scenario is "canonical" or "failed-rename";
+            var current = Path.Combine(directory, canonical ? "PKHeX-Avalonia.AppImage" : "old.AppImage");
+            var target = Path.Combine(directory, "PKHeX-Avalonia.AppImage");
+            var download = Path.Combine(root, "download.AppImage");
+            var oldBytes = "#!/bin/sh\nprintf old > \"$TEST_LAUNCH\"\n";
+            var newBytes = "#!/bin/sh\nprintf new > \"$TEST_LAUNCH\"\n";
+            WriteExecutable(current, oldBytes);
+            if (scenario != "missing-download") WriteExecutable(download, newBytes);
+            if (scenario == "existing-file") File.WriteAllText(target, "unrelated file");
+            if (scenario == "existing-directory") Directory.CreateDirectory(target);
+            if (scenario == "existing-symlink") File.CreateSymbolicLink(target, Path.Combine(root, "missing"));
+            var script = Path.Combine(root, "swap.sh");
+            File.WriteAllText(script, string.Join('\n', LinuxUpdateStrategy.BuildAppImageSwapScript(download, current, Path.Combine(root, "update.log"))));
+            var psi = new ProcessStartInfo("/bin/sh") { RedirectStandardOutput = true, RedirectStandardError = true };
+            psi.ArgumentList.Add(script); psi.ArgumentList.Add("99999999");
+            var launched = Path.Combine(root, "launched"); psi.Environment["TEST_LAUNCH"] = launched;
+            if (scenario.StartsWith("failed-", StringComparison.Ordinal))
+            {
+                var bin = Path.Combine(root, "bin"); Directory.CreateDirectory(bin);
+                var command = scenario switch { "failed-copy" => "cp", "failed-chmod" => "chmod", _ => "mv" };
+                WriteExecutable(Path.Combine(bin, command), "#!/bin/sh\nexit 1\n");
+                psi.Environment["PATH"] = bin + ":" + Environment.GetEnvironmentVariable("PATH");
+            }
+            using var process = Process.Start(psi)!;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            await process.WaitForExitAsync(timeout.Token);
+            var success = scenario is "versioned" or "canonical" or "special-path";
+            Assert.Equal(success ? 0 : 1, process.ExitCode);
+            // Relaunch is asynchronous, but its output is a real executable-side observation.
+            for (var i = 0; i < 100 && (!File.Exists(launched) || new FileInfo(launched).Length == 0); i++)
+                await Task.Delay(20, timeout.Token);
+            Assert.Equal(success ? "new" : "old", File.ReadAllText(launched));
+            if (success)
+            {
+                Assert.Equal(newBytes, File.ReadAllText(target));
+                if (!canonical) Assert.False(File.Exists(current));
+            }
+            else Assert.Equal(oldBytes, File.ReadAllText(current));
+            if (scenario == "existing-file") Assert.Equal("unrelated file", File.ReadAllText(target));
+            if (scenario == "existing-directory") Assert.Empty(Directory.EnumerateFileSystemEntries(target));
+            if (scenario == "existing-symlink") Assert.NotNull(new FileInfo(target).LinkTarget);
+            Assert.Empty(Directory.GetDirectories(directory, ".pkhex-update.*"));
+        }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact]
-    public void CanonicalAppImage_IsSwappedInPlaceWithoutRename()
+    private static void WriteExecutable(string path, string text)
     {
-        var script = ScriptFor(Stable);
-
-        Assert.Contains($"if mv \"{NewAppImage}\" \"{Stable}\"", script);
-        Assert.Contains($"chmod +x \"{Stable}\"", script);
-        Assert.Contains($"\"{Stable}\" &", script);
-        Assert.Contains($"mv \"{Stable}.bak\" \"{Stable}\"", script);
-
-        // In-place swap only: every mv destination is the canonical path or its .bak recovery —
-        // there is never a move to a third name. (Quoted destinations only; the trailing
-        // 2>>"$LOG" redirection is not a quoted path.)
-        var destinations = Regex.Matches(script, """mv "[^"]+" ("[^"]+")""")
-            .Select(m => m.Groups[1].Value.Trim('"'))
-            .ToList();
-        Assert.True(destinations.Count >= 2, $"expected mv lines, got: {script}");
-        Assert.All(destinations, d => Assert.True(d == Stable || d == Stable + ".bak", $"unexpected destination: {d}"));
+        File.WriteAllText(path, text);
+        if (OperatingSystem.IsLinux())
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
+}
 
-    [Fact]
-    public void Script_WaitsForOwnerProcess_BeforeTouchingFiles()
+public sealed class LinuxTheoryAttribute : TheoryAttribute
+{
+    public LinuxTheoryAttribute()
     {
-        var lines = LinuxUpdateStrategy.BuildAppImageSwapScript(NewAppImage, Stable, Log);
-
-        Assert.Equal("#!/bin/sh", lines[0]);
-        Assert.Equal("PID=\"$1\"", lines[1]);
-        Assert.Contains("while kill -0 \"$PID\" 2>/dev/null; do sleep 0.5; done", lines);
-        // No file mutation may precede the wait-for-exit loop.
-        var waitIndex = Array.IndexOf(lines, "while kill -0 \"$PID\" 2>/dev/null; do sleep 0.5; done");
-        for (var i = 0; i < waitIndex; i++)
-            Assert.DoesNotContain("mv ", lines[i]);
+        if (!OperatingSystem.IsLinux()) Skip = "Executes Linux shell commands; covered by Linux CI.";
     }
 }

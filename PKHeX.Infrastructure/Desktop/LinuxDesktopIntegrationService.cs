@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using PKHeX.Application.Abstractions;
 
@@ -10,8 +9,8 @@ namespace PKHeX.Infrastructure.Desktop;
 /// running AppImage to <c>~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage</c> under the
 /// canonical stable name, installs the bundled icon into the user's hicolor theme, writes an
 /// <c>io.pkhex.avalonia.desktop</c> entry into the user's applications directory, and refreshes the
-/// desktop database best-effort. Everything lands in per-user directories, so the behavior is
-/// identical on every distro and never requires elevated rights — and because the installed file
+/// desktop database best-effort. Everything lands in per-user directories without elevated rights.
+/// On supported Linux desktops, because the installed file
 /// keeps the stable name, the in-app self-updater swaps it in place without breaking the entry.
 /// </summary>
 public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationService
@@ -28,6 +27,7 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
     private readonly string _dataHome;
     private readonly string _optInstallDir;
     private readonly bool _isLinux;
+    private readonly bool _isFlatpak;
     private readonly Func<string, IReadOnlyList<string>, int>? _runCommand;
 
     /// <summary>Reads everything impure from the environment; the internal ctor passes it all in for tests.</summary>
@@ -38,7 +38,8 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
             ResolveDataHome(),
             Path.Combine(ResolveHome(), ".local", "opt", "PKHeX-Avalonia"),
             OperatingSystem.IsLinux(),
-            runCommand: null)
+            runCommand: null,
+            isFlatpak: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FLATPAK_ID")))
     {
     }
 
@@ -48,13 +49,15 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
         string dataHome,
         string optInstallDir,
         bool isLinux,
-        Func<string, IReadOnlyList<string>, int>? runCommand)
+        Func<string, IReadOnlyList<string>, int>? runCommand,
+        bool isFlatpak = false)
     {
         _sourceAppImagePath = sourceAppImagePath;
         _appDirPath = appDirPath;
         _dataHome = dataHome;
         _optInstallDir = optInstallDir;
         _isLinux = isLinux;
+        _isFlatpak = isFlatpak;
         _runCommand = runCommand;
     }
 
@@ -62,7 +65,7 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
     private string DesktopEntryPath => Path.Combine(ApplicationsDir, $"{DesktopEntryId}.desktop");
     private string InstalledIconPath => Path.Combine(_dataHome, IconRelativePath);
 
-    public bool IsSupported => _isLinux
+    public bool IsSupported => _isLinux && !_isFlatpak
         && !string.IsNullOrEmpty(_sourceAppImagePath)
         && File.Exists(_sourceAppImagePath);
 
@@ -96,9 +99,10 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
         {
             ct.ThrowIfCancellationRequested();
 
+            // Validate the launch path before changing any installed files.
+            _ = LinuxDesktopEntry.QuoteExec(InstalledAppImagePathUnchecked);
             Directory.CreateDirectory(_optInstallDir);
-            CopyAtomic(_sourceAppImagePath!, InstalledAppImagePathUnchecked, ct);
-            MakeExecutable(InstalledAppImagePathUnchecked);
+            CopyAtomic(_sourceAppImagePath!, InstalledAppImagePathUnchecked, ct, executable: true);
 
             // The icon is copied out of the mounted AppDir when present; without it the entry still
             // works, it just shows a generic icon until the user installs a theme icon themselves.
@@ -133,18 +137,17 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
 
     private LinuxDesktopIntegrationResult Unregister(CancellationToken ct)
     {
-        if (!_isLinux)
+        if (!_isLinux || _isFlatpak)
             return NotSupported();
 
         try
         {
             ct.ThrowIfCancellationRequested();
 
-            TryDelete(DesktopEntryPath);
-            TryDelete(InstalledAppImagePathUnchecked);
-            TryDelete(InstalledIconPath);
-            if (Directory.Exists(_optInstallDir) && !Directory.EnumerateFileSystemEntries(_optInstallDir).Any())
-                Directory.Delete(_optInstallDir);
+            // This is menu removal, not an uninstall. Keep the running/installed image so
+            // the user can add it again. Required deletions must surface failures.
+            DeleteRegistrationFile(DesktopEntryPath);
+            DeleteRegistrationFile(InstalledIconPath);
 
             RefreshDesktopDatabases();
             return new LinuxDesktopIntegrationResult(DesktopIntegrationOutcome.Success);
@@ -171,8 +174,10 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
             .AppendLine("Type=Application")
             .AppendLine("Name=PKHeX-Avalonia")
             .AppendLine("Comment=Pokémon save file editor")
-            .AppendLine($"Exec={QuoteExec(execPath)}")
-            .AppendLine($"TryExec={execPath}")
+            // GLib resolves the executable before field-code expansion. Keep literal % in an
+            // argument to env instead, so %% is expanded before the AppImage path is resolved.
+            .AppendLine($"Exec=/usr/bin/env -- {LinuxDesktopEntry.QuoteExec(execPath)}")
+            .AppendLine($"TryExec={LinuxDesktopEntry.EscapeValue(execPath)}")
             .AppendLine("Categories=Utility;")
             .AppendLine("Terminal=false")
             .AppendLine("StartupWMClass=PKHeX.Avalonia");
@@ -183,22 +188,18 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
         WriteAtomic(DesktopEntryPath, entry.ToString());
     }
 
-    // Desktop Entry spec quoting: inside double quotes, these five characters must be escaped.
-    private static string QuoteExec(string path)
+    private static void DeleteRegistrationFile(string path)
     {
-        var sb = new StringBuilder("\"");
-        foreach (var c in path)
-        {
-            if (c is '\\' or '"' or '$' or '`')
-                sb.Append('\\');
-            sb.Append(c);
-        }
-        return sb.Append('"').ToString();
+        // File.Delete is idempotent for a missing file, but its parent may not exist yet.
+        if (Directory.Exists(Path.GetDirectoryName(path)))
+            File.Delete(path);
     }
 
-    private void CopyAtomic(string sourcePath, string destinationPath, CancellationToken ct)
+    private static void CopyAtomic(string sourcePath, string destinationPath, CancellationToken ct, bool executable = false)
     {
-        var stagingPath = destinationPath + ".tmp";
+        if (Path.GetFullPath(sourcePath) == Path.GetFullPath(destinationPath))
+            return;
+        var stagingPath = destinationPath + $".{Guid.NewGuid():N}.tmp";
         try
         {
             using (var source = File.OpenRead(sourcePath))
@@ -212,6 +213,9 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
                     destination.Write(buffer, 0, read);
                 }
             }
+            ct.ThrowIfCancellationRequested();
+            if (executable)
+                MakeExecutable(stagingPath);
             File.Move(stagingPath, destinationPath, overwrite: true);
         }
         finally
@@ -222,7 +226,7 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
 
     private static void WriteAtomic(string path, string contents)
     {
-        var stagingPath = path + ".tmp";
+        var stagingPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
             File.WriteAllText(stagingPath, contents, new UTF8Encoding(false));
@@ -249,7 +253,7 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
         // Purely best-effort: menu scanners pick up user entries on their own; these just make it
         // immediate on distros that ship the helpers.
         RunBestEffort("update-desktop-database", [ApplicationsDir]);
-        var hicolorRoot = Path.GetFullPath(Path.Combine(InstalledIconPath, "..", "..", ".."));
+        var hicolorRoot = Path.Combine(_dataHome, "icons", "hicolor");
         RunBestEffort("gtk-update-icon-cache", ["-f", "-t", hicolorRoot]);
     }
 
@@ -293,8 +297,8 @@ public sealed class LinuxDesktopIntegrationService : ILinuxDesktopIntegrationSer
 
     private static string ResolveDataHome()
     {
-        // Maps to XDG_DATA_HOME with the ~/.local/share default, same as the desktop spec.
-        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return string.IsNullOrEmpty(local) ? Path.Combine(ResolveHome(), ".local", "share") : local;
+        var local = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+        return !string.IsNullOrEmpty(local) && Path.IsPathFullyQualified(local)
+            ? local : Path.Combine(ResolveHome(), ".local", "share");
     }
 }

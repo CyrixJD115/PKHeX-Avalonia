@@ -69,6 +69,24 @@ Alternatively, extract the Linux ZIP and run its executable. Both packages are f
 
 The companion `.AppImage.zsync` release file supports AppImageUpdate. See [AppImage requirements and updates](docs/packaging.md#appimage-catalog-metadata-and-updates).
 
+**Install with one command:** on a supported x86_64 Linux desktop with Bash, `curl`, `python3`, and `sha256sum`, run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash
+```
+
+The script verifies the release's SHA-256 digest, installs a stable `~/.local/opt/PKHeX-Avalonia/PKHeX-Avalonia.AppImage`, and adds a menu entry and icon under `$XDG_DATA_HOME` (default `~/.local/share`). No root access is needed. To select a release, use `bash -s -- --version <x.y.z>` instead of `bash` at the end of the command.
+
+When running an AppImage, **Settings → Linux desktop integration → Add to application menu** installs a copy in the same location. Launch that copy from the menu for subsequent use; the in-app updater updates the running copy. **Remove from application menu** removes only the entry and icon, keeping the executable so you can add it again.
+
+To uninstall the installed AppImage as well as its entry and icon:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realgarit/PKHeX-Avalonia/main/Scripts/install.sh | bash -s -- --uninstall
+```
+
+Uninstall preserves save files, settings, and backups. AppImage updates use the stable filename in the same directory; an unrelated existing file with that name is left untouched and the update stops.
+
 </details>
 
 <details>
