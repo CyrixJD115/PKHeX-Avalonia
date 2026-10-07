@@ -25,18 +25,20 @@ DESKTOP_ID="io.pkhex.avalonia"
 
 # --- output helpers --------------------------------------------------------------------
 # Plain output when stdout is not a TTY (piped to a log), NO_COLOR is set, or TERM is dumb.
+# Palette matches the app's own branding: the icon's Poké Ball red (~#CD1818 → 256-color 160),
+# the white of the app text, and the CompactAccentBrush rose (#B05763 → 256-color 131).
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
     C_RESET=$'\033[0m'
     C_BOLD=$'\033[1m'
     C_DIM=$'\033[2m'
-    C_PKH=$'\033[1;38;5;51m'      # bright cyan
-    C_AVALONIA=$'\033[1;38;5;141m'  # bright violet
-    C_ACCENT=$'\033[38;5;51m'
+    C_RED=$'\033[1;38;5;160m'      # brand red (icon Poké Ball red)
+    C_WHITE=$'\033[1;97m'          # bold bright white (app foreground)
+    C_ACCENT=$'\033[38;5;131m'     # app accent rose (CompactAccentBrush)
     C_OK=$'\033[38;5;114m'
     C_WARN=$'\033[38;5;215m'
     C_ERR=$'\033[1;38;5;203m'
 else
-    C_RESET=""; C_BOLD=""; C_DIM=""; C_PKH=""; C_AVALONIA=""
+    C_RESET=""; C_BOLD=""; C_DIM=""; C_RED=""; C_WHITE=""
     C_ACCENT=""; C_OK=""; C_WARN=""; C_ERR=""
 fi
 
@@ -46,7 +48,7 @@ warn() { printf '%s\n' "${C_WARN}  !${C_RESET} $*" >&2; }
 die()  { printf '%s\n' "${C_ERR}  ✗ $*${C_RESET}" >&2; exit 1; }
 
 print_banner() {
-    printf '%s' "${C_PKH}"
+    printf '%s' "${C_RED}"
     cat <<'BANNER_PKH'
 ██████╗ ██╗  ██╗██╗  ██╗███████╗██╗  ██╗
 ██╔══██╗██║ ██╔╝██║  ██║██╔════╝╚██╗██╔╝
@@ -55,7 +57,7 @@ print_banner() {
 ██║     ██║  ██╗██║  ██║███████╗██╔╝ ██╗
 ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 BANNER_PKH
-    printf '%s' "${C_RESET}${C_AVALONIA}"
+    printf '%s' "${C_RESET}${C_WHITE}"
     cat <<'BANNER_AVALONIA'
 
  █████╗ ██╗   ██╗ █████╗ ██╗      ██████╗ ███╗   ██╗██╗ █████╗
@@ -73,7 +75,7 @@ BANNER_AVALONIA
 print_summary() {
     local version="$1"
     printf '\n'
-    printf '%s\n' "${C_OK}${C_BOLD}  PKHeX-Avalonia ${version} installed${C_RESET}"
+    printf '%s\n' "${C_WHITE}  PKHeX-Avalonia ${version} installed${C_RESET}"
     printf '%s\n' "${C_DIM}  ─────────────────────────────────────────────${C_RESET}"
     printf '%s\n' "    ${C_BOLD}App        ${C_RESET}${INSTALL_PATH}"
     printf '%s\n' "    ${C_BOLD}Menu entry ${C_RESET}${DESKTOP_FILE}"
