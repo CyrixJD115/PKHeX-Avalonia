@@ -7,9 +7,11 @@ namespace PKHeX.Infrastructure.Updating;
 
 /// <summary>
 /// Linux install strategy. AppImage: the new AppImage file is already a complete, self-contained
-/// executable, so installing it is just chmod +x and an atomic move over the current AppImage path
-/// (via a detached shell helper that waits for our process to exit). Portable (extracted-zip) install:
-/// same staging + swap dance as the Windows portable path, using a POSIX shell helper instead of cmd.
+/// executable, so installing it is just chmod +x and an atomic move into place via a detached shell
+/// helper that waits for our process to exit — landing on the canonical stable file name
+/// (<see cref="LinuxAppImage.CanonicalFileName"/>) in the same directory, so the version no longer
+/// sticks to whatever file name the user first downloaded. Portable (extracted-zip) install: same
+/// staging + swap dance as the Windows portable path, using a POSIX shell helper instead of cmd.
 /// </summary>
 internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
 {
@@ -29,39 +31,62 @@ internal sealed class LinuxUpdateStrategy : IPlatformUpdateStrategy
 
         MakeExecutable(newAppImagePath);
 
-        var targetPath = location.Root;
-        var backupPath = targetPath + ".bak";
-        var logPath = Path.Combine(Path.GetTempPath(), "pkhex-update-helper.log");
-        var pid = Environment.ProcessId;
-
-        var lines = new[]
-        {
-            "#!/bin/sh",
-            "PID=\"$1\"",
-            $"LOG=\"{logPath}\"",
-            "echo \"$(date) waiting for pid $PID to exit\" >> \"$LOG\"",
-            "while kill -0 \"$PID\" 2>/dev/null; do sleep 0.5; done",
-            "echo \"$(date) swapping AppImage\" >> \"$LOG\"",
-            $"rm -f \"{backupPath}\"",
-            $"mv \"{targetPath}\" \"{backupPath}\" 2>>\"$LOG\"",
-            $"if mv \"{newAppImagePath}\" \"{targetPath}\" 2>>\"$LOG\"; then",
-            $"  chmod +x \"{targetPath}\"",
-            $"  rm -f \"{backupPath}\"",
-            "  echo \"$(date) update applied, relaunching\" >> \"$LOG\"",
-            $"  \"{targetPath}\" &",
-            "else",
-            "  echo \"$(date) swap failed, restoring backup\" >> \"$LOG\"",
-            $"  mv \"{backupPath}\" \"{targetPath}\" 2>>\"$LOG\"",
-            $"  \"{targetPath}\" &",
-            "fi",
-        };
+        var lines = BuildAppImageSwapScript(newAppImagePath, location.Root,
+            Path.Combine(Path.GetTempPath(), "pkhex-update-helper.log"));
 
         var scriptPath = WriteScript(lines);
-        StartDetached("/bin/sh", $"\"{scriptPath}\" {pid}");
+        StartDetached("/bin/sh", $"\"{scriptPath}\" {Environment.ProcessId}");
 
         progress.Report(new UpdateProgress(UpdatePhase.Relaunching, 0, null));
         return Task.FromResult(new UpdateInstallResult(true, true, (string?)null));
     }
+
+    /// <summary>
+    /// Stages the complete executable beside its destination before replacing anything. Renaming a
+    /// versioned image uses an exclusive hard link, so an unrelated stable-name file is never replaced.
+    /// A failed staging/replacement leaves the original runnable; canonical updates use atomic rename.
+    /// </summary>
+    internal static string[] BuildAppImageSwapScript(
+        string newAppImagePath, string currentAppImagePath, string logPath)
+    {
+        // These are Linux paths even when the script is inspected in Windows tests.
+        var separator = currentAppImagePath.LastIndexOf('/');
+        var directory = separator < 0 ? "." : separator == 0 ? "/" : currentAppImagePath[..separator];
+        var targetPath = separator < 0 ? LinuxAppImage.CanonicalFileName
+            : currentAppImagePath[..(separator + 1)] + LinuxAppImage.CanonicalFileName;
+        return $$"""
+            #!/bin/sh
+            PID="$1"
+            LOG={{QuoteShell(logPath)}}
+            CURRENT={{QuoteShell(currentAppImagePath)}}
+            TARGET={{QuoteShell(targetPath)}}
+            NEW={{QuoteShell(newAppImagePath)}}
+            DIRECTORY={{QuoteShell(directory)}}
+            WORK=''
+            cleanup() { if [ -n "$WORK" ]; then rm -f -- "$WORK/image"; rmdir -- "$WORK"; fi; }
+            fail() { echo "$(date) update failed; keeping original" >> "$LOG"; "$CURRENT" >> "$LOG" 2>&1 & exit 1; }
+            trap cleanup EXIT
+            trap 'exit 1' HUP INT TERM
+            while kill -0 "$PID" 2>/dev/null; do sleep 0.5; done
+            [ -f "$CURRENT" ] && [ ! -L "$CURRENT" ] || exit 1
+            if [ "$CURRENT" != "$TARGET" ] && { [ -e "$TARGET" ] || [ -L "$TARGET" ]; }; then fail; fi
+            WORK=$(mktemp -d "$DIRECTORY/.pkhex-update.XXXXXX") || fail
+            cp -- "$NEW" "$WORK/image" 2>>"$LOG" || fail
+            chmod 755 "$WORK/image" 2>>"$LOG" || fail
+            if [ "$CURRENT" = "$TARGET" ]; then
+                # -T refuses a directory destination; source and destination share a filesystem.
+                mv -fT -- "$WORK/image" "$TARGET" 2>>"$LOG" || fail
+            else
+                # ln has no overwrite mode: also refuses a target created after the preflight.
+                ln -T -- "$WORK/image" "$TARGET" 2>>"$LOG" || fail
+                rm -f -- "$CURRENT" 2>>"$LOG"
+            fi
+            echo "$(date) update applied, relaunching" >> "$LOG"
+            "$TARGET" >> "$LOG" 2>&1 &
+            """.ReplaceLineEndings("\n").Split('\n');
+    }
+
+    private static string QuoteShell(string value) => "'" + value.Replace("'", "'\"'\"'", StringComparison.Ordinal) + "'";
 
     private static async Task<UpdateInstallResult> SwapPortableAsync(
         string zipPath, InstallLocationInfo location, IProgress<UpdateProgress> progress, CancellationToken ct)
