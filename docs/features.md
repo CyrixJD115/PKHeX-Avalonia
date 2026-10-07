@@ -91,7 +91,7 @@ nine languages `PKHeX.Core` uses for game data), plus Brazilian Portuguese. `PKH
 Portuguese game data, so with Portuguese selected the shell is translated and species, moves, items
 and locations show in English.
 
-- **Change it:** Options → Language, or Settings → Appearance → Language. Switching applies
+- **Change it:** Help → Language, or Settings → Appearance → Language. Switching applies
   immediately across the whole UI, no restart required.
 - **Where strings live:** `PKHeX.Presentation/Localization/Strings/*.json`, one flat JSON file per
   language; `en.json` is the source of truth and any missing key in another language falls back to
@@ -104,32 +104,27 @@ and locations show in English.
 
 ## In-app update checker
 
-Checks GitHub Releases for a newer version and shows what changed.
+Checks GitHub Releases for a newer version and shows what changed. Use **Help → About → Check for Updates**, or the update check in Settings.
 
-- **Where it lives:** `PKHeX.Infrastructure/GitHubUpdateCheckService.cs` behind the
-  `IUpdateCheckService` port.
-- **Behavior:** runs automatically at startup, failing silently (no dialog, no retry) if the check
-  can't complete — for example, no network access. If you've just upgraded across a version
-  boundary, a "What's New" changelog dialog shows automatically once on the first run of the new
-  version.
-- **Downloads:** point you at the [Releases](https://github.com/realgarit/PKHeX-Avalonia/releases)
-  page for the appropriate per-platform artifact — see the Download section in the
-  [README](../README.md) and [packaging.md](packaging.md) for what's available per OS.
+- **Startup:** automatic checks and the once-per-upgrade changelog are configurable in Settings. A failed background check stays quiet; a manual check reports its result.
+- **Installation:** supported packages offer an in-app download/install flow. Available actions depend on the running package and installation location. Release assets are also available from the [official release page](https://github.com/realgarit/PKHeX-Avalonia/releases).
+- **Flatpak:** release notes remain available, but Flatpak owns installation. For the standalone GitHub bundle, download the newer bundle and install it with the same command as the original. There is no application update remote for that bundle. See the [Flatpak guide](packaging.md#linux-flatpak).
+- **Implementation:** `UpdateCheckCoordinator` in Presentation coordinates notifications and manual checks; `GitHubUpdateCheckService` and `GitHubUpdateInstaller` in Infrastructure handle release data and installation.
 
 ## OS drag-and-drop
 
 - **Drag out (box/party slot → desktop):** writes a decrypted entity file (e.g. `.pk9`) to a temp
   location and hands the OS a real file reference via Avalonia's `IStorageProvider`. This is
-  desktop-backed: it works on Windows, macOS, and Linux (X11 and Wayland) when running as a normal
-  desktop app. If a future Avalonia backend can't resolve a real file path for the temp file (e.g.
-  a sandboxed or browser-hosted build), drag-out degrades gracefully to in-app-only dragging (box
-  ↔ party still works) instead of failing.
+  desktop-backed: availability depends on the desktop backend and file-access permissions. If the
+  backend cannot resolve a real file path for the temp file, drag-out falls back to in-app-only
+  dragging (box ↔ party).
 - **Drag in** accepts `.pk1`–`.pk9`, `.pb7`/`.pb8`, `.pa8`, encrypted `.ek*`, and Mystery Gift
   files, reusing the same detection/conversion/legality pipeline as the folder import feature.
   Incompatible or unreadable files are rejected with a message dialog rather than crashing or
   silently corrupting a slot.
 - **Drag a save file** onto any part of the main window (a slot, the editor panel, or elsewhere)
-  to open it, the same as File → Open.
+  to open it, where the desktop backend permits the drop. If an external drop is ignored, use
+  **File → Open**. In Flatpak, opening through the portal may be needed to grant file access.
 
 ## Platform config/data directories
 

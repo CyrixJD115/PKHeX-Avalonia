@@ -35,21 +35,72 @@ Get a self-contained package from the [official latest release](https://github.c
 | macOS Apple Silicon | `PKHeX-Avalonia-osx-arm64.zip` | `PKHeX-Avalonia-osx-arm64-selfsigned.dmg` |
 | macOS Intel | `PKHeX-Avalonia-osx-x64.zip` | `PKHeX-Avalonia-osx-x64-selfsigned.dmg` |
 
-These filenames match v1.49.12. Signing suffixes may change; always check the release's asset list.
+Signing suffixes may change; always check the release's asset list. Expand your platform for setup instructions.
 
-- **Windows:** extract the complete ZIP before launching, or use the installer.
-- **macOS:** open the DMG and copy the app to Applications, or extract the ZIP. A self-signed build is not Apple-notarized and may require first-launch approval.
-- **Linux:** extract the ZIP, or make the downloaded AppImage executable with `chmod +x PKHeX-Avalonia-*-x86_64.AppImage` and launch it. Its companion `.AppImage.zsync` release file enables updates through AppImageUpdate.
-- **Linux Flatpak:** install the downloaded bundle with `flatpak install --user ./PKHeX-Avalonia-linux-x86_64.flatpak` and launch `flatpak run io.github.realgarit.PKHeX-Avalonia`. See the [Flatpak guide](docs/packaging.md#linux-flatpak) for runtimes, file access and updates. The app is not currently listed on Flathub.
+<details>
+<summary><strong>Windows — installer or portable ZIP</strong></summary>
 
-See the [packaging guide](docs/packaging.md) for signing details and platform troubleshooting. The Homebrew and winget files under `packaging/` are distribution templates; they do not establish that a public package-manager listing is available.
+Run the installer, or extract the **complete** Windows ZIP before launching `PKHeX.Avalonia.exe`. Keep the extracted files together. The `unsigned` installer is not code-signed; only download it from the official release page.
 
-The app checks GitHub Releases for updates and can display release notes. A manual **Check for Updates** action is available in **Help → About**.
+See the [packaging guide](docs/packaging.md#windows-installer--code-signing) for installer and signing details.
+
+</details>
+
+<details>
+<summary><strong>macOS — Apple Silicon or Intel</strong></summary>
+
+Choose `osx-arm64` for Apple Silicon or `osx-x64` for Intel. Open the DMG and copy the app to Applications, or extract the ZIP. A self-signed build is not Apple-notarized and may require first-launch approval.
+
+See [macOS signing and first launch](docs/packaging.md#macos-stable-self-signed-identity-the-tertius-pattern) for details.
+
+</details>
+
+<details>
+<summary><strong>Linux — portable AppImage or ZIP</strong></summary>
+
+Download the x86_64 AppImage, make that file executable, and launch it. Replace `<version>` with the downloaded release number:
+
+```bash
+chmod +x "PKHeX-Avalonia-<version>-x86_64.AppImage"
+./"PKHeX-Avalonia-<version>-x86_64.AppImage"
+```
+
+Alternatively, extract the Linux ZIP and run its executable. Both packages are for **x86_64**, not ARM. The .NET runtime is bundled; Linux system libraries are still required. If FUSE is unavailable, pass `--appimage-extract-and-run` to the AppImage.
+
+The companion `.AppImage.zsync` release file supports AppImageUpdate. See [AppImage requirements and updates](docs/packaging.md#appimage-catalog-metadata-and-updates).
+
+</details>
+
+<details>
+<summary><strong>Linux — sandboxed Flatpak bundle</strong></summary>
+
+Install Flatpak and your desktop's XDG portal backend, then download the x86_64 bundle from the release page:
+
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user ./PKHeX-Avalonia-linux-x86_64.flatpak
+flatpak run io.github.realgarit.PKHeX-Avalonia
+```
+
+Flathub supplies the runtime dependencies; **the app itself is not listed on Flathub**. To update this standalone bundle, download a newer release and repeat the install command. The in-app updater does not replace Flatpak files.
+
+Use **File → Open** and **Save As** to grant access to files through the desktop portal. See the [Flatpak guide](docs/packaging.md#linux-flatpak) for file access, persistent data, and troubleshooting.
+
+</details>
+
+<details>
+<summary><strong>Updates, signing, and package-manager availability</strong></summary>
+
+The app checks GitHub Releases for updates and can display release notes. Use **Help → About → Check for Updates** for a manual check. Available installation actions depend on the package; Flatpak updates are managed outside the app.
+
+The Homebrew and winget files under `packaging/` are distribution templates. They do not establish that a public package-manager listing is available. See the [packaging guide](docs/packaging.md) for signing and distribution details.
+
+</details>
 
 ## Getting started
 
 1. Keep an untouched backup of your exported game save.
-2. Use **File → Open**, or drop the save onto the window.
+2. Use **File → Open**, or drop the save onto the window where your desktop supports it. If a drop is ignored, use **File → Open**; Flatpak may need a portal file-access grant.
 3. Select a box slot and double-click it to load its Pokémon into the editor.
 4. Edit Main, Stats, Met, Moves, or OT/Misc fields. Use **More** for additional sections, then the slot's **Set** action to place the edited Pokémon back into a slot.
 5. Use **File → Save As** for a separate copy, or **Save** to update the loaded file.
@@ -58,7 +109,9 @@ Pokémon-file import requires a compatible save to be open. Available fields and
 
 ## Features
 
-### Pokémon and save editing
+<a id="pokémon-and-save-editing"></a>
+<details>
+<summary><strong>Pokémon and save editing</strong></summary>
 
 - Save support across Generations 1–9, including Let's Go, Legends: Arceus, BDSP, and Legends: Z-A, as supported by the bundled Core engine.
 - Edit species, forms, abilities, held items, stats, IVs/EVs, moves, met data, trainer identities, ribbons, and memories where the format supports them.
@@ -70,7 +123,11 @@ Pokémon-file import requires a compatible save to be open. Available fields and
 - Received Switch Mystery Gift records for Sword/Shield, BDSP, Legends: Arceus, and Scarlet/Violet. This edits save-side gift history; it does not deliver or redeem BCAT gifts.
 - Optional **PKHaX** mode for editing beyond normal constraints. Enable it in **Settings → Editor Behavior**, then restart.
 
-### Tools for larger workflows
+</details>
+
+<a id="tools-for-larger-workflows"></a>
+<details>
+<summary><strong>Advanced workflows — databases, batch editing, Auto-Legality and LiveHeX</strong></summary>
 
 - **PKM, Mystery Gift, and Encounter databases:** search and inspect Pokémon and encounter data.
 - **Legality Audit and Box Report:** review occupied slots across a save.
@@ -82,13 +139,19 @@ Pokémon-file import requires a compatible save to be open. Available fields and
 
 Use **Tools**, or **Ctrl+K** to search the tool launcher. The tool catalog reflects the loaded save's capabilities. See the [feature guide](docs/features.md) for details.
 
-### Desktop experience
+</details>
+
+<a id="desktop-experience"></a>
+<details>
+<summary><strong>Desktop features — themes, languages and accessibility</strong></summary>
 
 - Light and Dark themes, switchable at runtime from the top bar or Settings.
 - Ten interface languages: English, German, Spanish, French, Italian, Japanese, Korean, Simplified Chinese, Traditional Chinese, and Brazilian Portuguese (interface only; game data such as species and move names stays in English). Switch through **Help → Language**.
 - Compact and comfortable density settings, a resizable shell, and Pokémon, Save, and Reports workspaces.
 - Keyboard navigation, contextual accessible control names, and visible focus. See [accessibility and shortcuts](docs/accessibility.md).
 - Platform-specific settings/data directories, update notifications, and release notes.
+
+</details>
 
 ## Screenshots
 
@@ -149,6 +212,9 @@ The [screenshot guide](docs/screenshots/README.md) explains how to regenerate th
 
 ## Building from source
 
+<details>
+<summary><strong>Developers — build, run, test and publish</strong></summary>
+
 Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and Git:
 
 ```bash
@@ -173,7 +239,12 @@ dotnet publish PKHeX.Avalonia/PKHeX.Avalonia.csproj -c Release -r win-x64 --self
 
 Other release targets are `linux-x64`, `osx-arm64`, and `osx-x64`. Installers, DMGs, and AppImages require the additional steps in the [packaging guide](docs/packaging.md).
 
+</details>
+
 ## Project structure and contributing
+
+<details>
+<summary><strong>Contributors — architecture and contribution rules</strong></summary>
 
 | Project | Responsibility | Project dependencies |
 |---|---|---|
@@ -189,6 +260,8 @@ Tests cover Core behavior, Avalonia controls/ViewModels, headless rendering, and
 Development is AI-assisted. Shared repository instructions are in [AGENTS.md](AGENTS.md). Contributions go through branches and pull requests. Keep consumer changes outside the Core mirror, add user-facing strings to all ten language resources, and include relevant regression coverage. CI owns the application version bump; do not edit `UIVersion` in a PR.
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [development guide](docs/development.md).
+
+</details>
 
 ## Community
 
