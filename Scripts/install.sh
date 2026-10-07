@@ -67,9 +67,25 @@ draw_bar() {
     fi
 }
 
+# Wrap runs of fill blocks and runs of box-drawing glyphs in two banner colors,
+# so the letter mass and its extruded outline read as separate tones. Byte level
+# is safe without locale assumptions: the banner alphabet is closed
+# (█ plus ╗ ═ ╝ ╔ ╚ ║), and `\+` after a literal multibyte char matches runs of
+# that exact byte sequence. With empty color vars the substitutions are identity.
+colorize_banner() {  # $1 = fill (block) color, $2 = outline (box-drawing) color
+    local fill="$1" line="$2" r="$C_RESET"
+    sed -e "s/█\+/${fill}&${r}/g" \
+        -e "s/╗\+/${line}&${r}/g" \
+        -e "s/╝\+/${line}&${r}/g" \
+        -e "s/╔\+/${line}&${r}/g" \
+        -e "s/╚\+/${line}&${r}/g" \
+        -e "s/═\+/${line}&${r}/g" \
+        -e "s/║\+/${line}&${r}/g"
+}
+
 print_banner() {
-    printf '%s' "${C_RED}"
-    cat <<'BANNER_PKH'
+    # Top banner: red letter mass, white extruded outline. Bottom: inverted.
+    cat <<'BANNER_PKH' | colorize_banner "${C_RED}" "${C_WHITE}"
 ██████╗ ██╗  ██╗██╗  ██╗███████╗██╗  ██╗
 ██╔══██╗██║ ██╔╝██║  ██║██╔════╝╚██╗██╔╝
 ██████╔╝█████╔╝ ███████║█████╗   ╚███╔╝     █████╗
@@ -77,8 +93,7 @@ print_banner() {
 ██║     ██║  ██╗██║  ██║███████╗██╔╝ ██╗
 ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 BANNER_PKH
-    printf '%s' "${C_RESET}${C_WHITE}"
-    cat <<'BANNER_AVALONIA'
+    cat <<'BANNER_AVALONIA' | colorize_banner "${C_WHITE}" "${C_RED}"
 
  █████╗ ██╗   ██╗ █████╗ ██╗      ██████╗ ███╗   ██╗██╗ █████╗
 ██╔══██╗██║   ██║██╔══██╗██║     ██╔═══██╗████╗  ██║██║██╔══██╗
@@ -87,7 +102,6 @@ BANNER_PKH
 ██║  ██║ ╚████╔╝ ██║  ██║███████╗╚██████╔╝██║ ╚████║██║██║  ██║
 ╚═╝  ╚═╝  ╚═══╝  ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 BANNER_AVALONIA
-    printf '%s\n' "${C_RESET}"
     printf '%s\n' "${C_DIM}    Pokémon save file editor for Linux. User-local install, no root required.${C_RESET}"
     printf '\n'
 }
