@@ -27,6 +27,7 @@ DESKTOP_ID="io.pkhex.avalonia"
 # Plain output when stdout is not a TTY (piped to a log), NO_COLOR is set, or TERM is dumb.
 # Palette matches the app's own branding: the icon's Poké Ball red (~#CD1818 → 256-color 160),
 # the white of the app text, and the CompactAccentBrush rose (#B05763 → 256-color 131).
+# LIVE_UI additionally gates carriage-return redraws (progress bar) for the same conditions.
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
     C_RESET=$'\033[0m'
     C_BOLD=$'\033[1m'
@@ -37,15 +38,34 @@ if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
     C_OK=$'\033[38;5;114m'
     C_WARN=$'\033[38;5;215m'
     C_ERR=$'\033[1;38;5;203m'
+    LIVE_UI=1
 else
     C_RESET=""; C_BOLD=""; C_DIM=""; C_RED=""; C_WHITE=""
     C_ACCENT=""; C_OK=""; C_WARN=""; C_ERR=""
+    LIVE_UI=0
 fi
 
 info() { printf '%s\n' "${C_ACCENT}  ▶${C_RESET} $*"; }
 ok()   { printf '%s\n' "${C_OK}  ✓${C_RESET} $*"; }
 warn() { printf '%s\n' "${C_WARN}  !${C_RESET} $*" >&2; }
 die()  { printf '%s\n' "${C_ERR}  ✗ $*${C_RESET}" >&2; exit 1; }
+
+fmt_mb() { awk -v b="$1" 'BEGIN{printf "%.1f", b/1048576}'; }
+
+BAR_WIDTH=26
+# draw_bar <downloaded-bytes> <total-bytes>; total 0 = unknown size (counter only)
+draw_bar() {
+    local done_b="$1" total_b="$2" pct filled i bar=""
+    if [ "$total_b" -gt 0 ]; then
+        pct=$(( done_b * 100 / total_b )); [ "$pct" -gt 100 ] && pct=100
+        filled=$(( BAR_WIDTH * done_b / total_b )); [ "$filled" -gt "$BAR_WIDTH" ] && filled=$BAR_WIDTH
+        for ((i = 0; i < filled; i++)); do bar+="█"; done
+        for ((i = filled; i < BAR_WIDTH; i++)); do bar+="░"; done
+        printf '\r%s' "  ${C_RED}${bar}${C_RESET} ${C_WHITE}${pct}%${C_RESET} ${C_DIM}$(fmt_mb "$done_b") / $(fmt_mb "$total_b") MB${C_RESET}"
+    else
+        printf '\r%s' "  ${C_WHITE}$(fmt_mb "$done_b") MB${C_RESET} ${C_DIM}downloaded${C_RESET}"
+    fi
+}
 
 print_banner() {
     printf '%s' "${C_RED}"
@@ -198,21 +218,43 @@ DOWNLOAD_URL="https://github.com/$REPO/releases/download/v${VERSION}/${ASSET}"
 # The GitHub API reports a sha256 digest per asset; verify against it when present (same policy
 # as the in-app updater: an absent digest is warned about, not fatal). The digest line follows the
 # asset's "name" line inside the same JSON object (~27 lines), well before the next asset begins.
-DIGEST="$(grep -A 30 "\"name\": \"$ASSET\"" "$RELEASE_JSON" | sed -n 's/.*"digest": *"sha256:\([0-9a-f]\{64\}\)".*/\1/p' | head -n1)"
+ASSET_JSON="$(grep -A 30 "\"name\": \"$ASSET\"" "$RELEASE_JSON")"
+DIGEST="$(sed -n 's/.*"digest": *"sha256:\([0-9a-f]\{64\}\)".*/\1/p' <<<"$ASSET_JSON" | head -n1)"
+TOTAL_BYTES="$(sed -n 's/.*"size": \([0-9]\{1,\}\).*/\1/p' <<<"$ASSET_JSON" | head -n1)"
+[ -n "$TOTAL_BYTES" ] || TOTAL_BYTES=0
 
 # --- download + verify -----------------------------------------------------------------
 STAGING="$(mktemp --suffix=.AppImage 2>/dev/null || mktemp)"
 trap 'rm -f "$RELEASE_JSON" "$STAGING"' EXIT
 
-info "Downloading $ASSET …"
-curl -fL --retry 3 -o "$STAGING" "$DOWNLOAD_URL"
+if [ "$TOTAL_BYTES" -gt 0 ]; then
+    info "Downloading $ASSET ($(fmt_mb "$TOTAL_BYTES") MB)…"
+else
+    info "Downloading $ASSET …"
+fi
+
+# curl runs silently in the background while the script draws its own themed
+# progress bar; curl's default meter table is noisy and off-brand.
+curl -sS -fL --retry 3 -o "$STAGING" "$DOWNLOAD_URL" & CURL_PID=$!
+if [ "$LIVE_UI" -eq 1 ]; then
+    while kill -0 "$CURL_PID" 2>/dev/null; do
+        draw_bar "$(wc -c < "$STAGING" 2>/dev/null || echo 0)" "$TOTAL_BYTES"
+        sleep 0.2
+    done
+    draw_bar "$(wc -c < "$STAGING" 2>/dev/null || echo 0)" "$TOTAL_BYTES"
+    printf '\n'
+fi
+if ! wait "$CURL_PID"; then
+    die "Download failed. Check your connection and try again (or pin a release with --version)."
+fi
 
 if [ -n "$DIGEST" ] && command -v sha256sum >/dev/null 2>&1; then
     info "Verifying SHA-256 checksum…"
-    echo "${DIGEST}  ${STAGING}" | sha256sum --check --strict - || {
+    if echo "${DIGEST}  ${STAGING}" | sha256sum --check --strict - >/dev/null 2>&1; then
+        ok "Checksum verified (SHA-256 matches the published digest)"
+    else
         die "Checksum mismatch — the download is corrupt or was tampered with. Aborting."
-    }
-    ok "Checksum verified"
+    fi
 elif [ -z "$DIGEST" ]; then
     warn "Release has no published checksum; skipping verification."
 fi
