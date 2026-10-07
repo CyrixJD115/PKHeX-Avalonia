@@ -1,5 +1,9 @@
 # Packaging & distribution
 
+**Installing the app?** Start with the [platform setup instructions](../README.md#download).
+For sandbox access and bundle updates, go directly to [Linux Flatpak](#linux-flatpak).
+The sections below are primarily for release maintainers.
+
 This document covers how `release.yml` builds installers for each platform,
 which secrets unlock real code signing / notarization, and how to submit the
 package-manager templates under `packaging/` once signed builds exist.
