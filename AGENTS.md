@@ -223,6 +223,7 @@ WinForms UI changes, version bump, PR, and auto-merge once CI is green — is en
 - Session continuity across tools: before ending substantial work in ANY tool (Claude Code, Codex, Copilot), record durable context — decisions made, gotchas discovered, in-progress state worth resuming — in the "Working notes" section below, or fold it into the relevant section above. This is the shared memory between agents.
 
 ## Working notes
+- 2026-10-08 — At the user's request, #380 is closed as completed after notifying @Sir-Mudkip and @KintsugiUwU in comment 6067881697. Flatpak bundles shipped in v1.88.0; the issue had remained open for the separate Flathub route. Live verification found flathub/flathub#10519 auto-closed by the checklist bot (comment 6012260220), followed by the maintainer's request for review (6012332507), with no maintainer response/review yet. Do not misstate this as a definitive application rejection. The suggested self-hosted update remote is feasible: existing CI exports an OSTree repo, but stable HTTPS hosting, commit/metadata signing, protected keys, release publication and a tested migration from bundle origins remain unimplemented. GUI automatic updates depend on client settings. Neither a Flathub listing nor our own update remote is claimed delivered by closing #380; older notes to keep that issue open are superseded by this explicit closure decision.
 
 - 2026-10-08: Dependabot alerts/security updates are enabled. Version updates run
   weekly on Monday at 06:00 Europe/Zurich for the manifests in .github/dependabot.yml.
